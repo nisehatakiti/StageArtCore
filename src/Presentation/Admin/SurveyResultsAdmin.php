@@ -10,7 +10,7 @@ final class SurveyResultsAdmin{
   if(!current_user_can('manage_options'))wp_die('権限がありません。');
   $sid=(int)($_GET['survey_id']??0);$survey=$this->findSurvey($sid);if(!$survey)wp_die('アンケートが指定されていません。');
   $production=get_post((int)$survey['production_id']);$questions=$this->repo->questions($sid);$responses=$this->repo->responses($sid);$performances=$this->repo->performancesForSurvey((int)$production->ID);$pn=[];
-  foreach($performances as$p)$pn[(int)$p['id']=$p['performance_date'].' '.substr((string)$p['start_time'],0,5);
+  foreach($performances as$p)$pn[(int)$p['id']]=$p['performance_date'].' '.substr((string)$p['start_time'],0,5);
   if(isset($_GET['print'])){$this->printPage($survey,$production,$questions,$responses,$pn);return;}
   echo'<div class="wrap"><h1>アンケート結果</h1><p><strong>公演：</strong>'.esc_html($production->post_title).'　<strong>回答数：</strong>'.count($responses).'件</p><p><a class="button button-primary" target="_blank" href="'.esc_url(admin_url('admin.php?page=stageart-survey-results&survey_id='.$sid.'&print=1')).'">集計結果を印刷</a></p>';
   foreach($questions as$q)$this->summary($q,$responses);
