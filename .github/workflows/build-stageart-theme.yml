@@ -1,0 +1,38 @@
+name: Build StageArt Theme
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'theme/stageart/**'
+      - '.github/workflows/build-stageart-theme.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: PHP syntax check
+        run: |
+          find theme/stageart -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Validate theme structure
+        run: |
+          test -f theme/stageart/style.css
+          test -f theme/stageart/functions.php
+          test -f theme/stageart/front-page.php
+          grep -q '^Theme Name:' theme/stageart/style.css
+      - name: Build theme ZIP
+        run: |
+          cd theme
+          zip -r ../stageart-theme.zip stageart
+      - name: Upload theme artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: StageArtTheme
+          path: stageart-theme.zip
+          retention-days: 90
