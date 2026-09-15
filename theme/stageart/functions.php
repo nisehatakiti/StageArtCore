@@ -3,7 +3,7 @@ declare(strict_types=1);
 if(!defined('ABSPATH'))exit;
 function stageart_theme_setup():void{add_theme_support('title-tag');add_theme_support('post-thumbnails');add_theme_support('html5',['search-form','comment-form','comment-list','gallery','caption','style','script']);add_theme_support('custom-logo',['height'=>80,'width'=>320,'flex-height'=>true,'flex-width'=>true]);register_nav_menus(['primary'=>'メインメニュー']);}
 add_action('after_setup_theme','stageart_theme_setup');
-function stageart_theme_assets():void{wp_enqueue_style('stageart-theme',get_stylesheet_uri(),[], '1.0.0');}
+function stageart_theme_assets():void{wp_enqueue_style('stageart-theme',get_stylesheet_uri(),[], '1.1.0');}
 add_action('wp_enqueue_scripts','stageart_theme_assets');
 function stageart_theme_org(string $key,string $default=''):string{return(string)get_option('stageart_org_'.$key,$default);}
 function stageart_theme_released($value):bool{if(!$value)return true;try{$now=new DateTimeImmutable('now',new DateTimeZone('UTC'));return$now>=new DateTimeImmutable((string)$value,new DateTimeZone('UTC'));}catch(Throwable){return false;}}
