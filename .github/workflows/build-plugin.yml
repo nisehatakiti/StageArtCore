@@ -5,9 +5,6 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,12 +24,12 @@ jobs:
           fi
       - name: PHP syntax check
         run: |
-          set -e
           find src -name '*.php' -print0 | xargs -0 -n1 php -l
           php -l stageart-core.php
       - name: Build plugin ZIP
+        shell: bash
         run: |
-          set -e
+          set -euo pipefail
           rm -rf dist stageart-core.zip
           mkdir -p dist/StageArtCore
           rsync -a --exclude='.git' --exclude='.github' --exclude='dist' --exclude='*.zip' ./ dist/StageArtCore/
