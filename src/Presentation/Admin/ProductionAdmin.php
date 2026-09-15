@@ -22,7 +22,88 @@ final class ProductionAdmin{
  private function participantRow(int$i,array$r,array$members,string$kind):void{echo'<tr><td><input type="hidden" name="participants['.$kind.']['.$i.'][id]" value="'.(int)($r['id']??0).'"><input name="participants['.$kind.']['.$i.'][name]" value="'.esc_attr($r['name']??'').'"></td><td><input name="participants['.$kind.']['.$i.'][role]" value="'.esc_attr($r['role']??'').'"></td><td><select name="participants['.$kind.']['.$i.'][member_id]"><option value="">（未連携）</option>';foreach($members as$m)echo'<option value="'.(int)$m['id'].'" '.selected((int)($r['member_id']??0),(int)$m['id'],false).'>'.esc_html($m['name']).'</option>';echo'</select></td><td><input type="number" min="1" name="participants['.$kind.']['.$i.'][auth_user_id]" value="'.esc_attr((string)($r['auth_user_id']??'')).'"></td><td><button type="button" class="button-link-delete sa-remove-row">削除</button></td></tr>';}
  private function ticketRow(int$i,array$t):void{echo'<tr><td><input type="hidden" name="tickets['.$i.'][id]" value="'.(int)($t['id']??0).'"><input name="tickets['.$i.'][description]" value="'.esc_attr($t['description']??'').'"></td><td><input type="number" min="0" step="1" name="tickets['.$i.'][amount]" value="'.(int)($t['amount']??0).'"></td><td><input type="hidden" name="tickets['.$i.'][show_on_reservation]" value="0"><input type="checkbox" name="tickets['.$i.'][show_on_reservation]" value="1" '.checked(!empty($t['show_on_reservation']),true,false).'></td><td><button type="button" class="button-link-delete sa-remove-row">削除</button></td></tr>';}
  private function creditSection(int$i,array$s):void{echo'<div class="card sa-credit" data-index="'.$i.'"><h3>クレジット区分</h3><input type="hidden" name="credits['.$i.'][id]" value="'.(int)$s['id'].'"><input name="credits['.$i.'][name]" value="'.esc_attr($s['name']).'" placeholder="区分名" required> <input type="datetime-local" name="credits['.$i.'][release_at]" value="'.esc_attr($this->jst($s['release_at'])).'"><button type="button" class="button-link-delete sa-remove-credit">区分を削除</button><div class="sa-credit-items">';foreach($s['items']as$j=>$it)echo'<p><input type="hidden" name="credits['.$i.'][items]['.$j.'][id]" value="'.(int)$it['id'].'"><input name="credits['.$i.'][items]['.$j.'][name]" value="'.esc_attr($it['name']).'" placeholder="名称"> <input type="url" name="credits['.$i.'][items]['.$j.'][url]" value="'.esc_attr($it['url']??'').'" placeholder="リンク"> <button type="button" class="button-link-delete sa-remove-item">削除</button></p>';echo'</div><p><button type="button" class="button" data-add-credit-item>＋ 項目を追加</button></p></div>';}
- private function scripts(array$labels):void{$labelOptions='<option value="">なし</option>';foreach($labels as$l)$labelOptions.='<option value="'.(int)$l['id'].'">'.esc_js($l['symbol'].' '.$l['name']).'</option>';echo'<script>(function(){const f=document.getElementById("stageart-production-form");if(!f)return;let labelN=document.querySelectorAll("#sa-labels tbody tr").length,perfN=document.querySelectorAll("#sa-performances tbody tr").length,ticketN=document.querySelectorAll("#sa-tickets tbody tr").length,creditN=document.querySelectorAll(".sa-credit").length;document.getElementById("sa-media-picker")?.addEventListener("click",function(){const frame=wp.media({title:"メイン画像を選択",button:{text:"この画像を使用"},multiple:false});frame.on("select",function(){const a=frame.state().get("selection").first().toJSON();document.getElementById("sa-main-image-id").value=a.id;document.getElementById("sa-media-preview").innerHTML=a.url?"<img src=\""+a.url+"\" style=\"max-width:320px;height:auto\">":"";});frame.open();});document.getElementById("sa-media-clear")?.addEventListener("click",()=>{document.getElementById("sa-main-image-id").value="";document.getElementById("sa-media-preview").innerHTML="";});f.addEventListener("click",function(e){const b=e.target.closest(".sa-remove-row");if(b){const tr=b.closest("tr"),label=tr.closest("#sa-labels");if(label){const used=parseInt(tr.dataset.used||"0",10);if(used&&!confirm("このラベルは"+used+"件の公演回で使用されています。削除すると割り当てが解除されます。削除しますか？"))return;}tr.remove();}const c=e.target.closest(".sa-remove-credit");if(c){const box=c.closest(".sa-credit");if(confirm("このクレジット区分と項目を削除しますか？"))box.remove();}const it=e.target.closest(".sa-remove-item");if(it)it.closest("p").remove();const addItem=e.target.closest("[data-add-credit-item]");if(addItem){const box=addItem.closest(".sa-credit"),idx=box.dataset.index,wrap=box.querySelector(".sa-credit-items"),j=wrap.querySelectorAll("p").length;wrap.insertAdjacentHTML("beforeend","<p><input name=\"credits["+idx+"][items]["+j+"][name]\" placeholder=\"名称\"> <input type=\"url\" name=\"credits["+idx+"][items]["+j+"][url]\" placeholder=\"リンク\"> <button type=\"button\" class=\"button-link-delete sa-remove-item\">削除</button></p>");}});f.addEventListener("click",function(e){const b=e.target.closest("[data-add]");if(!b)return;const type=b.dataset.add;if(type==="label"){document.querySelector("#sa-labels tbody").insertAdjacentHTML("beforeend","<tr class=\"sa-label-row\" data-used=\"0\"><td><input name=\"labels[new"+labelN+"][symbol]\" required></td><td><input name=\"labels[new"+labelN+"][name]\"></td><td>未使用</td><td><button type=\"button\" class=\"button-link-delete sa-remove-row\">削除</button></td></tr>");labelN++;}if(type==="performance"){document.querySelector("#sa-performances tbody").insertAdjacentHTML("beforeend","<tr><td><input type=\"date\" name=\"performances[new"+perfN+"][date]\"></td><td><input type=\"time\" name=\"performances[new"+perfN+"][start]\"></td><td><input type=\"time\" name=\"performances[new"+perfN+"][end]\"></td><td><select name=\"performances[new"+perfN+"][label_id]\">'+"'.$labelOptions.'"+'</select></td><td><button type=\"button\" class=\"button-link-delete sa-remove-row\">削除</button></td></tr>");perfN++;}if(type==="ticket"){document.querySelector("#sa-tickets tbody").insertAdjacentHTML("beforeend","<tr><td><input name=\"tickets[new"+ticketN+"][description]\"></td><td><input type=\"number\" min=\"0\" name=\"tickets[new"+ticketN+"][amount]\"></td><td><input type=\"hidden\" name=\"tickets[new"+ticketN+"][show_on_reservation]\" value=\"0\"><input type=\"checkbox\" name=\"tickets[new"+ticketN+"][show_on_reservation]\" value=\"1\" checked></td><td><button type=\"button\" class=\"button-link-delete sa-remove-row\">削除</button></td></tr>");ticketN++;}if(type==="credit"){const i=creditN++;document.getElementById("sa-credits").insertAdjacentHTML("beforeend","<div class=\"card sa-credit\" data-index=\""+i+"\"><h3>クレジット区分</h3><input name=\"credits["+i+"][name]\" placeholder=\"区分名\" required> <input type=\"datetime-local\" name=\"credits["+i+"][release_at]\"> <button type=\"button\" class=\"button-link-delete sa-remove-credit\">区分を削除</button><div class=\"sa-credit-items\"></div><p><button type=\"button\" class=\"button\" data-add-credit-item>＋ 項目を追加</button></p></div>");}if(type==="participant"){const kind=b.dataset.kind,table=b.closest("p").previousElementSibling,n=table.querySelectorAll("tbody tr").length;const memberOptions=table.querySelector("tbody tr select[name*=\"[member_id]\"]")?.innerHTML||'<option value="">（未連携）</option>';table.querySelector("tbody").insertAdjacentHTML("beforeend","<tr><td><input name=\"participants["+kind+"]["+n+"][name]\"></td><td><input name=\"participants["+kind+"]["+n+"][role]\"></td><td><select name=\"participants["+kind+"]["+n+"][member_id]\">"+memberOptions+"</select></td><td><input type=\"number\" min=\"1\" name=\"participants["+kind+"]["+n+"][auth_user_id]\"></td><td><button type=\"button\" class=\"button-link-delete sa-remove-row\">削除</button></td></tr>");}});})();</script>';}
+ private function scripts(array $labels):void{
+  $labelOptions='<option value="">なし</option>';
+  foreach($labels as $l){
+   $labelOptions.='<option value="'.(int)$l['id'].'">'.esc_js($l['symbol'].' '.$l['name']).'</option>';
+  }
+  $script=<<<'JS'
+<script>
+(function(){
+ const f=document.getElementById('stageart-production-form');
+ if(!f)return;
+ let labelN=document.querySelectorAll('#sa-labels tbody tr').length;
+ let perfN=document.querySelectorAll('#sa-performances tbody tr').length;
+ let ticketN=document.querySelectorAll('#sa-tickets tbody tr').length;
+ let creditN=document.querySelectorAll('.sa-credit').length;
+ document.getElementById('sa-media-picker')?.addEventListener('click',function(){
+  const frame=wp.media({title:'メイン画像を選択',button:{text:'この画像を使用'},multiple:false});
+  frame.on('select',function(){
+   const a=frame.state().get('selection').first().toJSON();
+   document.getElementById('sa-main-image-id').value=a.id;
+   document.getElementById('sa-media-preview').innerHTML=a.url?'<img src="'+a.url+'" style="max-width:320px;height:auto">':'';
+  });
+  frame.open();
+ });
+ document.getElementById('sa-media-clear')?.addEventListener('click',()=>{
+  document.getElementById('sa-main-image-id').value='';
+  document.getElementById('sa-media-preview').innerHTML='';
+ });
+ f.addEventListener('click',function(e){
+  const remove=e.target.closest('.sa-remove-row');
+  if(remove){
+   const tr=remove.closest('tr'),label=tr.closest('#sa-labels');
+   if(label){
+    const used=parseInt(tr.dataset.used||'0',10);
+    if(used&&!confirm('このラベルは'+used+'件の公演回で使用されています。削除すると割り当てが解除されます。削除しますか？'))return;
+   }
+   tr.remove();
+  }
+  const removeCredit=e.target.closest('.sa-remove-credit');
+  if(removeCredit){
+   const box=removeCredit.closest('.sa-credit');
+   if(confirm('このクレジット区分と項目を削除しますか？'))box.remove();
+  }
+  const removeItem=e.target.closest('.sa-remove-item');
+  if(removeItem)removeItem.closest('p').remove();
+  const addItem=e.target.closest('[data-add-credit-item]');
+  if(addItem){
+   const box=addItem.closest('.sa-credit'),idx=box.dataset.index,wrap=box.querySelector('.sa-credit-items'),j=wrap.querySelectorAll('p').length;
+   wrap.insertAdjacentHTML('beforeend','<p><input name="credits['+idx+'][items]['+j+'][name]" placeholder="名称"> <input type="url" name="credits['+idx+'][items]['+j+'][url]" placeholder="リンク"> <button type="button" class="button-link-delete sa-remove-item">削除</button></p>');
+  }
+  const add=e.target.closest('[data-add]');
+  if(!add)return;
+  const type=add.dataset.add;
+  if(type==='label'){
+   document.querySelector('#sa-labels tbody').insertAdjacentHTML('beforeend','<tr class="sa-label-row" data-used="0"><td><input name="labels[new'+labelN+'][symbol]" required></td><td><input name="labels[new'+labelN+'][name]"></td><td>未使用</td><td><button type="button" class="button-link-delete sa-remove-row">削除</button></td></tr>');
+   labelN++;
+  }
+  if(type==='performance'){
+   document.querySelector('#sa-performances tbody').insertAdjacentHTML('beforeend','<tr><td><input type="date" name="performances[new'+perfN+'][date]"></td><td><input type="time" name="performances[new'+perfN+'][start]"></td><td><input type="time" name="performances[new'+perfN+'][end]"></td><td><select name="performances[new'+perfN+'][label_id]"></select></td><td><button type="button" class="button-link-delete sa-remove-row">削除</button></td></tr>');
+   const row=document.querySelector('#sa-performances tbody tr:last-child select');
+   row.innerHTML=__LABEL_OPTIONS__;
+   perfN++;
+  }
+  if(type==='ticket'){
+   document.querySelector('#sa-tickets tbody').insertAdjacentHTML('beforeend','<tr><td><input name="tickets[new'+ticketN+'][description]"></td><td><input type="number" min="0" name="tickets[new'+ticketN+'][amount]"></td><td><input type="hidden" name="tickets[new'+ticketN+'][show_on_reservation]" value="0"><input type="checkbox" name="tickets[new'+ticketN+'][show_on_reservation]" value="1" checked></td><td><button type="button" class="button-link-delete sa-remove-row">削除</button></td></tr>');
+   ticketN++;
+  }
+  if(type==='credit'){
+   const i=creditN++;
+   document.getElementById('sa-credits').insertAdjacentHTML('beforeend','<div class="card sa-credit" data-index="'+i+'"><h3>クレジット区分</h3><input name="credits['+i+'][name]" placeholder="区分名" required> <input type="datetime-local" name="credits['+i+'][release_at]"><button type="button" class="button-link-delete sa-remove-credit">区分を削除</button><div class="sa-credit-items"></div><p><button type="button" class="button" data-add-credit-item>＋ 項目を追加</button></p></div>');
+  }
+  if(type==='participant'){
+   const kind=add.dataset.kind,table=add.closest('p').previousElementSibling,n=table.querySelectorAll('tbody tr').length;
+   const memberOptions=table.querySelector('tbody tr select[name*="[member_id]"]')?.innerHTML||'<option value="">（未連携）</option>';
+   table.querySelector('tbody').insertAdjacentHTML('beforeend','<tr><td><input name="participants['+kind+']['+n+'][name]"></td><td><input name="participants['+kind+']['+n+'][role]"></td><td><select name="participants['+kind+']['+n+'][member_id]">'+memberOptions+'</select></td><td><input type="number" min="1" name="participants['+kind+']['+n+'][auth_user_id]"></td><td><button type="button" class="button-link-delete sa-remove-row">削除</button></td></tr>');
+  }
+ });
+})();
+</script>
+JS;
+  $script=str_replace('__LABEL_OPTIONS__', $labelOptions, $script);
+  echo $script;
+ }
  public function save():void{$this->guard();$id=(int)($_POST['id']??0);$title=sanitize_text_field(wp_unslash($_POST['title']??''));if($title==='')wp_die('公演名を入力してください。');$requested=sanitize_title(wp_unslash($_POST['slug']??''));if($requested==='')$requested=sanitize_title($title);$existing=$id?get_post($id):null;if($existing&&$existing->post_type!=='stageart_production')wp_die('不正な公演です。');$oldSlug=$existing?(string)$existing->post_name:'';$historical=$this->repo->productionIdByHistoricalSlug($requested);if($historical&&$historical!==$id){$base=$requested;$n=2;while($this->repo->productionIdByHistoricalSlug($requested))$requested=$base.'-'.$n++;}$post=['post_type'=>'stageart_production','post_title'=>$title,'post_status'=>($_POST['post_status']??'draft')==='publish'?'publish':'draft','post_name'=>$requested];$id=$id?wp_update_post(array_merge(['ID'=>$id],$post),true):wp_insert_post($post,true);if(is_wp_error($id))wp_die(esc_html($id->get_error_message()));$id=(int)$id;if($oldSlug&&$oldSlug!==$requested)$this->repo->addSlugHistory($id,$oldSlug);$this->repo->addSlugHistory($id,$requested);foreach(['main_image_id','summary','description','schedule_start','schedule_end','venue_name','venue_map','performance_marker','ticket_comment']as$k){$v=isset($_POST[$k])?wp_unslash($_POST[$k]):'';$this->meta($id,$k,$k==='description'?wp_kses_post((string)$v):sanitize_textarea_field((string)$v));}if(isset($_POST['main_image_id']))update_post_meta($id,'main_image_id',max(0,(int)$_POST['main_image_id']));foreach(['main_image_release','summary_release','description_release','schedule_release','performance_release','venue_release','venue_map_release','cast_release','staff_release','ticket_release']as$k)$this->meta($id,$k,$this->utc(isset($_POST[$k])?(string)wp_unslash($_POST[$k]):null));update_post_meta($id,'use_labels',!empty($_POST['use_labels'])?'1':'0');update_post_meta($id,'label_display',in_array($_POST['label_display']??'symbol',['symbol','both'],true)?$_POST['label_display']:'symbol');update_post_meta($id,'legend',in_array($_POST['legend']??'none',['none','above','below'],true)?$_POST['legend']:'none');update_post_meta($id,'tax_display',in_array($_POST['tax_display']??'included',['included','excluded','none'],true)?$_POST['tax_display']:'included');$this->repo->saveLabels($id,$this->cleanRows($_POST['labels']??[]));$this->repo->savePerformances($id,$this->cleanRows($_POST['performances']??[]));$this->repo->saveTickets($id,$this->cleanRows($_POST['tickets']??[]));foreach(['cast','staff']as$kind)$this->repo->saveParticipants($id,$kind,$this->cleanRows((array)($_POST['participants'][$kind]??[])));$submittedSections=[];foreach((array)($_POST['credits']??[])as$s)if(!empty($s['name']))$submittedSections[]=$s;$oldSections=$this->credits->sections($id,false);$keepSections=[];foreach(array_values($submittedSections)as$order=>$s){$sid=(int)($s['id']??0);$release=$this->utc(isset($s['release_at'])?(string)$s['release_at']:null);if($sid)$this->credits->updateSection($sid,sanitize_text_field(wp_unslash($s['name'])),$release,$order);else$sid=$this->credits->createSection($id,sanitize_text_field(wp_unslash($s['name'])),$release,$order);$keepSections[]=$sid;$oldItems=$this->credits->items($sid);$keepItems=[];foreach(array_values((array)($s['items']??[]))as$j=>$it){$name=sanitize_text_field(wp_unslash($it['name']??''));if($name==='')continue;$iid=(int)($it['id']??0);$url=esc_url_raw(wp_unslash($it['url']??''));if($iid)$this->credits->updateItem($iid,$name,$url?:null,$j);else$iid=$this->credits->createItem($sid,$name,$url?:null,$j);$keepItems[]=$iid;}foreach($oldItems as$it)if(!in_array((int)$it['id'],$keepItems,true))$this->credits->deleteItem((int)$it['id']);}foreach($oldSections as$s)if(!in_array((int)$s['id'],$keepSections,true))$this->credits->deleteSection((int)$s['id']);wp_safe_redirect(admin_url('admin.php?page=stageart-productions&id='.$id.'&saved=1'));exit;}
  private function cleanRows(array$rows):array{$out=[];foreach($rows as$r){if(!is_array($r))continue;$x=[];foreach($r as$k=>$v)$x[$k]=is_string($v)?sanitize_text_field(wp_unslash($v)):$v;$out[]=$x;}return$out;}
 }
