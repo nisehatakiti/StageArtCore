@@ -1,4 +1,4 @@
-name: Build StageArt Distribution
+name: Build StageArt Package
 
 on:
   push:
@@ -34,29 +34,29 @@ jobs:
           test -f theme/stageart/front-page.php
           grep -q '^Theme Name:' theme/stageart/style.css
 
-      - name: Build combined ZIP
+      - name: Build StageArt ZIP
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf dist stageart-core-with-theme.zip
+          rm -rf dist StageArtCore.zip
           mkdir -p dist/StageArtCore/plugins/StageArtCore
           mkdir -p dist/StageArtCore/themes
           rsync -a --exclude='.git' --exclude='.github' --exclude='dist' --exclude='*.zip' ./ dist/StageArtCore/plugins/StageArtCore/
           rm -rf dist/StageArtCore/plugins/StageArtCore/theme
           cp -a theme/stageart dist/StageArtCore/themes/stageart
           cd dist
-          zip -r ../stageart-core-with-theme.zip StageArtCore >/dev/null
+          zip -r ../StageArtCore.zip StageArtCore >/dev/null
 
       - name: Validate ZIP structure
         run: |
-          unzip -l stageart-core-with-theme.zip
-          unzip -l stageart-core-with-theme.zip | grep -q 'StageArtCore/plugins/StageArtCore/stageart-core.php'
-          unzip -l stageart-core-with-theme.zip | grep -q 'StageArtCore/themes/stageart/style.css'
+          unzip -l StageArtCore.zip
+          unzip -l StageArtCore.zip | grep -q 'StageArtCore/plugins/StageArtCore/stageart-core.php'
+          unzip -l StageArtCore.zip | grep -q 'StageArtCore/themes/stageart/style.css'
 
-      - name: Upload combined distribution
+      - name: Upload StageArt package
         uses: actions/upload-artifact@v4
         with:
-          name: StageArtCore-with-Theme
-          path: stageart-core-with-theme.zip
+          name: StageArtCore
+          path: StageArtCore.zip
           if-no-files-found: error
           retention-days: 90
