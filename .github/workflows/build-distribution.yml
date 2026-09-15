@@ -1,0 +1,62 @@
+name: Build StageArt Distribution
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'stageart-core.php'
+      - 'src/**'
+      - 'tools/**'
+      - 'theme/stageart/**'
+      - '.github/workflows/build-distribution.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: PHP syntax check
+        run: |
+          find src theme/stageart -name '*.php' -print0 | xargs -0 -n1 php -l
+          php -l stageart-core.php
+
+      - name: Validate plugin and theme
+        run: |
+          test -f stageart-core.php
+          test -f theme/stageart/style.css
+          test -f theme/stageart/functions.php
+          test -f theme/stageart/front-page.php
+          grep -q '^Theme Name:' theme/stageart/style.css
+
+      - name: Build combined ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf dist stageart-core-with-theme.zip
+          mkdir -p dist/StageArtCore/plugins/StageArtCore
+          mkdir -p dist/StageArtCore/themes
+          rsync -a --exclude='.git' --exclude='.github' --exclude='dist' --exclude='*.zip' ./ dist/StageArtCore/plugins/StageArtCore/
+          rm -rf dist/StageArtCore/plugins/StageArtCore/theme
+          cp -a theme/stageart dist/StageArtCore/themes/stageart
+          cd dist
+          zip -r ../stageart-core-with-theme.zip StageArtCore >/dev/null
+
+      - name: Validate ZIP structure
+        run: |
+          unzip -l stageart-core-with-theme.zip
+          unzip -l stageart-core-with-theme.zip | grep -q 'StageArtCore/plugins/StageArtCore/stageart-core.php'
+          unzip -l stageart-core-with-theme.zip | grep -q 'StageArtCore/themes/stageart/style.css'
+
+      - name: Upload combined distribution
+        uses: actions/upload-artifact@v4
+        with:
+          name: StageArtCore-with-Theme
+          path: stageart-core-with-theme.zip
+          if-no-files-found: error
+          retention-days: 90
