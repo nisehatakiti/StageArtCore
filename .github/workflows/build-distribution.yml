@@ -39,31 +39,35 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf dist StageArtCore.zip
-          mkdir -p dist/package/StageArtCore
-          mkdir -p dist/core/StageArtCore dist/theme/stageart
+          mkdir -p dist/core/StageArtCore dist/theme/stageart dist/package
 
           rsync -a --exclude='.git' --exclude='.github' --exclude='dist' --exclude='*.zip' ./ dist/core/StageArtCore/
           rm -rf dist/core/StageArtCore/theme
           cp -a theme/stageart/. dist/theme/stageart/
 
           cd dist/core
-          zip -r ../package/StageArtCore/Core.zip StageArtCore >/dev/null
+          zip -r ../package/Core.zip StageArtCore >/dev/null
           cd ../theme
-          zip -r ../package/StageArtCore/Theme.zip stageart >/dev/null
+          zip -r ../package/Theme.zip stageart >/dev/null
           cd ../package
-          zip -r ../../StageArtCore.zip StageArtCore >/dev/null
+          zip -r ../../StageArtCore.zip Core.zip Theme.zip >/dev/null
 
       - name: Validate ZIP structure
         shell: bash
         run: |
           set -euo pipefail
           unzip -l StageArtCore.zip
-          unzip -l StageArtCore.zip | grep -q 'StageArtCore/Core.zip'
-          unzip -l StageArtCore.zip | grep -q 'StageArtCore/Theme.zip'
+          unzip -l StageArtCore.zip | grep -q '^.* Core.zip$'
+          unzip -l StageArtCore.zip | grep -q '^.* Theme.zip$'
+          ! unzip -l StageArtCore.zip | grep -q 'StageArtCore/Core.zip'
+          ! unzip -l StageArtCore.zip | grep -q 'StageArtCore/Theme.zip'
 
+          rm -rf dist/outer-check
           unzip -q StageArtCore.zip -d dist/outer-check
-          unzip -l dist/outer-check/StageArtCore/Core.zip | grep -q 'StageArtCore/stageart-core.php'
-          unzip -l dist/outer-check/StageArtCore/Theme.zip | grep -q 'stageart/style.css'
+          test -f dist/outer-check/Core.zip
+          test -f dist/outer-check/Theme.zip
+          unzip -l dist/outer-check/Core.zip | grep -q 'StageArtCore/stageart-core.php'
+          unzip -l dist/outer-check/Theme.zip | grep -q 'stageart/style.css'
 
       - name: Upload StageArt package
         uses: actions/upload-artifact@v4
