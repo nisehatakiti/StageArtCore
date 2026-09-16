@@ -38,7 +38,6 @@ jobs:
           cd dist/Core && zip -qr ../../zip/StageArtCore-Core.zip StageArtCore
           cd ../Theme && zip -qr ../../zip/StageArtCore-Theme.zip stageart
           cd ../..
-          cp zip/StageArtCore-Core.zip zip/StageArtCore-Theme.zip zip/
           cd zip
           zip -q StageArtCore-symbol-only.zip StageArtCore-Core.zip StageArtCore-Theme.zip
           unzip -t StageArtCore-symbol-only.zip
