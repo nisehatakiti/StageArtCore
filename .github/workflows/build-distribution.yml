@@ -9,7 +9,7 @@ on:
       - 'tools/**'
       - 'theme/stageart/**'
       - '.github/workflows/build-distribution.yml'
-      - '.github/stageart-fix-script.b64'
+      - '.github/stageart-admin-patch.py'
   workflow_dispatch:
 
 permissions:
@@ -22,24 +22,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Apply verified pending fixes
+      - name: Apply admin UI fix
         shell: bash
         run: |
           set -euo pipefail
-          if [ -f .github/stageart-fix-script.b64 ]; then
-            base64 -d .github/stageart-fix-script.b64 | tar -xz -C /tmp
-            python3 /tmp/stageart_apply_fix.py
-            php -l src/Domain/Production/ProductionRepository.php
+          if [ -f .github/stageart-admin-patch.py ]; then
+            python3 .github/stageart-admin-patch.py
             php -l src/Presentation/Admin/ProductionAdmin.php
-            php -l src/Presentation/PublicSite/ProductionRouter.php
-            php -l src/Plugin.php
-            php -l theme/stageart/functions.php
             git diff --check
-            rm -f .github/stageart-fix-script.b64 .github/workflows/apply-stageart-fixes.yml
+            rm -f .github/stageart-admin-patch.py
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
             git add -A
-            git commit -m 'stageart: apply verified fixes'
+            git commit -m 'stageart: apply admin UI fix'
             git push
           fi
 
