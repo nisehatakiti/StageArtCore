@@ -36,6 +36,7 @@ final class Plugin
         if (get_option('stageart_core_db_version') !== Schema::DB_VERSION) Schema::activate();
         ProductionMigration::ensure();
         SurveyMigration::ensure();
+        SiteSettingsAdmin::migrate();
         add_action('init', static function (): void {
             register_post_type('stageart_production', ['labels'=>['name'=>'公演','singular_name'=>'公演'],'public'=>false,'show_ui'=>false,'supports'=>['title'],'rewrite'=>false]);
         }, 5);
@@ -59,6 +60,7 @@ final class Plugin
         add_action('admin_head', static function (): void {
             if (($_GET['page'] ?? '') !== 'stageart-homepage') return;
             echo '<style>.stageart-homepage-admin .sa-slot-controls{display:flex;align-items:flex-end;gap:12px;flex-wrap:nowrap}.stageart-homepage-admin .sa-slot-controls>label{display:flex;flex-direction:column;align-items:flex-start;gap:4px;white-space:nowrap}.stageart-homepage-admin .sa-slot-controls>label br{display:none}.stageart-homepage-admin .sa-slot-controls>label:first-child{width:150px}.stageart-homepage-admin .sa-slot-controls .sa-slot-content-wrap,.stageart-homepage-admin .sa-slot-controls .sa-slot-heading-wrap{width:300px}.stageart-homepage-admin .sa-slot-controls .sa-slot-content,.stageart-homepage-admin .sa-slot-controls .sa-slot-heading{width:100%;max-width:none}.stageart-homepage-admin .sa-slot-controls .sa-slot-indent{width:100px}.stageart-homepage-admin .sa-home-slot{overflow-x:auto}.stageart-homepage-admin .sa-slot-controls select,.stageart-homepage-admin .sa-slot-controls input{margin:0}@media(max-width:900px){.stageart-homepage-admin .sa-slot-controls{flex-wrap:wrap}.stageart-homepage-admin .sa-slot-controls .sa-slot-content-wrap,.stageart-homepage-admin .sa-slot-controls .sa-slot-heading-wrap{width:260px}}</style>';
+            echo '<script>(function(){document.querySelectorAll(".stageart-homepage-admin .sa-columns").forEach(function(select){for(var i=6;i<=20;i++){if(!select.querySelector("option[value=\""+i+"\"]")){var option=document.createElement("option");option.value=i;option.textContent=i+"件";select.appendChild(option);}}});})();</script>';
         });
         add_action('rest_api_init', static function (): void {
             (new HealthController())->register_routes();
