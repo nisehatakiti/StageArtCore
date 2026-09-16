@@ -11,6 +11,7 @@ on:
       - '.github/workflows/build-distribution.yml'
       - '.github/stageart-admin-patch.py'
       - '.github/stageart-finalize-schedule.py'
+      - '.github/stageart-final-fix.py'
   workflow_dispatch:
 
 permissions:
@@ -39,6 +40,14 @@ jobs:
             python3 .github/stageart-finalize-schedule.py
             php -l src/Presentation/PublicSite/ProductionRouter.php
             git diff --check
+            changed=1
+          fi
+          if [ -f .github/stageart-final-fix.py ]; then
+            python3 .github/stageart-final-fix.py
+            php -l src/Domain/Production/ProductionRepository.php
+            php -l stageart-core.php
+            git diff --check
+            rm -f .github/stageart-final-fix.py
             changed=1
           fi
           if [ "$changed" = "1" ]; then
