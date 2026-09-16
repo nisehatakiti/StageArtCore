@@ -34,33 +34,16 @@ final class ProductionLayout
         ];
     }
 
-    /**
-     * Preset used only when this production has never had a layout saved.
-     * Once a layout is saved, that saved layout is authoritative, including
-     * an intentionally empty layout.
-     */
     public static function defaults(): array
     {
-        return [[
-            'section_id' => 'default-production',
-            'heading' => '',
-            'columns' => 5,
-            'layout' => self::LAYOUT_VERTICAL,
-            'slots' => [
-                ['type' => self::SLOT_LINK, 'ref' => 'main_image', 'indent' => 0],
-                ['type' => self::SLOT_LINK, 'ref' => 'title', 'indent' => 0],
-                ['type' => self::SLOT_LINK, 'ref' => 'venue', 'indent' => 0],
-                ['type' => self::SLOT_LINK, 'ref' => 'tickets', 'indent' => 0],
-                ['type' => self::SLOT_LINK, 'ref' => 'performances', 'indent' => 0],
-            ],
-        ]];
+        return [];
     }
 
     public static function get(int $id): array
     {
         $value = get_post_meta($id, self::OPTION, true);
         if (!is_array($value)) {
-            return self::defaults();
+            return [];
         }
 
         return self::normalize($value);
