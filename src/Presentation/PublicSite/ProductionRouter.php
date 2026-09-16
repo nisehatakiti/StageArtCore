@@ -45,10 +45,10 @@ final class ProductionRouter
     private function performanceList(array $ps, string $display, string $marker): void
     {
         $groups=[];
-        foreach($ps as$x){$date=(string)$x['performance_date'];$start=substr((string)$x['start_time'],0,5);$cell=$display==='none'?$marker:$this->performanceCell($x,$display,$marker);$groups[$date][]=['time'=>$start,'cell'=>$cell];}
+        foreach($ps as$x){$date=(string)$x['performance_date'];$start=substr((string)$x['start_time'],0,5);$hasLabel=!empty($x['symbol']);$cell=$display==='none'||!$hasLabel?'':$this->performanceCell($x,$display,$marker);$groups[$date][]=['time'=>$start,'cell'=>$cell];}
         ksort($groups);
         echo'<div class="stageart-performance-list">';
-        foreach($groups as$date=>$items){usort($items,static fn(array$a,array$b):int=>strcmp($a['time'],$b['time']));$times=[];foreach($items as$item)$times[]=$display==='none'?esc_html($item['time']):esc_html($item['time']).' '.esc_html($item['cell']);echo'<div class="stageart-performance-list-row"><span class="stageart-performance-list-date">'.esc_html(wp_date('n/j',strtotime($date))).'</span><span class="stageart-performance-list-time">'.implode(' / ',$times).'</span></div>';}
+        foreach($groups as$date=>$items){usort($items,static fn(array$a,array$b):int=>strcmp($a['time'],$b['time']));$times=[];foreach($items as$item){$value=esc_html($item['time']);if($item['cell']!=='')$value.=' '.esc_html($item['cell']);$times[]=$value;}echo'<div class="stageart-performance-list-row"><span class="stageart-performance-list-date">'.esc_html(wp_date('n/j',strtotime($date))).'</span><span class="stageart-performance-list-time">'.implode(' / ',$times).'</span></div>';}
         echo'</div>';
     }
     private function performanceTimeline(array $ps, string $display, string $marker, string $style): void
@@ -94,7 +94,7 @@ final class ProductionRouter
             case'staff':$this->participants($p,$g,$r,'staff','スタッフ');break;
             case'tickets':if(!$inner)echo'<h2>チケット料金</h2>';if(!$this->released($g('ticket_release')))$this->placeholder('料金は後日公開');else{$ts=$r->tickets($p->ID);if(!$ts)$this->placeholder('チケット料金は登録されていません。');else{echo'<ul>';foreach($ts as$x){$tax=$g('tax_display','included')==='included'?'（税込）':($g('tax_display')==='excluded'?'（税別）':'');echo'<li>'.esc_html($x['description']).'：'.number_format($x['amount']).'円'.esc_html($tax).'</li>';}echo'</ul>';if($g('ticket_comment'))echo wp_kses_post(wpautop($g('ticket_comment')));}}break;
             case'survey':if(!$inner)echo'<h2>アンケート</h2>';$survey=(new SurveyRepository())->findByProduction($p->ID);if($survey&&(string)$survey['status']==='publish')echo'<p><a href="'.esc_url(home_url('/production/'.$p->post_name.'/'.rawurlencode((string)$survey['slug']).'/')).'">アンケートに回答する</a></p>';break;
-            case'credits':foreach($c->sections($p->ID,true)as$s){if(!$s['items'])continue;if(!$inner)echo'<h2>'.esc_html($s['name']).'</h2>';echo'<h3>'.esc_html($s['name']).'</h3><ul>';foreach($s['items']as$x)echo'<li>'.($x['url']?'<a href="'.esc_url($x['url']).'" target="_blank" rel="noopener">'.esc_html($x['name']).'</a>':esc_html($x['name'])).'</li>';echo'</ul>';}break;
+            case'credits':foreach($c->sections($p->ID,true)as$s){if(!$s['items'])continue;if(!$inner)echo'<h2>'.esc_html($s['name']).'</h2>';echo'<h3>'.esc_html($s['name']).'</h3><ul>';foreach($s['items']as$x)echo'<li>'.($x['url']?'<a href="'.esc_url($x['url']).'" target="_blank" rel="noopener">'.esc_html($x['name']).'</a>':esc_html($x['name'])).'</li>';}break;
         }
         if(!$inner)echo'</section>';
     }
