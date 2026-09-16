@@ -12,6 +12,7 @@ use StageArtCore\Domain\Production\ProductionValidator;
 use StageArtCore\Presentation\Admin\AdminMenu;
 use StageArtCore\Presentation\Admin\MemberAdmin;
 use StageArtCore\Presentation\Admin\PerformanceReleaseAdmin;
+use StageArtCore\Presentation\Admin\PerformanceDisplayAdmin;
 use StageArtCore\Presentation\Admin\ProductionAdmin;
 use StageArtCore\Presentation\Admin\ProductionLayoutAdmin;
 use StageArtCore\Presentation\Admin\ProductionPresentationAdmin;
@@ -33,9 +34,6 @@ final class Plugin
 {
     public function boot(): void
     {
-        // Schema/content migrations are run after WordPress has completed its
-        // core initialization. They are version-gated and therefore do not
-        // execute dbDelta()/content repair work on every request.
         add_action('init', static function (): void {
             if (get_option('stageart_core_db_version') !== Schema::DB_VERSION) {
                 Schema::activate();
@@ -53,6 +51,7 @@ final class Plugin
         add_action('admin_menu', [new SiteStructureAdmin(), 'register'], 21);
         add_action('admin_menu', [new MemberAdmin(), 'register'], 20);
         (new PerformanceReleaseAdmin())->register();
+        (new PerformanceDisplayAdmin());
         (new RepresentativeGreetingAdmin())->register();
         (new ProductionPresentationAdmin())->register();
         (new ProductionTimeAdmin())->register();
