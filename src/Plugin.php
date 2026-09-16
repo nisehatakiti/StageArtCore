@@ -15,6 +15,7 @@ use StageArtCore\Presentation\Admin\ProductionAdmin;
 use StageArtCore\Presentation\Admin\ProductionLayoutAdmin;
 use StageArtCore\Presentation\Admin\ProductionPresentationAdmin;
 use StageArtCore\Presentation\Admin\ProductionTimeAdmin;
+use StageArtCore\Presentation\Admin\RepresentativeGreetingAdmin;
 use StageArtCore\Presentation\Admin\SiteSettingsAdmin;
 use StageArtCore\Presentation\Admin\SiteStructureAdmin;
 use StageArtCore\Presentation\Admin\SurveyAdmin;
@@ -42,6 +43,7 @@ final class Plugin
         add_action('admin_menu', [new SiteStructureAdmin(), 'register'], 21);
         add_action('admin_menu', [new MemberAdmin(), 'register'], 20);
         (new PerformanceReleaseAdmin())->register();
+        (new RepresentativeGreetingAdmin())->register();
         (new ProductionPresentationAdmin())->register();
         (new ProductionTimeAdmin())->register();
         (new ProductionLayoutAdmin())->register();
