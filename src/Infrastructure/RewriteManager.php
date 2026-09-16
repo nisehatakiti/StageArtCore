@@ -10,7 +10,7 @@ use StageArtCore\Presentation\PublicSite\SurveyRouter;
 
 final class RewriteManager
 {
-    public const VERSION = '10';
+    public const VERSION = '11';
 
     public static function register(): void
     {
@@ -23,6 +23,7 @@ final class RewriteManager
         self::registerRoutes();
         self::loadRewriteWriter();
         flush_rewrite_rules(true);
+        self::writeApacheFallbackRules();
         self::markReadyIfRoutesExist();
     }
 
@@ -36,6 +37,7 @@ final class RewriteManager
         self::registerRoutes();
         self::loadRewriteWriter();
         flush_rewrite_rules(true);
+        self::writeApacheFallbackRules();
         self::markReadyIfRoutesExist();
     }
 
@@ -71,6 +73,35 @@ final class RewriteManager
         if (!function_exists('save_mod_rewrite_rules')) {
             require_once ABSPATH . 'wp-admin/includes/misc.php';
         }
+    }
+
+    private static function writeApacheFallbackRules(): void
+    {
+        if (!function_exists('insert_with_markers')) {
+            return;
+        }
+
+        $htaccess = trailingslashit(ABSPATH) . '.htaccess';
+        if (!file_exists($htaccess) || !is_writable($htaccess)) {
+            return;
+        }
+
+        $rules = [
+            'RewriteEngine On',
+            'RewriteRule ^production/([^/]+)/([^/]+)/?$ index.php?stageart_production_slug=$1 [QSA,L]',
+            'RewriteRule ^production/([^/]+)/([^/]+)/?$ index.php?stageart_production_slug=$1&stageart_survey_slug=$2 [QSA,L]',
+            'RewriteRule ^member/([^/]+)/?$ index.php?stageart_member_slug=$1 [QSA,L]',
+        ];
+
+        // The two-segment production rule must precede the one-segment rule.
+        $rules = [
+            'RewriteEngine On',
+            'RewriteRule ^production/([^/]+)/([^/]+)/?$ index.php?stageart_production_slug=$1&stageart_survey_slug=$2 [QSA,L]',
+            'RewriteRule ^production/([^/]+)/?$ index.php?stageart_production_slug=$1 [QSA,L]',
+            'RewriteRule ^member/([^/]+)/?$ index.php?stageart_member_slug=$1 [QSA,L]',
+        ];
+
+        insert_with_markers($htaccess, 'StageArtCore', $rules);
     }
 
     private static function hasRoute(array $rules, string $prefix): bool
