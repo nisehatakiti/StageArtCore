@@ -102,61 +102,40 @@ final class ProductionRepository
         foreach ($old as $x) if (!in_array((int) $x['id'], $keep, true)) $wpdb->delete($this->participants, ['id' => (int) $x['id'], 'production_id' => $id], ['%d','%d']);
     }
 
-    public function saveLabels(int $id, array $rows): void
+    public function saveLabels(int $id, array $rows, array $deletedIds = []): array
     {
         global $wpdb;
         $old = $this->labels($id);
         $oldById = [];
         foreach ($old as $label) $oldById[(int) $label['id']] = $label;
         $keep = [];
+        $newIds = [];
         $now = gmdate('Y-m-d H:i:s');
-
-        foreach (array_values($rows) as $i => $r) {
+        foreach ($rows as $rowKey => $r) {
             if (!is_array($r)) continue;
             $symbol = sanitize_text_field((string) ($r['symbol'] ?? ''));
             if ($symbol === '') continue;
             $rid = (int) ($r['id'] ?? 0);
-            $name = array_key_exists('name', $r)
-                ? sanitize_text_field((string) $r['name'])
-                : (string) ($oldById[$rid]['name'] ?? '');
-
-            $data = [
-                'production_id' => $id,
-                'symbol' => $symbol,
-                'name' => $name,
-                'display_order' => $i,
-                'updated_at' => $now,
-            ];
-
+            $name = sanitize_text_field((string) ($r['name'] ?? ($oldById[$rid]['name'] ?? '')));
+            $data = ['production_id'=>$id,'symbol'=>$symbol,'name'=>$name,'display_order'=>count($keep),'updated_at'=>$now];
             if ($rid > 0 && isset($oldById[$rid])) {
-                $result = $wpdb->update(
-                    $this->labels,
-                    $data,
-                    ['id' => $rid, 'production_id' => $id],
-                    ['%d','%s','%s','%d','%s'],
-                    ['%d','%d']
-                );
-                if ($result === false) {
-                    $wpdb->query($wpdb->prepare(
-                        "UPDATE {$this->labels} SET symbol=%s,name=%s,display_order=%d,updated_at=%s WHERE id=%d AND production_id=%d",
-                        $symbol, $name, $i, $now, $rid, $id
-                    ));
-                }
+                $wpdb->update($this->labels,$data,['id'=>$rid,'production_id'=>$id],['%d','%s','%s','%d','%s'],['%d','%d']);
             } else {
-                $data['created_at'] = $now;
-                $wpdb->insert($this->labels, $data, ['%d','%s','%s','%d','%s','%s']);
-                $rid = (int) $wpdb->insert_id;
+                $data['created_at']=$now;
+                $wpdb->insert($this->labels,$data,['%d','%s','%s','%d','%s','%s']);
+                $rid=(int)$wpdb->insert_id;
             }
-            if ($rid > 0) $keep[] = $rid;
+            if ($rid>0) { $keep[]=$rid; $newIds[(string)$rowKey]=$rid; }
         }
-
+        $deleted=[];
+        foreach ($deletedIds as $v) { $rid=(int)$v; if($rid>0)$deleted[$rid]=true; }
         foreach ($old as $x) {
-            $rid = (int) $x['id'];
-            if (!in_array($rid, $keep, true)) {
-                $wpdb->query($wpdb->prepare("UPDATE {$this->performances} SET label_id=NULL WHERE production_id=%d AND label_id=%d", $id, $rid));
-                $wpdb->delete($this->labels, ['id' => $rid, 'production_id' => $id], ['%d','%d']);
-            }
+            $rid=(int)$x['id'];
+            if (!isset($deleted[$rid])) continue;
+            $wpdb->query($wpdb->prepare("UPDATE {$this->performances} SET label_id=NULL WHERE production_id=%d AND label_id=%d",$id,$rid));
+            $wpdb->delete($this->labels,['id'=>$rid,'production_id'=>$id],['%d','%d']);
         }
+        return $newIds;
     }
 
     public function savePerformances(int $id, array $rows): void
@@ -169,7 +148,6 @@ final class ProductionRepository
         foreach ($this->labels($id) as $l) $validLabels[(int) $l['id']] = true;
         $keep = [];
         $now = gmdate('Y-m-d H:i:s');
-
         foreach (array_values($rows) as $i => $r) {
             $date = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($r['date'] ?? '')) ? $r['date'] : '';
             $start = preg_match('/^\d{2}:\d{2}$/', (string) ($r['start'] ?? '')) ? $r['start'] : '';
@@ -184,20 +162,13 @@ final class ProductionRepository
                 $existing = $oldById[$rid]['label_id'];
                 $label = $existing !== null ? (int) $existing : null;
             }
-            $release = isset($r['release_at'])
-                ? ReleaseDate::toUtc(sanitize_text_field((string) $r['release_at']))
-                : ($rid > 0 && isset($oldById[$rid]) ? $oldById[$rid]['release_at'] : null);
+            $release = isset($r['release_at']) ? ReleaseDate::toUtc(sanitize_text_field((string) $r['release_at'])) : ($rid > 0 && isset($oldById[$rid]) ? $oldById[$rid]['release_at'] : null);
             $data = ['production_id'=>$id,'performance_date'=>$date,'start_time'=>$start,'end_time'=>$end,'label_id'=>$label,'release_at'=>$release,'updated_at'=>$now];
-            if ($rid > 0) {
-                $wpdb->update($this->performances, $data, ['id'=>$rid,'production_id'=>$id], ['%d','%s','%s','%s','%d','%s','%s'], ['%d','%d']);
-            } else {
-                $data['created_at'] = $now;
-                $wpdb->insert($this->performances, $data, ['%d','%s','%s','%s','%d','%s','%s','%s']);
-                $rid = (int) $wpdb->insert_id;
-            }
-            if ($rid > 0) $keep[] = $rid;
+            if ($rid > 0) $wpdb->update($this->performances, $data, ['id'=>$rid,'production_id'=>$id], ['%d','%s','%s','%s','%d','%s','%s'], ['%d','%d']);
+            else { $data['created_at']=$now; $wpdb->insert($this->performances,$data,['%d','%s','%s','%s','%d','%s','%s','%s']); $rid=(int)$wpdb->insert_id; }
+            if ($rid > 0) $keep[]=$rid;
         }
-        foreach ($old as $x) if (!in_array((int) $x['id'], $keep, true)) $wpdb->delete($this->performances, ['id'=>(int)$x['id'],'production_id'=>$id], ['%d','%d']);
+        foreach ($old as $x) if (!in_array((int)$x['id'],$keep,true)) $wpdb->delete($this->performances,['id'=>(int)$x['id'],'production_id'=>$id],['%d','%d']);
     }
 
     public function saveTickets(int $id, array $rows): void
