@@ -12,6 +12,7 @@ on:
       - '.github/stageart-admin-patch.py'
       - '.github/stageart-finalize-schedule.py'
       - '.github/stageart-final-fix.py'
+      - '.github/stageart-label-fix.py'
   workflow_dispatch:
 
 permissions:
@@ -48,6 +49,14 @@ jobs:
             php -l stageart-core.php
             git diff --check
             rm -f .github/stageart-final-fix.py
+            changed=1
+          fi
+          if [ -f .github/stageart-label-fix.py ]; then
+            python3 .github/stageart-label-fix.py
+            php -l src/Presentation/Admin/ProductionAdmin.php
+            php -l src/Domain/Production/ProductionRepository.php
+            git diff --check
+            rm -f .github/stageart-label-fix.py
             changed=1
           fi
           if [ "$changed" = "1" ]; then
