@@ -18,12 +18,9 @@ final class PerformanceReleaseAdmin
     public function normalizePost(): void
     {
         if (!current_user_can('manage_options')) return;
-        $rows = (array) ($_POST['performances'] ?? []);
-        foreach ($rows as $i => $row) {
-            if (!is_array($row)) continue;
-            $rows[$i]['release_at'] = ReleaseDate::toUtc(sanitize_text_field(wp_unslash($row['release_at'] ?? '')));
-        }
-        $_POST['performances'] = $rows;
+        // release_at is entered in JST in the admin UI and converted to UTC exactly once
+        // by ProductionRepository::savePerformances(). Do not convert it here.
+        $_POST['performances'] = (array) ($_POST['performances'] ?? []);
         unset($_POST['performance_release']);
     }
 
