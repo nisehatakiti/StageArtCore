@@ -259,13 +259,13 @@ final class ProductionRouter
             .stageart-production-layout-slot--performances.stageart-size-l{font-size:1rem}.stageart-production-layout-slot--performances.stageart-size-l .stageart-performance-table th,.stageart-production-layout-slot--performances.stageart-size-l .stageart-performance-table td{padding:10px;font-size:1rem}
             .stageart-production-layout-slot--performances.stageart-size-m{font-size:.84rem}.stageart-production-layout-slot--performances.stageart-size-m .stageart-performance-table th,.stageart-production-layout-slot--performances.stageart-size-m .stageart-performance-table td{padding:6px;font-size:.84rem}
             .stageart-production-layout-slot--performances.stageart-size-s{font-size:.72rem}.stageart-production-layout-slot--performances.stageart-size-s .stageart-performance-table th,.stageart-production-layout-slot--performances.stageart-size-s .stageart-performance-table td{padding:4px;font-size:.72rem}
-            .stageart-production-layout-slot--performances.stageart-size-l .stageart-performance-list{font-size:.92rem}
-            .stageart-production-layout-slot--performances.stageart-size-m .stageart-performance-list{font-size:.78rem}
-            .stageart-production-layout-slot--performances.stageart-size-s .stageart-performance-list{font-size:.68rem}
+            .stageart-production-layout-slot--performances.stageart-size-l .stageart-performance-list{font-size:1rem}
+            .stageart-production-layout-slot--performances.stageart-size-m .stageart-performance-list{font-size:.84rem}
+            .stageart-production-layout-slot--performances.stageart-size-s .stageart-performance-list{font-size:.72rem}
             .stageart-production-layout-slot--performances.stageart-size-l .stageart-performance-timeline{font-size:1rem}
             .stageart-production-layout-slot--performances.stageart-size-m .stageart-performance-timeline{font-size:.84rem}
             .stageart-production-layout-slot--performances.stageart-size-s .stageart-performance-timeline{font-size:.72rem}
-            .stageart-production-layout-slot--tickets.stageart-size-l .stageart-ticket-list{font-size:1rem;line-height:1.8}
+            .stageart-production-layout-slot--performances.stageart-size-l .stageart-performance-timeline th,.stageart-production-layout-slot--performances.stageart-size-l .stageart-performance-timeline td{font-size:1rem}.stageart-production-layout-slot--performances.stageart-size-m .stageart-performance-timeline th,.stageart-production-layout-slot--performances.stageart-size-m .stageart-performance-timeline td{font-size:.84rem}.stageart-production-layout-slot--performances.stageart-size-s .stageart-performance-timeline th,.stageart-production-layout-slot--performances.stageart-size-s .stageart-performance-timeline td{font-size:.72rem}.stageart-production-layout-slot--tickets.stageart-size-l .stageart-ticket-list{font-size:1rem;line-height:1.8}
             .stageart-production-layout-slot--tickets.stageart-size-m .stageart-ticket-list{font-size:.84rem;line-height:1.65}
             .stageart-production-layout-slot--tickets.stageart-size-s .stageart-ticket-list{font-size:.72rem;line-height:1.5}
             .stageart-production-layout-slot--tickets.stageart-size-l .stageart-ticket-comment{font-size:.92rem}
