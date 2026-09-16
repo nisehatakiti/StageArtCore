@@ -104,11 +104,9 @@ final class ProductionRepository
 
     public function saveLabels(int $id, array $rows, array $deletedIds = []): array
     {
-        global $wpdb;
         $old = $this->labels($id);
         $oldById = [];
         foreach ($old as $label) $oldById[(int) $label['id']] = $label;
-        $keep = [];
         $newIds = [];
         $now = gmdate('Y-m-d H:i:s');
         foreach ($rows as $rowKey => $r) {
@@ -116,25 +114,25 @@ final class ProductionRepository
             $symbol = sanitize_text_field((string) ($r['symbol'] ?? ''));
             if ($symbol === '') continue;
             $rid = (int) ($r['id'] ?? 0);
-            $name = array_key_exists('name', $r) ? sanitize_text_field((string) $r['name']) : (string) ($oldById[$rid]['name'] ?? '');
-            $data = ['production_id'=>$id,'symbol'=>$symbol,'name'=>$name,'display_order'=>count($keep),'updated_at'=>$now];
+            $name = sanitize_text_field((string) ($r['name'] ?? ($oldById[$rid]['name'] ?? '')));
+            $order = count($newIds);
             if ($rid > 0 && isset($oldById[$rid])) {
-                $sql = $wpdb->prepare("UPDATE {$this->labels} SET symbol=%s,name=%s,display_order=%d,updated_at=%s WHERE id=%d AND production_id=%d", $symbol, $name, count($keep), $now, $rid, $id);
-                if ($wpdb->query($sql) === false) $wpdb->update($this->labels, $data, ['id'=>$rid,'production_id'=>$id], ['%d','%s','%s','%d','%s'], ['%d','%d']);
+                $ok = $this->db->update($this->labels, ['symbol'=>$symbol,'name'=>$name,'display_order'=>$order,'updated_at'=>$now], ['id'=>$rid,'production_id'=>$id], ['%s','%s','%d','%s'], ['%d','%d']);
+                if ($ok === false) wp_die('公演スケジュールラベルの保存に失敗しました。');
             } else {
-                $data['created_at']=$now;
-                $wpdb->insert($this->labels, $data, ['%d','%s','%s','%d','%s','%s']);
-                $rid=(int)$wpdb->insert_id;
+                $ok = $this->db->insert($this->labels, ['production_id'=>$id,'symbol'=>$symbol,'name'=>$name,'display_order'=>$order,'created_at'=>$now,'updated_at'=>$now], ['%d','%s','%s','%d','%s','%s']);
+                if ($ok === false) wp_die('公演スケジュールラベルの追加に失敗しました。');
+                $rid = (int) $this->db->insert_id;
             }
-            if ($rid > 0) { $keep[]=$rid; $newIds[(string)$rowKey]=$rid; }
+            if ($rid > 0) $newIds[(string) $rowKey] = $rid;
         }
-        $deleted=[];
-        foreach ($deletedIds as $v) { $rid=(int)$v; if($rid>0)$deleted[$rid]=true; }
+        $deleted = [];
+        foreach ($deletedIds as $deletedId) { $rid=(int)$deletedId; if($rid>0)$deleted[$rid]=true; }
         foreach ($old as $x) {
             $rid=(int)$x['id'];
-            if (!isset($deleted[$rid])) continue;
-            $wpdb->query($wpdb->prepare("UPDATE {$this->performances} SET label_id=NULL WHERE production_id=%d AND label_id=%d",$id,$rid));
-            $wpdb->delete($this->labels,['id'=>$rid,'production_id'=>$id],['%d','%d']);
+            if(!isset($deleted[$rid])) continue;
+            $this->db->query($this->db->prepare("UPDATE {$this->performances} SET label_id=NULL WHERE production_id=%d AND label_id=%d",$id,$rid));
+            $this->db->delete($this->labels,['id'=>$rid,'production_id'=>$id],['%d','%d']);
         }
         return $newIds;
     }
