@@ -1,5 +1,4 @@
 from pathlib import Path
-import re
 
 repo = Path('src/Domain/Production/ProductionRepository.php')
 s = repo.read_text()
@@ -12,7 +11,6 @@ new = '''    public function saveLabels(int $id, array $rows, array $deletedIds 
         foreach ($old as $label) $oldById[(int) $label['id']] = $label;
         $newIds = [];
         $now = gmdate('Y-m-d H:i:s');
-
         foreach ($rows as $rowKey => $r) {
             if (!is_array($r)) continue;
             $symbol = sanitize_text_field((string) ($r['symbol'] ?? ''));
@@ -20,38 +18,23 @@ new = '''    public function saveLabels(int $id, array $rows, array $deletedIds 
             $rid = (int) ($r['id'] ?? 0);
             $name = sanitize_text_field((string) ($r['name'] ?? ($oldById[$rid]['name'] ?? '')));
             $order = count($newIds);
-
             if ($rid > 0 && isset($oldById[$rid])) {
-                $ok = $this->db->update(
-                    $this->labels,
-                    ['symbol' => $symbol, 'name' => $name, 'display_order' => $order, 'updated_at' => $now],
-                    ['id' => $rid, 'production_id' => $id],
-                    ['%s', '%s', '%d', '%s'],
-                    ['%d', '%d']
-                );
+                $ok = $this->db->update($this->labels, ['symbol'=>$symbol,'name'=>$name,'display_order'=>$order,'updated_at'=>$now], ['id'=>$rid,'production_id'=>$id], ['%s','%s','%d','%s'], ['%d','%d']);
                 if ($ok === false) wp_die('公演スケジュールラベルの保存に失敗しました。');
             } else {
-                $ok = $this->db->insert(
-                    $this->labels,
-                    ['production_id' => $id, 'symbol' => $symbol, 'name' => $name, 'display_order' => $order, 'created_at' => $now, 'updated_at' => $now],
-                    ['%d', '%s', '%s', '%d', '%s', '%s']
-                );
+                $ok = $this->db->insert($this->labels, ['production_id'=>$id,'symbol'=>$symbol,'name'=>$name,'display_order'=>$order,'created_at'=>$now,'updated_at'=>$now], ['%d','%s','%s','%d','%s','%s']);
                 if ($ok === false) wp_die('公演スケジュールラベルの追加に失敗しました。');
                 $rid = (int) $this->db->insert_id;
             }
             if ($rid > 0) $newIds[(string) $rowKey] = $rid;
         }
-
         $deleted = [];
-        foreach ($deletedIds as $deletedId) {
-            $rid = (int) $deletedId;
-            if ($rid > 0) $deleted[$rid] = true;
-        }
+        foreach ($deletedIds as $deletedId) { $rid=(int)$deletedId; if($rid>0)$deleted[$rid]=true; }
         foreach ($old as $x) {
-            $rid = (int) $x['id'];
-            if (!isset($deleted[$rid])) continue;
-            $this->db->query($this->db->prepare("UPDATE {$this->performances} SET label_id=NULL WHERE production_id=%d AND label_id=%d", $id, $rid));
-            $this->db->delete($this->labels, ['id' => $rid, 'production_id' => $id], ['%d', '%d']);
+            $rid=(int)$x['id'];
+            if(!isset($deleted[$rid])) continue;
+            $this->db->query($this->db->prepare("UPDATE {$this->performances} SET label_id=NULL WHERE production_id=%d AND label_id=%d",$id,$rid));
+            $this->db->delete($this->labels,['id'=>$rid,'production_id'=>$id],['%d','%d']);
         }
         return $newIds;
     }
@@ -60,8 +43,11 @@ repo.write_text(s[:start] + new + s[end:])
 
 theme = Path('theme/stageart/style.css')
 t = theme.read_text()
-pattern = r'\\.stageart-performance-list\\{font-size:\\.78rem!important;max-width:640px!important;\\}.*?\\.stageart-production--light \\.stageart-performance-timeline--grid \\.stageart-performance-timeline-line b\\{background:var\\(--production-bg\\)!important;\\}'
-replacement = '''.stageart-performance-list{max-width:640px!important;}
+if '.stageart-production-layout-slot--performances.stageart-size-l .stageart-performance-timeline th' not in t:
+    start = t.find('.stageart-performance-list{')
+    end = t.find('\n\n/* StageArtCore homepage production cards */', start)
+    if start >= 0 and end > start:
+        replacement = '''.stageart-performance-list{max-width:640px!important;}
 .stageart-performance-list-row{gap:12px!important;}
 .stageart-performance-list-date{min-width:48px!important;}
 .stageart-performance-timeline{max-width:640px!important;margin:0 auto!important;overflow:visible!important;}
@@ -85,10 +71,10 @@ replacement = '''.stageart-performance-list{max-width:640px!important;}
 .stageart-production-layout-slot--performances.stageart-size-m .stageart-performance-timeline-line b{font-size:.95rem!important;}
 .stageart-production-layout-slot--performances.stageart-size-s .stageart-performance-timeline th,.stageart-production-layout-slot--performances.stageart-size-s .stageart-performance-timeline td{font-size:.8rem!important;}
 .stageart-production-layout-slot--performances.stageart-size-s .stageart-performance-timeline-line b{font-size:.8rem!important;}'''
-t2, n = re.subn(pattern, replacement, t, flags=re.S)
-if n != 1:
-    raise SystemExit(f'theme block replacements={n}')
-theme.write_text(t2)
+        t = t[:start] + replacement + t[end:]
+    else:
+        raise SystemExit('theme performance block not found')
+theme.write_text(t)
 
 p = Path('stageart-core.php')
 ps = p.read_text().replace('Version: 0.6.5', 'Version: 0.6.6').replace("define('STAGEART_CORE_VERSION','0.6.5');", "define('STAGEART_CORE_VERSION','0.6.6');")
