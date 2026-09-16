@@ -68,9 +68,9 @@ final class Plugin
         (new ProductionRouter())->register();
         (new SurveyRouter())->register();
         add_action('init', static function (): void {
-            if (get_option('stageart_core_rewrite_version') !== '7') {
-                flush_rewrite_rules(false);
-                update_option('stageart_core_rewrite_version', '7');
+            if (get_option('stageart_core_rewrite_version') !== '8') {
+                flush_rewrite_rules(true);
+                update_option('stageart_core_rewrite_version', '8');
             }
         }, 99);
     }
