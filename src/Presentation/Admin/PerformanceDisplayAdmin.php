@@ -14,7 +14,7 @@ final class PerformanceDisplayAdmin
     {
         add_action('admin_enqueue_scripts', [$this, 'assets'], 30);
         add_action('admin_footer', [$this, 'footer'], 30);
-        add_action('admin_post_stageart_save_production', [$this, 'save'], 0);
+        add_action('admin_post_stageart_save_production', [$this, 'save'], -1);
     }
 
     public function assets(string $hook): void
@@ -29,74 +29,19 @@ final class PerformanceDisplayAdmin
         if (($_GET['page'] ?? '') !== 'stageart-productions' || !current_user_can('manage_options')) return;
         $id = (int) ($_GET['id'] ?? 0);
         if (!$id) return;
-
         $view = (string) get_post_meta($id, self::VIEW_META, true);
-        if (!in_array($view, ['table', 'list', 'timeline_line', 'timeline_grid'], true)) $view = 'table';
-        $performanceSize = (string) get_post_meta($id, self::PERFORMANCE_SIZE_META, true);
-        if (!in_array($performanceSize, ['l', 'm', 's'], true)) $performanceSize = 'l';
-        $ticketSize = (string) get_post_meta($id, self::TICKET_SIZE_META, true);
-        if (!in_array($ticketSize, ['l', 'm', 's'], true)) $ticketSize = 'l';
-
-        $viewJs = esc_js($view);
-        $performanceSizeJs = esc_js($performanceSize);
-        $ticketSizeJs = esc_js($ticketSize);
-        echo '<script>(function(){
-            const form=document.getElementById("stageart-production-form");
-            const performances=document.getElementById("sa-performances");
-            if(!form)return;
-
-            function selectHtml(name, value, options){
-                return "<select name=\\\""+name+"\\\" form=\\\"stageart-production-form\\\">"+options.map(function(o){return "<option value=\\\""+o[0]+"\\\">"+o[1]+"</option>";}).join("")+"</select>";
-            }
-
-            if(performances){
-                const box=document.createElement("div");
-                box.className="stageart-performance-display-setting";
-                box.style.cssText="margin:12px 0 20px;padding:12px 14px;background:#f6f7f7;border:1px solid #dcdcde";
-                box.innerHTML="<strong>公演回の表示形式</strong> "+selectHtml("performance_view","",[["table","表形式"],["list","一覧形式"],["timeline_line","タイムライン（線）"],["timeline_grid","タイムライン（区切り）"]])+" <label style=\\\"margin-left:18px\\\">サイズ "+selectHtml("performance_size","",[["l","L"],["m","M"],["s","S"]])+"</label><p class=\\\"description\\\" style=\\\"margin:6px 0 0\\\">表形式のLを基準に、M/Sは文字・余白・全体幅を小さくします。</p>";
-                performances.insertAdjacentElement("afterend",box);
-                const selects=box.querySelectorAll("select");
-                selects[0].value="' . $viewJs . '";
-                selects[1].value="' . $performanceSizeJs . '";
-            }
-
-            const tickets=document.getElementById("sa-tickets");
-            if(tickets){
-                const box=document.createElement("div");
-                box.className="stageart-ticket-size-setting";
-                box.style.cssText="margin:12px 0 12px;padding:10px 14px;background:#f6f7f7;border:1px solid #dcdcde";
-                box.innerHTML="<strong>チケット料金のサイズ</strong> "+selectHtml("ticket_size","",[["l","L"],["m","M"],["s","S"]]);
-                tickets.insertAdjacentElement("beforebegin",box);
-                box.querySelector("select").value="' . $ticketSizeJs . '";
-            }
-
-            function bindMediaPicker(){
-                const button=document.getElementById("sa-media-picker");
-                const clear=document.getElementById("sa-media-clear");
-                const mediaId=document.getElementById("sa-main-image-id");
-                const preview=document.getElementById("sa-media-preview");
-                if(!button||!mediaId||!preview||button.dataset.stageartMediaBound)return false;
-                if(!window.wp||typeof window.wp.media!=="function")return false;
-                button.dataset.stageartMediaBound="1";
-                button.addEventListener("click",function(e){
-                    e.preventDefault();
-                    const frame=window.wp.media({title:"メイン画像を選択",button:{text:"この画像を使用"},multiple:false});
-                    frame.on("select",function(){
-                        const a=frame.state().get("selection").first().toJSON();
-                        mediaId.value=a.id||"";
-                        preview.innerHTML=a.url?"<img src=\\\""+a.url+"\\\" style=\\\"max-width:320px;height:auto\\\">":"";
-                    });
-                    frame.open();
-                });
-                if(clear&&!clear.dataset.stageartMediaBound){
-                    clear.dataset.stageartMediaBound="1";
-                    clear.addEventListener("click",function(e){e.preventDefault();mediaId.value="";preview.innerHTML="";});
-                }
-                return true;
-            }
-            if(!bindMediaPicker()){
-                let tries=0;const timer=setInterval(function(){if(bindMediaPicker()||++tries>=20)clearInterval(timer);},100);
-            }
+        if (!in_array($view, ['table','list','timeline_line','timeline_grid'], true)) $view='table';
+        $psize=(string)get_post_meta($id,self::PERFORMANCE_SIZE_META,true); if(!in_array($psize,['l','m','s'],true))$psize='l';
+        $tsize=(string)get_post_meta($id,self::TICKET_SIZE_META,true); if(!in_array($tsize,['l','m','s'],true))$tsize='l';
+        $v=esc_js($view);$ps=esc_js($psize);$ts=esc_js($tsize);
+        echo '<style>.stageart-performance-display-setting,.stageart-ticket-size-setting{margin:12px 0;padding:12px 14px;background:#f6f7f7;border:1px solid #dcdcde}.sa-credit-release-toggle{margin-left:10px}.sa-credit-release-toggle+input{margin-left:8px}</style>';
+        echo '<script>(function(){const f=document.getElementById("stageart-production-form");if(!f)return;
+        const perf=document.getElementById("sa-performances");
+        function sel(n,opts,val){return "<select name=\""+n+"\">"+opts.map(o=>"<option value=\""+o[0]+"\">"+o[1]+"</option>").join("")+"</select>"}
+        if(perf&&!f.querySelector(".stageart-performance-display-setting")){const b=document.createElement("div");b.className="stageart-performance-display-setting";b.innerHTML="<strong>公演回の表示方式</strong> "+sel("performance_view",[["table","表形式"],["list","一覧形式"],["timeline_line","タイムライン（線）"],["timeline_grid","タイムライン（区切り）"]],"' . $v . '")+"　<strong>サイズ</strong> "+sel("performance_size",[["l","L"],["m","M"],["s","S"]],"' . $ps . '");perf.parentNode.insertBefore(b,perf)}
+        const tickets=document.getElementById("sa-tickets");if(tickets&&!f.querySelector(".stageart-ticket-size-setting")){const b=document.createElement("div");b.className="stageart-ticket-size-setting";b.innerHTML="<strong>チケット料金のサイズ</strong> "+sel("ticket_size",[["l","L"],["m","M"],["s","S"]],"' . $ts . '");tickets.parentNode.insertBefore(b,tickets)}
+        function credits(){f.querySelectorAll(".sa-credit").forEach(function(card){const d=card.querySelector("input[type=datetime-local][name*=\"[release_at]\"]");if(!d||card.querySelector(".sa-credit-release-toggle"))return;const w=document.createElement("label");w.className="sa-credit-release-toggle";const c=document.createElement("input");c.type="checkbox";c.name=d.name.replace("[release_at]","[release_enabled]");c.value="1";c.checked=!!d.value;w.appendChild(c);w.appendChild(document.createTextNode(" 公開日時を使用する"));d.parentNode.insertBefore(w,d);d.disabled=!c.checked;c.addEventListener("change",function(){d.disabled=!c.checked;if(!c.checked)d.value=""})})}
+        credits();f.addEventListener("click",function(e){if(e.target.closest("[data-add=credit]"))setTimeout(credits,0)});f.addEventListener("submit",credits);
         })();</script>';
     }
 
@@ -105,6 +50,48 @@ final class PerformanceDisplayAdmin
         if (!current_user_can('manage_options')) return;
         $id = (int) ($_POST['id'] ?? 0);
         if (!$id || get_post_type($id) !== 'stageart_production') return;
+
+        // Resolve temporary label keys before ProductionAdmin saves labels/performances.
+        if (isset($_POST['labels']) && is_array($_POST['labels'])) {
+            global $wpdb;
+            $table = $wpdb->prefix . 'stageart_plugin_performance_labels';
+            $map = [];
+            $rows = [];
+            foreach ($_POST['labels'] as $key => $row) {
+                if (!is_array($row)) continue;
+                $symbol = sanitize_text_field(wp_unslash($row['symbol'] ?? ''));
+                if ($symbol === '') continue;
+                $labelId = (int) ($row['id'] ?? 0);
+                if ($labelId <= 0 && !ctype_digit((string) $key)) {
+                    $name = sanitize_text_field(wp_unslash($row['name'] ?? ''));
+                    $now = gmdate('Y-m-d H:i:s');
+                    $wpdb->insert($table, [
+                        'production_id' => $id, 'symbol' => $symbol, 'name' => $name,
+                        'display_order' => count($rows), 'created_at' => $now, 'updated_at' => $now,
+                    ], ['%d','%s','%s','%d','%s','%s']);
+                    $labelId = (int) $wpdb->insert_id;
+                    if ($labelId > 0) $map[(string) $key] = $labelId;
+                }
+                $row['id'] = $labelId;
+                $rows[$key] = $row;
+            }
+            $_POST['labels'] = $rows;
+            if (isset($_POST['performances']) && is_array($_POST['performances'])) {
+                foreach ($_POST['performances'] as $pk => $pr) {
+                    if (!is_array($pr)) continue;
+                    $lk = (string) ($pr['label_id'] ?? '');
+                    if ($lk !== '' && isset($map[$lk])) $_POST['performances'][$pk]['label_id'] = (string) $map[$lk];
+                }
+            }
+        }
+
+        // The checkbox controls whether a credit release timestamp is actually used.
+        if (isset($_POST['credits']) && is_array($_POST['credits'])) {
+            foreach ($_POST['credits'] as $ck => $credit) {
+                if (!is_array($credit)) continue;
+                if (empty($credit['release_enabled'])) $_POST['credits'][$ck]['release_at'] = '';
+            }
+        }
 
         $view = sanitize_key(wp_unslash($_POST['performance_view'] ?? 'table'));
         if (!in_array($view, ['table', 'list', 'timeline_line', 'timeline_grid'], true)) $view = 'table';
