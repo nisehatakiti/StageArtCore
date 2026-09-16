@@ -167,31 +167,8 @@ final class ProductionLayoutAdmin
             sync();
             f.addEventListener("submit",function(){syncFromDom()});
 
-            function wireCreditRelease(root){
-                root.querySelectorAll(".sa-credit").forEach(function(card){
-                    if(card.querySelector(".sa-credit-release"))return;
-                    const date=card.querySelector("input[type=datetime-local][name*=\"[release_at]\"]");
-                    if(!date)return;
-                    const checked=!!date.value;
-                    const release=document.createElement("div");
-                    release.className="sa-credit-release";
-                    release.innerHTML="<label><input type=\"checkbox\" class=\"sa-credit-release-use\""+(checked?" checked":"")+"> 公開日時を使用する</label>";
-                    date.parentNode.insertBefore(release,date);
-                    release.appendChild(date);
-                    function toggle(){date.disabled=!release.querySelector(".sa-credit-release-use").checked;if(date.disabled)date.value=""}
-                    release.querySelector(".sa-credit-release-use").addEventListener("change",toggle);
-                    toggle();
-                });
-            }
-            wireCreditRelease(f);
-            f.addEventListener("click",function(e){
-                const addCredit=e.target.closest("[data-add=credit]");
-                if(addCredit)setTimeout(function(){wireCreditRelease(f)},0);
-            });
-            f.addEventListener("submit",function(){wireCreditRelease(f)});
-
-            const submit=f.querySelector("button[type=submit]");
-            if(submit){f.insertBefore(box,submit.parentNode)}else{f.appendChild(box)}
+            const credits=f.querySelector("#sa-credits");
+            if(credits){credits.insertAdjacentElement("beforebegin",box)}else{const submit=f.querySelector("button[type=submit]");if(submit)f.insertBefore(box,submit.parentNode);else f.appendChild(box)}
         })();</script>';
     }
 
