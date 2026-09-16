@@ -11,7 +11,7 @@ on:
 permissions:
   contents: write
 
-a jobs:
+jobs:
   repair:
     runs-on: ubuntu-latest
     steps:
