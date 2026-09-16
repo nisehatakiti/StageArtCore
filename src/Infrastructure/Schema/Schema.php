@@ -6,7 +6,7 @@ namespace StageArtCore\Infrastructure\Schema;
 
 final class Schema
 {
-    public const DB_VERSION = '0.6.0';
+    public const DB_VERSION = '0.6.1';
 
     public static function activate(): void
     {
