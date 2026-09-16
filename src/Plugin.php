@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace StageArtCore;
 
+use StageArtCore\Infrastructure\RewriteManager;
 use StageArtCore\Infrastructure\Schema\Schema;
 use StageArtCore\Infrastructure\Schema\ProductionMigration;
 use StageArtCore\Infrastructure\Schema\SurveyMigration;
@@ -67,11 +68,6 @@ final class Plugin
         (new MemberRouter())->register();
         (new ProductionRouter())->register();
         (new SurveyRouter())->register();
-        add_action('init', static function (): void {
-            if (get_option('stageart_core_rewrite_version') !== '8') {
-                flush_rewrite_rules(true);
-                update_option('stageart_core_rewrite_version', '8');
-            }
-        }, 99);
+        RewriteManager::register();
     }
 }
