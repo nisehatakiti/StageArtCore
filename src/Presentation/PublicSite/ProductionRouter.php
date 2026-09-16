@@ -49,10 +49,8 @@ final class ProductionRouter
 
     private function performanceCell(array $x, string $display, string $marker): string
     {
-        if ($display === 'both' && !empty($x['symbol'])) {
-            return trim((string) $x['symbol'] . ' ' . (string) $x['label_name']);
-        }
-        return $display === 'symbol' && !empty($x['symbol']) ? (string) $x['symbol'] : $marker;
+        // 公演スケジュール上はラベル名を付加せず、記号（A/Bなど）のみ表示する。
+        return !empty($x['symbol']) ? (string) $x['symbol'] : $marker;
     }
 
     private function performanceLegend(array $labels): void
