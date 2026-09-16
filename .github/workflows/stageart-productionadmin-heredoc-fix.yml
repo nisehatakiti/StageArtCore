@@ -1,0 +1,49 @@
+name: StageArt ProductionAdmin Repair
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/stageart-productionadmin-heredoc-fix.py'
+      - '.github/workflows/stageart-productionadmin-heredoc-fix.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Repair and validate
+        run: |
+          python3 .github/stageart-productionadmin-heredoc-fix.py
+          php -l src/Presentation/Admin/ProductionAdmin.php
+          php -l src/Presentation/PublicSite/ProductionRouter.php
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if ! git diff --quiet; then
+            git add src/Presentation/Admin/ProductionAdmin.php
+            git commit -m 'stageart: fix ProductionAdmin script initialization'
+            git push
+          fi
+      - name: Build installable package
+        run: |
+          rm -rf dist zip
+          mkdir -p dist/Core dist/Theme zip
+          rsync -a --exclude='.git' --exclude='.github' --exclude='dist' --exclude='zip' ./ dist/Core/StageArtCore/
+          if [ -d theme/stageart ]; then rsync -a theme/stageart/ dist/Theme/stageart/; fi
+          cd dist/Core && zip -qr ../../zip/StageArtCore-Core.zip StageArtCore
+          cd ../Theme && zip -qr ../../zip/StageArtCore-Theme.zip stageart
+          cd ../..
+          zip -q StageArtCore.zip zip/StageArtCore-Core.zip zip/StageArtCore-Theme.zip
+          unzip -t StageArtCore.zip
+          mv StageArtCore.zip zip/StageArtCore-productionadmin-fix.zip
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: StageArtCore-productionadmin-fix
+          path: zip/StageArtCore-productionadmin-fix.zip
+          if-no-files-found: error
