@@ -116,16 +116,17 @@ final class ProductionRepository
             $symbol = sanitize_text_field((string) ($r['symbol'] ?? ''));
             if ($symbol === '') continue;
             $rid = (int) ($r['id'] ?? 0);
-            $name = sanitize_text_field((string) ($r['name'] ?? ($oldById[$rid]['name'] ?? '')));
+            $name = array_key_exists('name', $r) ? sanitize_text_field((string) $r['name']) : (string) ($oldById[$rid]['name'] ?? '');
             $data = ['production_id'=>$id,'symbol'=>$symbol,'name'=>$name,'display_order'=>count($keep),'updated_at'=>$now];
             if ($rid > 0 && isset($oldById[$rid])) {
-                $wpdb->update($this->labels,$data,['id'=>$rid,'production_id'=>$id],['%d','%s','%s','%d','%s'],['%d','%d']);
+                $sql = $wpdb->prepare("UPDATE {$this->labels} SET symbol=%s,name=%s,display_order=%d,updated_at=%s WHERE id=%d AND production_id=%d", $symbol, $name, count($keep), $now, $rid, $id);
+                if ($wpdb->query($sql) === false) $wpdb->update($this->labels, $data, ['id'=>$rid,'production_id'=>$id], ['%d','%s','%s','%d','%s'], ['%d','%d']);
             } else {
                 $data['created_at']=$now;
-                $wpdb->insert($this->labels,$data,['%d','%s','%s','%d','%s','%s']);
+                $wpdb->insert($this->labels, $data, ['%d','%s','%s','%d','%s','%s']);
                 $rid=(int)$wpdb->insert_id;
             }
-            if ($rid>0) { $keep[]=$rid; $newIds[(string)$rowKey]=$rid; }
+            if ($rid > 0) { $keep[]=$rid; $newIds[(string)$rowKey]=$rid; }
         }
         $deleted=[];
         foreach ($deletedIds as $v) { $rid=(int)$v; if($rid>0)$deleted[$rid]=true; }
