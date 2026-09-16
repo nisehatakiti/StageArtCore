@@ -134,6 +134,30 @@ final class ProductionRepository
             $this->db->query($this->db->prepare("UPDATE {$this->performances} SET label_id=NULL WHERE production_id=%d AND label_id=%d",$id,$rid));
             $this->db->delete($this->labels,['id'=>$rid,'production_id'=>$id],['%d','%d']);
         }
+        if ($newIds) {
+            $savedById = [];
+            foreach ($this->labels($id) as $label) $savedById[(int) $label['id']] = $label;
+            foreach ($rows as $rowKey => $r) {
+                $rid = (int) ($newIds[(string) $rowKey] ?? 0);
+                if ($rid <= 0) continue;
+                $expectedSymbol = sanitize_text_field((string) ($r['symbol'] ?? ''));
+                $expectedName = sanitize_text_field((string) ($r['name'] ?? ''));
+                $actual = $savedById[$rid] ?? null;
+                if (!$actual || (string) ($actual['symbol'] ?? '') !== $expectedSymbol || (string) ($actual['name'] ?? '') !== $expectedName) {
+                    $this->db->query($this->db->prepare("UPDATE {$this->labels} SET symbol=%s,name=%s,updated_at=%s WHERE id=%d AND production_id=%d", $expectedSymbol, $expectedName, $now, $rid, $id));
+                }
+            }
+            $savedById = [];
+            foreach ($this->labels($id) as $label) $savedById[(int) $label['id']] = $label;
+            foreach ($rows as $rowKey => $r) {
+                $rid = (int) ($newIds[(string) $rowKey] ?? 0);
+                if ($rid <= 0) continue;
+                $expectedSymbol = sanitize_text_field((string) ($r['symbol'] ?? ''));
+                $expectedName = sanitize_text_field((string) ($r['name'] ?? ''));
+                $actual = $savedById[$rid] ?? null;
+                if (!$actual || (string) ($actual['symbol'] ?? '') !== $expectedSymbol || (string) ($actual['name'] ?? '') !== $expectedName) wp_die('公演スケジュールラベルの保存結果を確認できませんでした。');
+            }
+        }
         return $newIds;
     }
 
