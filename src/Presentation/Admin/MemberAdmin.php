@@ -20,6 +20,7 @@ final class MemberAdmin
         add_action('admin_post_stageart_member_order', [$this, 'saveOrder']);
         add_action('admin_post_stageart_field_order', [$this, 'saveFieldOrder']);
         add_action('admin_footer', [$this, 'releaseControl']);
+        add_action('admin_footer', [$this, 'orderScripts']);
     }
 
     public function register(): void
@@ -47,14 +48,20 @@ final class MemberAdmin
             echo '</div>';
             return;
         }
-        echo '<p><a class="button button-primary" href="' . esc_url(admin_url('admin.php?page=stageart-members&new=1')) . '">＋ メンバーを追加</a> <a class="button" href="' . esc_url(admin_url('admin.php?page=stageart-member-fields')) . '">共通項目を管理</a></p><h2>メンバー一覧</h2><p>公開されているメンバーを表示順で一覧表示する標準コンテンツです。</p><table class="widefat striped"><thead><tr><th>表示順</th><th>名前</th><th>役割</th><th>状態</th><th>操作</th></tr></thead><tbody id="stageart-member-list">';
+        echo '<p><a class="button button-primary" href="' . esc_url(admin_url('admin.php?page=stageart-members&new=1')) . '">＋ メンバーを追加</a> <a class="button" href="' . esc_url(admin_url('admin.php?page=stageart-member-fields')) . '">共通項目を管理</a></p><h2>メンバー一覧</h2><p>公開状態に関係なく登録済みメンバーを表示順で並べ替えできます。並べ替え後に「表示順を保存」を押してください。</p>';
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" id="stageart-member-order-form">';
+        wp_nonce_field('stageart_member_action');
+        echo '<input type="hidden" name="action" value="stageart_member_order"><input type="hidden" name="ids" id="stageart-member-order-ids" value="">';
+        echo '<table class="widefat striped"><thead><tr><th style="width:90px">表示順</th><th>名前</th><th>役割</th><th>状態</th><th>操作</th></tr></thead><tbody id="stageart-member-list">';
         foreach ($members as $m) {
             $full = $this->repo->find((int) $m['id']);
             $roles = $full ? array_map(fn($r) => MemberRepository::ROLES[$r] ?? $r, $full['roles']) : [];
-            echo '<tr data-id="' . (int) $m['id'] . '"><td>☰ ' . (int) $m['display_order'] . '</td><td><strong><a href="' . esc_url(admin_url('admin.php?page=stageart-members&id=' . (int) $m['id'])) . '">' . esc_html($m['name']) . '</a></strong></td><td>' . esc_html(implode('・', $roles)) . '</td><td>' . esc_html($m['status'] === 'published' ? '公開' : '下書き') . '</td><td><a href="' . esc_url(admin_url('admin.php?page=stageart-members&id=' . (int) $m['id'])) . '">編集</a></td></tr>';
+            echo '<tr data-id="' . (int) $m['id'] . '" draggable="true"><td class="sa-member-order-handle" title="ドラッグして並べ替え">☰ <span>' . (int) $m['display_order'] . '</span></td><td><strong><a href="' . esc_url(admin_url('admin.php?page=stageart-members&id=' . (int) $m['id'])) . '">' . esc_html($m['name']) . '</a></strong></td><td>' . esc_html(implode('・', $roles)) . '</td><td>' . esc_html($m['status'] === 'published' ? '公開' : '下書き') . '</td><td><a href="' . esc_url(admin_url('admin.php?page=stageart-members&id=' . (int) $m['id'])) . '">編集</a></td></tr>';
         }
         if (!$members) echo '<tr><td colspan="5">メンバーはまだ登録されていません。</td></tr>';
-        echo '</tbody></table></div>';
+        echo '</tbody></table>';
+        if ($members) submit_button('表示順を保存', 'primary', 'submit', false, ['id' => 'stageart-member-order-submit']);
+        echo '</form></div>';
     }
 
     private function form(?array $m, array $fields): void
@@ -98,7 +105,7 @@ final class MemberAdmin
             'display_order' => (int) ($_POST['display_order'] ?? 0),
             'release_at' => ReleaseDate::toUtc(sanitize_text_field(wp_unslash($_POST['release_at'] ?? ''))),
         ]);
-        wp_safe_redirect(admin_url('admin.php?page=stageart-members&id=' . $id . '&saved=1'));
+        wp_safe_redirect(admin_url('admin.php?page=stageart-members&saved=1'));
         exit;
     }
 
@@ -163,7 +170,13 @@ final class MemberAdmin
 
     public function releaseControl(): void
     {
-        if (!is_admin() || ($_GET['page'] ?? '') !== 'stageart-members' || !isset($_GET['id']) && !isset($_GET['new'])) return;
-        echo '<script>(function(){function init(){var input=document.querySelector("#stageart-member-release-placeholder");if(input)return;var form=document.querySelector("form[action*=admin-post]");if(!form)return;var release=form.querySelector("input[name=release_at]");if(!release)return;var row=release.closest("tr");if(!row)return;var cell=release.parentNode;var toggle=document.createElement("input");toggle.type="checkbox";toggle.className="sa-release-toggle";toggle.checked=release.value!=="";toggle.setAttribute("aria-label","情報解禁日を設定する");var label=document.createElement("label");label.appendChild(toggle);label.appendChild(document.createTextNode(" 情報解禁日を設定する"));cell.insertBefore(label,release);cell.insertBefore(document.createElement("br"),release);release.disabled=!toggle.checked;toggle.addEventListener("change",function(){release.disabled=!toggle.checked;if(toggle.checked)release.focus();});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();})();</script>';
+        if (!is_admin() || ($_GET['page'] ?? '') !== 'stageart-members' || (!isset($_GET['id']) && !isset($_GET['new']))) return;
+        echo '<script>(function(){function init(){var form=document.querySelector("form[action*=admin-post]");if(!form)return;var release=form.querySelector("input[name=release_at]");if(!release||release.dataset.saReleaseInit)return;release.dataset.saReleaseInit="1";var cell=release.parentNode;var toggle=document.createElement("input");toggle.type="checkbox";toggle.className="sa-release-toggle";toggle.checked=release.value!=="";var label=document.createElement("label");label.appendChild(toggle);label.appendChild(document.createTextNode(" 情報解禁日を設定する"));cell.insertBefore(label,release);cell.insertBefore(document.createElement("br"),release);release.disabled=!toggle.checked;toggle.addEventListener("change",function(){release.disabled=!toggle.checked;if(toggle.checked)release.focus();});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();})();</script>';
+    }
+
+    public function orderScripts(): void
+    {
+        if (!is_admin() || ($_GET['page'] ?? '') !== 'stageart-members' || isset($_GET['id']) || isset($_GET['new'])) return;
+        echo '<style>#stageart-member-list tr{cursor:grab}#stageart-member-list tr.sa-dragging{opacity:.45}.sa-member-order-handle{font-weight:600;white-space:nowrap}#stageart-member-order-submit{margin-top:12px}</style><script>(function(){function init(){var body=document.getElementById("stageart-member-list"),hidden=document.getElementById("stageart-member-order-ids");if(!body||!hidden)return;var drag=null;function rows(){return Array.prototype.slice.call(body.querySelectorAll("tr[data-id]"));}function sync(){var r=rows();hidden.value=r.map(function(x){return x.getAttribute("data-id");}).join(",");r.forEach(function(x,i){var s=x.querySelector(".sa-member-order-handle span");if(s)s.textContent=String(i+1);});}body.addEventListener("dragstart",function(e){var row=e.target.closest("tr[data-id]");if(!row)return;drag=row;row.classList.add("sa-dragging");e.dataTransfer.effectAllowed="move";});body.addEventListener("dragend",function(){if(drag)drag.classList.remove("sa-dragging");drag=null;sync();});body.addEventListener("dragover",function(e){if(!drag)return;e.preventDefault();var row=e.target.closest("tr[data-id]");if(!row||row===drag)return;var rect=row.getBoundingClientRect();if(e.clientY<rect.top+rect.height/2)body.insertBefore(drag,row);else body.insertBefore(drag,row.nextSibling);});sync();}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();})();</script>';
     }
 }
