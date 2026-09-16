@@ -45,7 +45,6 @@ final class PerformanceDisplayAdmin
         echo '<script>(function(){
             const table=document.getElementById("sa-performances");
             if(!table)return;
-            const wrap=table.parentElement;
             const box=document.createElement("div");
             box.className="stageart-performance-display-setting";
             box.style.cssText="margin:12px 0 20px;padding:12px 14px;background:#f6f7f7;border:1px solid #dcdcde";
@@ -53,6 +52,42 @@ final class PerformanceDisplayAdmin
             table.insertAdjacentElement("afterend",box);
             const select=box.querySelector("select");
             select.value="' . $currentJs . '";
+
+            function bindMediaPicker(){
+                const button=document.getElementById("sa-media-picker");
+                const clear=document.getElementById("sa-media-clear");
+                const mediaId=document.getElementById("sa-main-image-id");
+                const preview=document.getElementById("sa-media-preview");
+                if(!button||!mediaId||!preview||button.dataset.stageartMediaBound)return false;
+                if(!window.wp||typeof window.wp.media!=="function")return false;
+                button.dataset.stageartMediaBound="1";
+                button.addEventListener("click",function(e){
+                    e.preventDefault();
+                    const frame=window.wp.media({title:"メイン画像を選択",button:{text:"この画像を使用"},multiple:false});
+                    frame.on("select",function(){
+                        const a=frame.state().get("selection").first().toJSON();
+                        mediaId.value=a.id||"";
+                        preview.innerHTML=a.url?"<img src=\""+a.url+"\" style=\"max-width:320px;height:auto\">":"";
+                    });
+                    frame.open();
+                });
+                if(clear&&!clear.dataset.stageartMediaBound){
+                    clear.dataset.stageartMediaBound="1";
+                    clear.addEventListener("click",function(e){
+                        e.preventDefault();
+                        mediaId.value="";
+                        preview.innerHTML="";
+                    });
+                }
+                return true;
+            }
+
+            if(!bindMediaPicker()){
+                let tries=0;
+                const timer=setInterval(function(){
+                    if(bindMediaPicker()||++tries>=20)clearInterval(timer);
+                },100);
+            }
         })();</script>';
     }
 
