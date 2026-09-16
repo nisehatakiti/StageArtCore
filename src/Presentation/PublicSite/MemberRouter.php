@@ -51,6 +51,7 @@ final class MemberRouter
             return;
         }
         $this->render($member);
+        exit;
     }
 
     public function disable_conflicting_canonical($redirect, $requested)
