@@ -12,7 +12,6 @@ use StageArtCore\Domain\Production\ProductionValidator;
 use StageArtCore\Presentation\Admin\AdminMenu;
 use StageArtCore\Presentation\Admin\MemberAdmin;
 use StageArtCore\Presentation\Admin\PerformanceReleaseAdmin;
-use StageArtCore\Presentation\Admin\PerformanceDisplayAdmin;
 use StageArtCore\Presentation\Admin\ProductionAdmin;
 use StageArtCore\Presentation\Admin\ProductionLayoutAdmin;
 use StageArtCore\Presentation\Admin\ProductionPresentationAdmin;
@@ -51,8 +50,7 @@ final class Plugin
         add_action('admin_menu', [new SiteStructureAdmin(), 'register'], 21);
         add_action('admin_menu', [new MemberAdmin(), 'register'], 20);
         (new PerformanceReleaseAdmin())->register();
-        (new PerformanceDisplayAdmin());
-        (new RepresentativeGreetingAdmin())->register();
+                (new RepresentativeGreetingAdmin())->register();
         (new ProductionPresentationAdmin())->register();
         (new ProductionTimeAdmin())->register();
         (new ProductionLayoutAdmin())->register();

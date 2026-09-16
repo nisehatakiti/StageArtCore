@@ -47,7 +47,7 @@ final class SurveyResultsAdmin
         foreach ($questions as $question) {
             $this->summary($question, $responses);
         }
-        echo '<h2>回答一覧</h2><table class="widefat striped"><thead><tr><th>日時</th><th>公演回</th>';
+        echo '<h2>回答一覧</h2><table class="widefat striped"><thead><tr><th>日時</th><th>公演スケジュール</th>';
         foreach ($questions as $question) {
             echo '<th>' . esc_html($question['label']) . '</th>';
         }
@@ -139,7 +139,7 @@ final class SurveyResultsAdmin
                 }
                 echo '</table>';
             } else {
-                echo '<table><tr><th>回答</th><th>公演回</th></tr>';
+                echo '<table><tr><th>回答</th><th>公演スケジュール</th></tr>';
                 foreach ($responses as $response) {
                     $value = $response['answers'][(string) $question['id']] ?? '';
                     echo '<tr><td>' . esc_html(is_array($value) ? implode('、', $value) : (string) $value) . '</td><td>' . esc_html($pn[(int) $response['performance_id']] ?? '未選択') . '</td></tr>';

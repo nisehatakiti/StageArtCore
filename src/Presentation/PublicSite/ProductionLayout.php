@@ -24,7 +24,7 @@ final class ProductionLayout
             'summary' => '概要',
             'description' => '公演紹介',
             'schedule' => '公演日程',
-            'performances' => '公演回',
+            'performances' => '公演スケジュール',
             'cast' => '出演者',
             'staff' => 'スタッフ',
             'venue' => '会場',

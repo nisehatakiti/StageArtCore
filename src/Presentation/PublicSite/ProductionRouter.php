@@ -228,7 +228,7 @@ final class ProductionRouter
         echo '<style>
             .stageart-production-layout-slots--horizontal{display:grid;grid-template-columns:repeat(var(--stageart-layout-columns),minmax(0,1fr));gap:28px;align-items:start}
             .stageart-production-layout-slots--vertical{display:flex;flex-direction:column;gap:28px}
-            .stageart-production-layout-slot{min-width:0}
+            .stageart-production-layout-slot{min-width:0}.stageart-production-layout-slot--performances{justify-self:start;width:min(100%,520px)}.stageart-production-layout-slot--performances.stageart-size-l{max-width:520px}.stageart-production-layout-slot--performances.stageart-size-m{max-width:420px}.stageart-production-layout-slot--performances.stageart-size-s{max-width:340px}
             .stageart-production-layout-slot>h2{margin-top:0}
             .stageart-production-layout-slot>ul{margin-top:0}
             .stageart-performance-table-wrap{overflow:auto}
@@ -248,7 +248,7 @@ final class ProductionRouter
             .stageart-performance-timeline-line{position:relative;display:flex;align-items:center;justify-content:center;min-height:17px}
             .stageart-performance-timeline-line:before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid var(--line)}
             .stageart-performance-timeline-line b{position:relative;z-index:2;font-weight:500;background:var(--paper);padding:0 3px;line-height:1.1;font-size:.72rem}
-            .stageart-performance-timeline--grid .stageart-performance-timeline-line:not(.has-marker):after{content:"┼";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;color:var(--line);font-size:.68rem;line-height:1}
+            .stageart-performance-timeline--grid .stageart-performance-timeline-line:after{content:none}
             .stageart-performance-timeline--grid .stageart-performance-timeline-line.has-marker b{background:var(--paper)}
             .stageart-production--dark .stageart-performance-timeline-line b,.stageart-production--dark .stageart-performance-timeline--grid .stageart-performance-timeline-line.has-marker b{background:var(--production-bg)}
             .stageart-production--light .stageart-performance-timeline-line b,.stageart-production--light .stageart-performance-timeline--grid .stageart-performance-timeline-line.has-marker b{background:var(--production-bg)}
@@ -326,12 +326,12 @@ final class ProductionRouter
                 else $this->placeholder('近日公開');
                 break;
             case 'performances':
-                echo '<h2>公演回</h2>';
+                echo '<h2>公演スケジュール</h2>';
                 $ps = $r->performances($p->ID);
-                if (!$ps) $this->placeholder('現在登録されている公演回はありません。');
+                if (!$ps) $this->placeholder('現在登録されている公演スケジュールはありません。');
                 else {
                     $released = array_values(array_filter($ps, fn(array $x): bool => $this->released($x['release_at'] ?? null)));
-                    if (!$released) $this->placeholder('公演回は後日公開');
+                    if (!$released) $this->placeholder('公演スケジュールは後日公開');
                     else {
                         $display = $g('use_labels', '1') === '1' ? $g('label_display', 'symbol') : 'none';
                         $view = sanitize_key($g('performance_view', 'table'));

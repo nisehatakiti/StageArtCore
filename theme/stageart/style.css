@@ -3,7 +3,7 @@ Theme Name: StageArt Theatre
 Theme URI: https://github.com/nisehatakiti/StageArtCore
 Author: nisehatakiti.online
 Description: StageArtCore向けの劇団・舞台芸術団体公式サイトテーマ。
-Version: 1.3.2
+Version: 1.3.3
 Requires at least: 6.0
 Requires PHP: 8.0
 License: GPL v2 or later
@@ -13,7 +13,7 @@ Text Domain: stageart-theatre
 @media(max-width:800px){.stageart-header-inner{flex-direction:column;align-items:flex-start;padding:18px 0}.stageart-nav ul{gap:18px;flex-wrap:wrap}.stageart-nav li ul{position:static}.stageart-hero{min-height:500px}.stageart-section-header,.stageart-feature{grid-template-columns:1fr}.stageart-feature-image{min-height:220px}.stageart-production-grid,.stageart-members{grid-template-columns:1fr 1fr}.stageart-home-slots{grid-template-columns:1fr 1fr!important}.stageart-feature-copy{padding:45px 30px}}@media(max-width:520px){.stageart-container,.stageart-header-inner{width:min(calc(100% - 28px),var(--max))}.stageart-production-grid,.stageart-members,.stageart-home-slots{grid-template-columns:1fr!important}.stageart-hero h1{font-size:3.2rem}.stageart-hero-actions{flex-direction:column;align-items:flex-start}.stageart-news-item{grid-template-columns:1fr;gap:3px}.stageart-footer-inner{flex-direction:column}.stageart-indent-1{padding-left:1em}.stageart-indent-2{padding-left:2em}.stageart-indent-3{padding-left:3em}}
 
 /* StageArtCore compact production presentation overrides */
-.stageart-home-slot>.stageart-production-grid{grid-template-columns:repeat(auto-fit,minmax(240px,1fr));}
+.stageart-home-slot>.stageart-production-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),520px));justify-content:center;}
 .stageart-home-slot .stageart-card-image{aspect-ratio:auto;display:flex;align-items:center;justify-content:center;min-height:0;}
 .stageart-home-slot .stageart-card-image img{width:auto;height:auto;max-width:100%;max-height:280px;object-fit:contain;}
 .stageart-performance-list{font-size:.78rem!important;max-width:640px!important;}
@@ -36,6 +36,6 @@ Text Domain: stageart-theatre
 
 /* StageArtCore homepage production cards */
 .stageart-home-slot>.stageart-card{max-width:680px;margin-left:auto;margin-right:auto;}
-.stageart-home-slot>.stageart-production-grid .stageart-card{max-width:none;}
+.stageart-home-slot>.stageart-production-grid .stageart-card{max-width:520px;width:100%;margin-left:auto;margin-right:auto;}
 .stageart-home-slot>.stageart-card .stageart-card-image{max-height:360px;}
 .stageart-home-slot>.stageart-card .stageart-card-image img{max-height:360px;width:auto;height:auto;object-fit:contain;}
