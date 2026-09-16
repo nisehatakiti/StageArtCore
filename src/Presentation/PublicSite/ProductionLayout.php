@@ -34,29 +34,14 @@ final class ProductionLayout
 
     public static function defaults(): array
     {
-        $slots = [];
-        foreach (self::contentLabels() as $id => $label) {
-            $slots[] = [
-                'type' => self::SLOT_LINK,
-                'ref' => $id,
-                'indent' => 0,
-            ];
-        }
-
-        return [[
-            'section_id' => wp_generate_uuid4(),
-            'heading' => '',
-            'columns' => 1,
-            'layout' => self::LAYOUT_VERTICAL,
-            'slots' => $slots,
-        ]];
+        return [];
     }
 
     public static function get(int $id): array
     {
         $value = get_post_meta($id, self::OPTION, true);
-        if (!is_array($value) || !$value) {
-            return self::defaults();
+        if (!is_array($value)) {
+            return [];
         }
 
         return self::normalize($value);
@@ -152,6 +137,6 @@ final class ProductionLayout
             ];
         }
 
-        return $out ?: self::defaults();
+        return $out;
     }
 }
