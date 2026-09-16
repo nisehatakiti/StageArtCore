@@ -90,8 +90,16 @@ final class ProductionRepository
 
     public function savePerformances(int $id,array $rows):void
     {
-        global$wpdb;$old=$this->performances($id);$keep=[];$now=gmdate('Y-m-d H:i:s');
-        foreach(array_values($rows)as$i=>$r){$date=preg_match('/^\d{4}-\d{2}-\d{2}$/',(string)($r['date']??''))?$r['date']:'';$start=preg_match('/^\d{2}:\d{2}$/',(string)($r['start']??''))?$r['start']:'';if(!$date||!$start)continue;$end=preg_match('/^\d{2}:\d{2}$/',(string)($r['end']??''))?$r['end']:null;$label=!empty($r['label_id'])?(int)$r['label_id']:null;$release=isset($r['release_at'])?ReleaseDate::toUtc(sanitize_text_field((string)$r['release_at'])):null;$rid=(int)($r['id']??0);$data=['production_id'=>$id,'performance_date'=>$date,'start_time'=>$start,'end_time'=>$end,'label_id'=>$label,'release_at'=>$release,'updated_at'=>$now];if($rid>0)$wpdb->update($this->performances,$data,['id'=>$rid,'production_id'=>$id],['%d','%s','%s','%s','%d','%s','%s'],['%d','%d']);else{$data['created_at']=$now;$wpdb->insert($this->performances,$data,['%d','%s','%s','%s','%d','%s','%s','%s']);$rid=(int)$wpdb->insert_id;}$keep[]=$rid;}
+        global$wpdb;$old=$this->performances($id);$oldById=[];foreach($old as$x)$oldById[(int)$x['id']=$x];
+        $validLabels=[];foreach($this->labels($id)as$l)$validLabels[(int)$l['id']=true;
+        $keep=[];$now=gmdate('Y-m-d H:i:s');
+        foreach(array_values($rows)as$i=>$r){$date=preg_match('/^\d{4}-\d{2}-\d{2}$/',(string)($r['date']??''))?$r['date']:'';$start=preg_match('/^\d{2}:\d{2}$/',(string)($r['start']??''))?$r['start']:'';if(!$date||!$start)continue;$end=preg_match('/^\d{2}:\d{2}$/',(string)($r['end']??''))?$r['end']:null;
+            $rid=(int)($r['id']??0);
+            $label=null;
+            if(array_key_exists('label_id',$r)&&$r['label_id']!==''){$candidate=(int)$r['label_id'];$label=isset($validLabels[$candidate])?$candidate:null;}
+            elseif($rid>0&&isset($oldById[$rid])){$existing=$oldById[$rid]['label_id'];$label=$existing!==null?(int)$existing:null;}
+            $release=isset($r['release_at'])?ReleaseDate::toUtc(sanitize_text_field((string)$r['release_at'])):($rid>0&&isset($oldById[$rid])?$oldById[$rid]['release_at']:null);
+            $data=['production_id'=>$id,'performance_date'=>$date,'start_time'=>$start,'end_time'=>$end,'label_id'=>$label,'release_at'=>$release,'updated_at'=>$now];if($rid>0)$wpdb->update($this->performances,$data,['id'=>$rid,'production_id'=>$id],['%d','%s','%s','%s','%d','%s','%s'],['%d','%d']);else{$data['created_at']=$now;$wpdb->insert($this->performances,$data,['%d','%s','%s','%s','%d','%s','%s','%s']);$rid=(int)$wpdb->insert_id;}$keep[]=$rid;}
         foreach($old as$x)if(!in_array((int)$x['id'],$keep,true))$wpdb->delete($this->performances,['id'=>(int)$x['id'],'production_id'=>$id],['%d','%d']);
     }
 
@@ -100,7 +108,7 @@ final class ProductionRepository
         global$wpdb;$old=$this->tickets($id);$keep=[];$now=gmdate('Y-m-d H:i:s');foreach(array_values($rows)as$i=>$r){$name=sanitize_text_field((string)($r['description']??''));if($name==='')continue;$amount=max(0,(int)($r['amount']??0));$rid=(int)($r['id']??0);$data=['production_id'=>$id,'description'=>$name,'amount'=>$amount,'show_on_reservation'=>!empty($r['show_on_reservation'])?1:0,'display_order'=>$i,'updated_at'=>$now];if($rid>0)$wpdb->update($this->tickets,$data,['id'=>$rid,'production_id'=>$id],['%d','%s','%d','%d','%d','%s'],['%d','%d']);else{$data['created_at']=$now;$wpdb->insert($this->tickets,$data,['%d','%s','%d','%d','%d','%s','%s']);$rid=(int)$wpdb->insert_id;}$keep[]=$rid;}foreach($old as$x)if(!in_array((int)$x['id'],$keep,true))$wpdb->delete($this->tickets,['id'=>(int)$x['id'],'production_id'=>$id],['%d','%d']);
     }
 
-    public function addSlugHistory(int$productionId,string$slug):void{if($slug==='')return;$this->db->query($this->db->prepare("INSERT IGNORE INTO {$this->slugs} (production_id,slug,created_at) VALUES (%d,%s,%s)",$productionId,$slug,gmdate('Y-m-d H:i:s')));}
-    public function productionIdByHistoricalSlug(string$slug):int{return(int)$this->db->get_var($this->db->prepare("SELECT production_id FROM {$this->slugs} WHERE slug=%s LIMIT 1",$slug));}
-    public function historicalSlugs(int$productionId):array{return array_map('strval',$this->db->get_col($this->db->prepare("SELECT slug FROM {$this->slugs} WHERE production_id=%d ORDER BY id",$productionId))?:[]);}
+    public function addSlugHistory(int $productionId,string $slug):void{if($slug==='')return;$this->db->query($this->db->prepare("INSERT IGNORE INTO {$this->slugs} (production_id,slug,created_at) VALUES (%d,%s,%s)",$productionId,$slug,gmdate('Y-m-d H:i:s')));}
+    public function productionIdByHistoricalSlug(string $slug):int{return(int)$this->db->get_var($this->db->prepare("SELECT production_id FROM {$this->slugs} WHERE slug=%s LIMIT 1",$slug));}
+    public function historicalSlugs(int $productionId):array{return array_map('strval',$this->db->get_col($this->db->prepare("SELECT slug FROM {$this->slugs} WHERE production_id=%d ORDER BY id",$productionId))?:[]);}
 }
