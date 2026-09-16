@@ -15,11 +15,16 @@ if 'name=\"ticket_size\"' not in s:
 # Preserve associative keys for labels[new0].
 s,n=re.subn(r'private function cleanRows\(array\$rows\):array\{.*?\}',"private function cleanRows(array$rows):array{$out=[];foreach($rows as$rowKey=>$r){if(!is_array($r))continue;$x=[];foreach($r as$k=>$v)$x[$k]=is_string($v)?sanitize_text_field(wp_unslash($v)):$v;$out[$rowKey]=$x;}return$out;}",s,count=1,flags=re.S)
 if n!=1: raise SystemExit('cleanRows function not found')
-# Replace the persistence block between legend and savePerformances.
-pattern=r"update_post_meta\(\$id,'legend'.*?\$this->repo->savePerformances\(\$id,\$performanceRows\);"
-replacement="update_post_meta($id,'legend',in_array($_POST['legend']??'none',['none','above','below'],true)?$_POST['legend']:'none');$performanceView=sanitize_key(wp_unslash($_POST['performance_view']??'table'));if(!in_array($performanceView,['table','list','timeline_line','timeline_grid'],true))$performanceView='table';update_post_meta($id,'performance_view',$performanceView);$performanceSize=sanitize_key(wp_unslash($_POST['performance_size']??'l'));if(!in_array($performanceSize,['l','m','s'],true))$performanceSize='l';update_post_meta($id,'performance_size',$performanceSize);$ticketSize=sanitize_key(wp_unslash($_POST['ticket_size']??'l'));if(!in_array($ticketSize,['l','m','s'],true))$ticketSize='l';update_post_meta($id,'ticket_size',$ticketSize);$labelRows=$this->cleanRows($_POST['labels']??[]);$labelIds=$this->repo->saveLabels($id,$labelRows,(array)($_POST['deleted_labels']??[]));$performanceRows=$this->cleanRows($_POST['performances']??[]);foreach($performanceRows as&$performanceRow){$labelKey=(string)($performanceRow['label_id']??'');if($labelKey!==''&&!ctype_digit($labelKey)&&isset($labelIds[$labelKey]))$performanceRow['label_id']=$labelIds[$labelKey];}unset($performanceRow);$this->repo->savePerformances($id,$performanceRows);"
-s,n=re.subn(pattern,replacement,s,count=1,flags=re.S)
-if n!=1: raise SystemExit('save block not found')
+# Add display meta immediately after legend persistence.
+if "update_post_meta($id,'performance_view'" not in s:
+    pat=r"(update_post_meta\(\$id,'legend'.*?;)(\$labelRows=)"
+    repl=r"\1$performanceView=sanitize_key(wp_unslash($_POST['performance_view']??'table'));if(!in_array($performanceView,['table','list','timeline_line','timeline_grid'],true))$performanceView='table';update_post_meta($id,'performance_view',$performanceView);$performanceSize=sanitize_key(wp_unslash($_POST['performance_size']??'l'));if(!in_array($performanceSize,['l','m','s'],true))$performanceSize='l';update_post_meta($id,'performance_size',$performanceSize);$ticketSize=sanitize_key(wp_unslash($_POST['ticket_size']??'l'));if(!in_array($ticketSize,['l','m','s'],true))$ticketSize='l';update_post_meta($id,'ticket_size',$ticketSize);\2"
+    s,n=re.subn(pat,repl,s,count=1,flags=re.S)
+    if n!=1: raise SystemExit('legend/save anchor not found')
+# Replace label save and map temporary label keys into performance rows.
+s=s.replace("$this->repo->saveLabels($id,$labelRows);", "$labelIds=$this->repo->saveLabels($id,$labelRows,(array)($_POST['deleted_labels']??[]));",1)
+if '$labelIds=' in s and 'foreach($performanceRows as&$performanceRow)' not in s:
+    s=s.replace("$performanceRows=$this->cleanRows($_POST['performances']??[]);$this->repo->savePerformances($id,$performanceRows);", "$performanceRows=$this->cleanRows($_POST['performances']??[]);foreach($performanceRows as&$performanceRow){$labelKey=(string)($performanceRow['label_id']??'');if($labelKey!==''&&!ctype_digit($labelKey)&&isset($labelIds[$labelKey]))$performanceRow['label_id']=$labelIds[$labelKey];}unset($performanceRow);$this->repo->savePerformances($id,$performanceRows);",1)
 s=s.replace('<h3>公演スケジュールラベル</h3><table class=\"widefat\" id=\"sa-labels\">','<h3>公演スケジュールラベル</h3><div id=\"sa-label-deletions\"></div><table class=\"widefat\" id=\"sa-labels\">',1)
 needle="const tr=remove.closest('tr'),label=tr.closest('#sa-labels');if(label){tr.remove();}"
 if needle in s:
