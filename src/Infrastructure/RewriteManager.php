@@ -10,7 +10,7 @@ use StageArtCore\Presentation\PublicSite\SurveyRouter;
 
 final class RewriteManager
 {
-    public const VERSION = '12';
+    public const VERSION = '13';
 
     public static function register(): void
     {
@@ -33,7 +33,6 @@ final class RewriteManager
             return;
         }
 
-        // Ensure the StageArt routes are registered in this request before flushing.
         self::registerRoutes();
         self::loadRewriteWriter();
         flush_rewrite_rules(true);
@@ -92,6 +91,7 @@ final class RewriteManager
             'RewriteRule ^production/([^/]+)/([^/]+)/?$ index.php?stageart_production_slug=$1&stageart_survey_slug=$2 [QSA,L]',
             'RewriteRule ^production/([^/]+)/?$ index.php?stageart_production_slug=$1 [QSA,L]',
             'RewriteRule ^member/([^/]+)/?$ index.php?stageart_member_slug=$1 [QSA,L]',
+            'RewriteRule ^contact/?$ index.php?pagename=contact [QSA,L]',
         ];
 
         insert_with_markers($htaccess, 'StageArtCore', $rules);
