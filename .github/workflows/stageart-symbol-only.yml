@@ -1,0 +1,50 @@
+name: StageArt Symbol Only
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/stageart-symbol-only.py'
+      - '.github/workflows/stageart-symbol-only.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply symbol-only schedule display
+        run: |
+          python3 .github/stageart-symbol-only.py
+          php -l src/Presentation/PublicSite/ProductionRouter.php
+          php -l src/Presentation/Admin/ProductionAdmin.php
+          git diff --check
+          if ! git diff --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add src/Presentation/PublicSite/ProductionRouter.php src/Presentation/Admin/ProductionAdmin.php
+            git commit -m 'stageart: display schedule labels as symbols only'
+            git push
+          fi
+      - name: Build installable package
+        run: |
+          rm -rf dist zip
+          mkdir -p dist/Core dist/Theme zip
+          rsync -a --exclude='.git' --exclude='.github' --exclude='dist' --exclude='zip' ./ dist/Core/StageArtCore/
+          if [ -d theme/stageart ]; then rsync -a theme/stageart/ dist/Theme/stageart/; fi
+          cd dist/Core && zip -qr ../../zip/StageArtCore-Core.zip StageArtCore
+          cd ../Theme && zip -qr ../../zip/StageArtCore-Theme.zip stageart
+          cd ../..
+          cp zip/StageArtCore-Core.zip zip/StageArtCore-Theme.zip zip/
+          cd zip
+          zip -q StageArtCore-symbol-only.zip StageArtCore-Core.zip StageArtCore-Theme.zip
+          unzip -t StageArtCore-symbol-only.zip
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: StageArtCore-symbol-only
+          path: zip/StageArtCore-symbol-only.zip
+          if-no-files-found: error
