@@ -3,7 +3,7 @@ Theme Name: StageArt Theatre
 Theme URI: https://github.com/nisehatakiti/StageArtCore
 Author: nisehatakiti.online
 Description: StageArtCore向けの劇団・舞台芸術団体公式サイトテーマ。
-Version: 1.3.1
+Version: 1.3.2
 Requires at least: 6.0
 Requires PHP: 8.0
 License: GPL v2 or later
@@ -33,3 +33,9 @@ Text Domain: stageart-theatre
 .stageart-performance-timeline--grid .stageart-performance-timeline-line b{background:var(--paper)!important;z-index:2;}
 .stageart-production--dark .stageart-performance-timeline--grid .stageart-performance-timeline-line b{background:var(--production-bg)!important;}
 .stageart-production--light .stageart-performance-timeline--grid .stageart-performance-timeline-line b{background:var(--production-bg)!important;}
+
+/* StageArtCore homepage production cards */
+.stageart-home-slot>.stageart-card{max-width:680px;margin-left:auto;margin-right:auto;}
+.stageart-home-slot>.stageart-production-grid .stageart-card{max-width:none;}
+.stageart-home-slot>.stageart-card .stageart-card-image{max-height:360px;}
+.stageart-home-slot>.stageart-card .stageart-card-image img{max-height:360px;width:auto;height:auto;object-fit:contain;}
