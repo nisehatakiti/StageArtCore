@@ -4,7 +4,7 @@ on:
     branches: [main]
 jobs:
   apply:
-    if: ${{ github.event.head_commit.message != 'stageart: apply verified fixes' && github.event.head_commit.message != 'stageart: remove verified fix workflow' }}
+    if: "${{ github.event.head_commit.message != 'stageart: apply verified fixes' && github.event.head_commit.message != 'stageart: remove verified fix workflow' }}"
     runs-on: ubuntu-latest
     permissions:
       contents: write
