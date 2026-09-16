@@ -38,10 +38,6 @@ final class ProductionLayoutAdmin
 
         $sections = ProductionLayout::get($id);
         $labels = ProductionLayout::contentLabels();
-        $performanceView = get_post_meta($id, 'performance_view', true);
-        if (!in_array($performanceView, ['table', 'list', 'timeline_line', 'timeline_grid'], true)) {
-            $performanceView = 'table';
-        }
         $nonce = wp_create_nonce('stageart_production_layout');
         $picker = '<option value="">選択してください</option>';
         foreach ($labels as $key => $value) {
@@ -51,7 +47,6 @@ final class ProductionLayoutAdmin
         $json = wp_json_encode($sections, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $pickerJson = wp_json_encode($picker, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $nonceJs = esc_js($nonce);
-        $viewJs = esc_js($performanceView);
 
         echo '<style>
         .stageart-layout-box{margin:30px 0;padding:18px;background:#fff;border:1px solid #ccd0d4}
@@ -73,11 +68,6 @@ final class ProductionLayoutAdmin
             let sections=' . $json . ',picker=' . $pickerJson . ';
             const box=document.createElement("div");box.className="stageart-layout-box";
             box.innerHTML="<h2>公演ページ・コンテンツ配置</h2><p>この公演ページだけの配置設定です。トップページ設定・メニュー構成とは独立しています。</p>";
-            const viewLabel=document.createElement("label");viewLabel.innerHTML="公演回の表示形式<br><select id=\"sa-performance-view\"><option value=\"table\">表形式</option><option value=\"list\">一覧形式（コンパクト）</option><option value=\"timeline_line\">タイムライン（線）</option><option value=\"timeline_grid\">タイムライン（区切り）</option></select></label>";
-            const viewSelect=viewLabel.querySelector("select");viewSelect.value="' . $viewJs . '";
-            box.appendChild(viewLabel);
-            const viewHidden=document.createElement("input");viewHidden.type="hidden";viewHidden.name="stageart_performance_view";viewHidden.value=viewSelect.value;box.appendChild(viewHidden);
-            viewSelect.onchange=function(){viewHidden.value=this.value};
             const wrap=document.createElement("div");box.appendChild(wrap);
             const hidden=document.createElement("input");hidden.type="hidden";hidden.name="stageart_production_layout";box.appendChild(hidden);
             const n=document.createElement("input");n.type="hidden";n.name="stageart_production_layout_nonce";n.value="' . $nonceJs . '";box.appendChild(n);
@@ -128,7 +118,7 @@ final class ProductionLayoutAdmin
                         const sl=(s.slots||[])[i]||{type:"none",ref:"",indent:0};
                         const r=document.createElement("div");r.className="sa-pl-slot";r.hidden=i>=+(s.columns||1);
                         const heading=sl.type==="heading";
-                        r.innerHTML="<div class=\"sa-pl-slot-label\">"+(i+1)+"件目</div><div class=\"sa-pl-controls\"><select data-type><option value=\"link\""+(sl.type!=="heading"?" selected":"")+">コンテンツリンク</option><option value=\"heading\""+(heading?" selected":"")+">見出し</option></select><select class=\"sa-pl-content\">"+picker+"</select><input class=\"sa-pl-heading\" value=\"\" placeholder=\"見出し\" style=\"display:none\"><select class=\"sa-pl-indent\"><option value=\"0\">インデントなし</option><option value=\"1\">1段</option><option value=\"2\">2段</option><option value=\"3\">3段</option></select></div>";
+                        r.innerHTML="<div class=\"sa-pl-slot-label\">"+(i+1)+"件目</div><div class=\"sa-pl-controls\"><select data-type><option value=\"link\""+(sl.type!=="heading"?" selected":"")+">コンテンツリンク</option><option value=\"heading\""+(heading?" selected":"")+">見出し</option></select><select class=\"sa-pl-content\">"+picker+"</select><input class=\"sa-pl-heading\" value=\"\" placeholder=\"見出し\" style=\"display:none"><select class=\"sa-pl-indent\"><option value=\"0\">インデントなし</option><option value=\"1\">1段</option><option value=\"2\">2段</option><option value=\"3\">3段</option></select></div>";
                         const c=r.querySelector(".sa-pl-content"),h=r.querySelector(".sa-pl-heading");
                         if(heading)h.value=String(sl.ref||"");else c.value=sl.ref||"";
                         r.querySelector(".sa-pl-indent").value=String(sl.indent||0);
@@ -173,7 +163,5 @@ final class ProductionLayoutAdmin
         if (is_array($raw)) {
             ProductionLayout::save($id, $raw);
         }
-        $view = sanitize_key((string) ($_POST['stageart_performance_view'] ?? 'table'));
-        update_post_meta($id, 'performance_view', in_array($view, ['table', 'list', 'timeline_line', 'timeline_grid'], true) ? $view : 'table');
     }
 }
