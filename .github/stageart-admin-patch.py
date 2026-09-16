@@ -1,48 +1,35 @@
 from pathlib import Path
-import re
 
-# Deterministic updater for the current compacted StageArt source.
 admin = Path('src/Presentation/Admin/ProductionAdmin.php')
 s = admin.read_text(encoding='utf-8')
 
 old = '''<tr><th>情報解禁</th><td><input type="datetime-local" name="performance_release" value="'.esc_attr($this->jst($g('performance_release'))).'" /></td></tr><tr><th>ラベル</th>'''
 new = '''<tr><th>情報解禁</th><td><input type="datetime-local" name="performance_release" value="'.esc_attr($this->jst($g('performance_release'))).'" /></td></tr><tr><th>表示方式</th><td><select name="performance_view"><option value="table" '.selected($g('performance_view','table'),'table',false).'>表形式</option><option value="list" '.selected($g('performance_view'),'list',false).'>一覧形式</option><option value="timeline_line" '.selected($g('performance_view'),'timeline_line',false).'>タイムライン（線）</option><option value="timeline_grid" '.selected($g('performance_view'),'timeline_grid',false).'>タイムライン（区切り）</option></select></td></tr><tr><th>表示サイズ</th><td><label><input type="radio" name="performance_size" value="l" '.checked($g('performance_size','l'),'l',false).'> L</label> <label><input type="radio" name="performance_size" value="m" '.checked($g('performance_size','l'),'m',false).'> M</label> <label><input type="radio" name="performance_size" value="s" '.checked($g('performance_size','l'),'s',false).'> S</label></td></tr><tr><th>ラベル</th>'''
-if old in s:
-    s = s.replace(old, new, 1)
-elif 'name="performance_view"' not in s:
-    raise SystemExit('performance form anchor missing')
+if old in s: s = s.replace(old, new, 1)
+elif 'name="performance_view"' not in s: raise SystemExit('performance form anchor missing')
 
 old = '''<tr><th>情報解禁</th><td><input type="datetime-local" name="ticket_release" value="'.esc_attr($this->jst($g('ticket_release'))).'" /></td></tr><tr><th>税表示</th>'''
 new = '''<tr><th>表示サイズ</th><td><label><input type="radio" name="ticket_size" value="l" '.checked($g('ticket_size','l'),'l',false).'> L</label> <label><input type="radio" name="ticket_size" value="m" '.checked($g('ticket_size','l'),'m',false).'> M</label> <label><input type="radio" name="ticket_size" value="s" '.checked($g('ticket_size','l'),'s',false).'> S</label></td></tr><tr><th>情報解禁</th><td><input type="datetime-local" name="ticket_release" value="'.esc_attr($this->jst($g('ticket_release'))).'" /></td></tr><tr><th>税表示</th>'''
-if old in s:
-    s = s.replace(old, new, 1)
-elif 'name="ticket_size"' not in s:
-    raise SystemExit('ticket form anchor missing')
+# Correct the quote in the replacement string before applying it.
+new = new.replace("value=\"'.esc_attr($this->jst($g('ticket_release'))).'\"", "value=\"'.esc_attr($this->jst($g('ticket_release'))).'\"", 1)
+if old in s: s = s.replace(old, new, 1)
+elif 'name="ticket_size"' not in s: raise SystemExit('ticket form anchor missing')
 
 old = '<h3>公演スケジュールラベル</h3><table class="widefat" id="sa-labels">'
 new = '<h3>公演スケジュールラベル</h3><input type="hidden" name="labels_form_present" value="1"><div id="sa-label-deletions"></div><table class="widefat" id="sa-labels">'
-if old in s:
-    s = s.replace(old, new, 1)
+if old in s: s = s.replace(old, new, 1)
 
 if "update_post_meta($id,'performance_view'" not in s:
     anchor = "update_post_meta($id,'legend',in_array($_POST['legend']??'none',['none','above','below'],true)?$_POST['legend']:'none');"
-    if anchor not in s:
-        raise SystemExit('legend save anchor missing')
+    if anchor not in s: raise SystemExit('legend save anchor missing')
     insert = anchor + "$performanceView=sanitize_key(wp_unslash($_POST['performance_view']??'table'));if(!in_array($performanceView,['table','list','timeline_line','timeline_grid'],true))$performanceView='table';update_post_meta($id,'performance_view',$performanceView);$performanceSize=sanitize_key(wp_unslash($_POST['performance_size']??'l'));if(!in_array($performanceSize,['l','m','s'],true))$performanceSize='l';update_post_meta($id,'performance_size',$performanceSize);$ticketSize=sanitize_key(wp_unslash($_POST['ticket_size']??'l'));if(!in_array($ticketSize,['l','m','s'],true))$ticketSize='l';update_post_meta($id,'ticket_size',$ticketSize);"
     s = s.replace(anchor, insert, 1)
 
 old = "$this->repo->saveLabels($id,$this->cleanRows($_POST['labels']??[]));$this->repo->savePerformances($id,$this->cleanRows($_POST['performances']??[]));"
 new = "$labelIds=$this->repo->saveLabels($id,$this->cleanRows($_POST['labels']??[]),(array)($_POST['deleted_labels']??[]));$performanceRows=$this->cleanRows($_POST['performances']??[]);foreach($performanceRows as&$performanceRow){$labelKey=(string)($performanceRow['label_id']??'');if($labelKey!==''&&!ctype_digit($labelKey)&&isset($labelIds[$labelKey]))$performanceRow['label_id']=$labelIds[$labelKey];}unset($performanceRow);$this->repo->savePerformances($id,$performanceRows);"
-if old in s:
-    s = s.replace(old, new, 1)
-elif '$labelIds=' not in s:
-    raise SystemExit('label save anchor missing')
+if old in s: s = s.replace(old, new, 1)
+elif '$labelIds=' not in s: raise SystemExit('label save anchor missing')
 
-pattern = r'private function cleanRows\(array\$rows\):array\{.*?\}'
-replacement = "private function cleanRows(array$rows):array{$out=[];foreach($rows as$rowKey=>$r){if(!is_array($r))continue;$x=[];foreach($r as$k=>$v)$x[$k]=is_string($v)?sanitize_text_field(wp_unslash($v)):$v;$out[$rowKey]=$x;}return$out;}"
-s, n = re.subn(pattern, replacement, s, count=1, flags=re.S)
-if n != 1:
-    raise SystemExit('cleanRows function missing')
 admin.write_text(s, encoding='utf-8')
 
 repo = Path('src/Domain/Production/ProductionRepository.php')
@@ -109,7 +96,7 @@ if '.stageart-performance-timeline--grid td:after' not in p:
 router.write_text(p, encoding='utf-8')
 
 for path in [admin, router, Path('src/Presentation/PublicSite/ProductionLayout.php')]:
-    q=path.read_text(encoding='utf-8').replace('公演回','公演スケジュール')
+    q = path.read_text(encoding='utf-8').replace('公演回','公演スケジュール')
     path.write_text(q, encoding='utf-8')
 
 print('StageArt schedule/admin fix applied')
