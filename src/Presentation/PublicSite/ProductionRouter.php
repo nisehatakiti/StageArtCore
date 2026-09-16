@@ -12,12 +12,7 @@ use StageArtCore\Domain\Survey\SurveyRepository;
 
 final class ProductionRouter
 {
-    public function register(): void
-    {
-        add_action('init', [$this, 'rewrite']);
-        add_filter('query_vars', [$this, 'vars']);
-        add_action('template_redirect', [$this, 'render'], 2);
-    }
+    public function register(): void { add_action('init', [$this, 'rewrite']); add_filter('query_vars', [$this, 'vars']); add_action('template_redirect', [$this, 'render'], 2); }
     public function rewrite(): void { add_rewrite_rule('^production/([^/]+)/?$', 'index.php?stageart_production_slug=$matches[1]', 'top'); }
     public function vars(array $v): array { $v[] = 'stageart_production_slug'; return $v; }
     private function released($v): bool { return ReleaseDate::isReleased($v ?: null); }
@@ -41,18 +36,36 @@ final class ProductionRouter
         foreach($ps as$x){$d=(string)$x['performance_date'];$t=substr((string)$x['start_time'],0,5);$dates[$d]=true;$times[$t]=true;$map[$d][$t][]=$x;}
         $dates=array_keys($dates);$times=array_keys($times);sort($dates);sort($times);
         if($legend==='above')$this->performanceLegend($labels);
-        echo '<div class="stageart-performance-table-wrap"><table class="stageart-performance-table"><thead><tr><th>開演</th>';
+        echo '<div class="stageart-performance-table-wrap"><table class="stageart-performance-table stageart-performance-table--compact"><thead><tr><th>開演</th>';
         foreach($dates as$d)echo'<th>'.esc_html(wp_date('n/j',strtotime($d))).'</th>';
         echo'</tr></thead><tbody>';
-        foreach($times as$t){echo'<tr><th>'.esc_html($t).'</th>';foreach($dates as$d){echo'<td>';if(!empty($map[$d][$t]))foreach($map[$d][$t]as$x){$cell=$display==='none'?$marker:$this->performanceCell($x,$display,$marker);echo'<span class="stageart-performance-cell">'.esc_html($cell).'</span>';if(!empty($x['end_time']))echo'<small>～'.esc_html(substr($x['end_time'],0,5)).'</small><br>';}echo'</td>';}echo'</tr>';}
+        foreach($times as$t){echo'<tr><th>'.esc_html($t).'</th>';foreach($dates as$d){echo'<td>';if(!empty($map[$d][$t]))foreach($map[$d][$t]as$x){$cell=$display==='none'?$marker:$this->performanceCell($x,$display,$marker);echo'<span class="stageart-performance-cell">'.esc_html($cell).'</span>';}echo'</td>';}echo'</tr>';}
         echo'</tbody></table></div>';if($legend==='below')$this->performanceLegend($labels);
     }
-    private function performanceList(array $ps, array $labels, string $display, string $marker, string $legend): void
+    private function performanceList(array $ps, string $display, string $marker): void
     {
-        if($legend!=='none')$this->performanceLegend($labels);
+        $groups=[];
+        foreach($ps as$x){$date=(string)$x['performance_date'];$start=substr((string)$x['start_time'],0,5);$cell=$display==='none'?$marker:$this->performanceCell($x,$display,$marker);$groups[$date][]=['time'=>$start,'cell'=>$cell];}
+        ksort($groups);
         echo'<div class="stageart-performance-list">';
-        foreach($ps as$x){$date=(string)$x['performance_date'];$start=substr((string)$x['start_time'],0,5);$cell=$display==='none'?$marker:$this->performanceCell($x,$display,$marker);echo'<div class="stageart-performance-list-row"><span class="stageart-performance-list-date">'.esc_html(wp_date('Y/n/j',strtotime($date))).'</span><span class="stageart-performance-list-time">'.esc_html($start).'</span><span class="stageart-performance-list-marker">'.esc_html($cell).'</span>';if(!empty($x['end_time']))echo'<span class="stageart-performance-list-end">～'.esc_html(substr($x['end_time'],0,5)).'</span>';echo'</div>';}
+        foreach($groups as$date=>$items){usort($items,static fn(array$a,array$b):int=>strcmp($a['time'],$b['time']));$times=[];foreach($items as$item)$times[]=$display==='none'?esc_html($item['time']):esc_html($item['time']).' '.esc_html($item['cell']);echo'<div class="stageart-performance-list-row"><span class="stageart-performance-list-date">'.esc_html(wp_date('n/j',strtotime($date))).'</span><span class="stageart-performance-list-time">'.implode(' / ',$times).'</span></div>';}
         echo'</div>';
+    }
+    private function performanceTimeline(array $ps, string $display, string $marker, string $style): void
+    {
+        $dates=[];$times=[];$map=[];
+        foreach($ps as$x){$d=(string)$x['performance_date'];$t=substr((string)$x['start_time'],0,5);$dates[$d]=true;$times[$t]=true;$map[$d][$t][]=$x;}
+        $dates=array_keys($dates);$times=array_keys($times);sort($dates);sort($times);
+        $modifier=$style==='timeline_grid'?'stageart-performance-timeline--grid':'stageart-performance-timeline--line';
+        echo'<div class="stageart-performance-timeline '.esc_attr($modifier).'"><table><thead><tr><th></th>';foreach($dates as$d)echo'<th>'.esc_html(wp_date('n/j',strtotime($d))).'</th>';echo'</tr></thead><tbody>';
+        foreach($times as$t){echo'<tr><th>'.esc_html($t).'</th>';foreach($dates as$d){$items=$map[$d][$t]??[];echo'<td><span class="stageart-performance-timeline-line">';foreach($items as$x){$cell=$display==='none'?$marker:$this->performanceCell($x,$display,$marker);echo'<b>'.esc_html($cell).'</b>';}echo'</span></td>';}echo'</tr>';}
+        echo'</tbody></table></div>';
+    }
+    private function performanceView(array $ps,array$labels,string$display,string$marker,string$legend,string$view):void
+    {
+        if($view==='list'){$this->performanceList($ps,$display,$marker);return;}
+        if($view==='timeline_line'||$view==='timeline_grid'){$this->performanceTimeline($ps,$display,$marker,$view);return;}
+        $this->performanceTable($ps,$labels,$display,$marker,$legend);
     }
     public function render(): void
     {
@@ -64,7 +77,7 @@ final class ProductionRouter
         $layout=ProductionLayout::get($p->ID);foreach($layout as$section){echo'<section class="stageart-production-layout-section">';if(!empty($section['heading']))echo'<h2>'.esc_html($section['heading']).'</h2>';echo'<div class="stageart-production-layout-slots stageart-production-layout-slots--'.esc_attr($section['layout']).'" style="--stageart-layout-columns:'.(int)$section['columns'].'">';foreach((array)$section['slots']as$slot){$type=(string)($slot['type']??'link');$ref=(string)($slot['ref']??'');if($type==='heading'){echo'<h3>'.esc_html($ref).'</h3>';continue;}if(!$ref)continue;$this->renderBlock($ref,$p,$g,$r,$c,true);}echo'</div></section>';}
         echo'</article></main>';get_footer();exit;
     }
-    private function renderBlock(string $id,\WP_Post$p,callable$g,ProductionRepository$r,ProductionCreditRepository$c,bool$inner=false):void
+    private function renderBlock(string$id,\WP_Post$p,callable$g,ProductionRepository$r,ProductionCreditRepository$c,bool$inner=false):void
     {
         if(!$inner)echo'<section class="stageart-production-section stageart-production-section--'.esc_attr($id).'">';
         switch($id){
@@ -74,7 +87,7 @@ final class ProductionRouter
             case'description':if(!$inner)echo'<h2>公演紹介</h2>';if($this->released($g('description_release'))){if($g('description'))echo wp_kses_post($g('description'));else$this->placeholder('公演紹介はありません。');}else$this->placeholder('近日公開');break;
             case'schedule':if(!$inner)echo'<h2>公演日程</h2>';if($this->released($g('schedule_release'))){if($g('schedule_start')||$g('schedule_end'))echo'<p>'.esc_html($g('schedule_start')).($g('schedule_end')?' ～ '.esc_html($g('schedule_end')):'').'</p>';else$this->placeholder('公演日程は登録されていません。');}else$this->placeholder('近日公開');break;
             case'performances':
-                if(!$inner)echo'<h2>公演回</h2>';$ps=$r->performances($p->ID);if(!$ps)$this->placeholder('現在登録されている公演回はありません。');else{$released=array_values(array_filter($ps,fn(array$x):bool=>$this->released($x['release_at']??null)));if(!$released)$this->placeholder('公演回は後日公開');else{$display=$g('use_labels','1')==='1'?$g('label_display','symbol'):'none';$view=in_array($g('performance_view','table'),['table','list'],true)?$g('performance_view','table'):'table';if($view==='list')$this->performanceList($released,$r->labels($p->ID),$display,$g('performance_marker','●'),$g('legend','none'));else$this->performanceTable($released,$r->labels($p->ID),$display,$g('performance_marker','●'),$g('legend','none'));}}break;
+                if(!$inner)echo'<h2>公演回</h2>';$ps=$r->performances($p->ID);if(!$ps)$this->placeholder('現在登録されている公演回はありません。');else{$released=array_values(array_filter($ps,fn(array$x):bool=>$this->released($x['release_at']??null)));if(!$released)$this->placeholder('公演回は後日公開');else{$display=$g('use_labels','1')==='1'?$g('label_display','symbol'):'none';$view=sanitize_key($g('performance_view','table'));if(!in_array($view,['table','list','timeline_line','timeline_grid'],true))$view='table';$this->performanceView($released,$r->labels($p->ID),$display,$g('performance_marker','●'),$g('legend','none'),$view);}}break;
             case'venue':if(!$inner)echo'<h2>会場</h2>';if(!$this->released($g('venue_release')))$this->placeholder('近日公開');else{if($g('venue_name'))echo'<p>'.esc_html($g('venue_name')).'</p>';else$this->placeholder('会場は登録されていません。');if($g('venue_map')){if($this->released($g('venue_map_release')))echo'<p><a href="'.esc_url($this->mapsUrl($g('venue_map'))).'" target="_blank" rel="noopener">Google Mapsで見る</a></p>';else$this->placeholder('地図は後日公開');}}break;
             case'cast':$this->participants($p,$g,$r,'cast','出演者');break;
             case'staff':$this->participants($p,$g,$r,'staff','スタッフ');break;
