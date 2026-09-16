@@ -23,6 +23,7 @@ final class RewriteManager
         (new MemberRouter())->add_rewrite_rules();
         (new ProductionRouter())->rewrite();
         (new SurveyRouter())->rewrite();
+        self::loadRewriteWriter();
         flush_rewrite_rules(true);
         if (function_exists('save_mod_rewrite_rules')) {
             save_mod_rewrite_rules();
@@ -36,6 +37,7 @@ final class RewriteManager
             return;
         }
 
+        self::loadRewriteWriter();
         flush_rewrite_rules(true);
         if (function_exists('save_mod_rewrite_rules')) {
             save_mod_rewrite_rules();
@@ -57,6 +59,13 @@ final class RewriteManager
         }
 
         echo '<div class="notice notice-warning"><p><strong>StageArtCore:</strong> 公開ページのURLルールを自動更新できませんでした。WordPressの「設定 → パーマリンク」を開いて「変更を保存」を一度実行してください。</p></div>';
+    }
+
+    private static function loadRewriteWriter(): void
+    {
+        if (!function_exists('save_mod_rewrite_rules')) {
+            require_once ABSPATH . 'wp-admin/includes/misc.php';
+        }
     }
 
     private static function hasRoute(array $rules, string $prefix): bool
