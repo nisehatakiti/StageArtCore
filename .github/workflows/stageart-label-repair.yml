@@ -1,0 +1,66 @@
+name: StageArt Label Repair
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/stageart-force-label-save.py'
+      - '.github/workflows/stageart-label-repair.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+a jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply and verify label persistence repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/stageart-force-label-save.py
+          php -l src/Domain/Production/ProductionRepository.php
+          git diff --check
+          if git diff --quiet -- src/Domain/Production/ProductionRepository.php; then
+            echo 'No source change was necessary.'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add src/Domain/Production/ProductionRepository.php
+            git commit -m 'stageart: verify performance label persistence'
+            git push
+          fi
+
+      - name: Build installable package
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf dist StageArtCore-label-fix.zip
+          mkdir -p dist/core/StageArtCore dist/theme/stageart dist/package
+          rsync -a --exclude='.git' --exclude='.github' --exclude='dist' --exclude='*.zip' ./ dist/core/StageArtCore/
+          rm -rf dist/core/StageArtCore/theme
+          cp -a theme/stageart/. dist/theme/stageart/
+          cd dist/core
+          zip -r ../package/Core.zip StageArtCore >/dev/null
+          cd ../theme
+          zip -r ../package/Theme.zip stageart >/dev/null
+          cd ../package
+          zip -r ../../StageArtCore-label-fix.zip Core.zip Theme.zip >/dev/null
+          cd ../..
+          unzip -l StageArtCore-label-fix.zip
+          unzip -l StageArtCore-label-fix.zip | grep -q ' Core.zip$'
+          unzip -l StageArtCore-label-fix.zip | grep -q ' Theme.zip$'
+
+      - name: Upload repaired package
+        uses: actions/upload-artifact@v4
+        with:
+          name: StageArtCore-label-fix
+          path: StageArtCore-label-fix.zip
+          if-no-files-found: error
+          retention-days: 90
