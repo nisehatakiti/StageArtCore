@@ -50,7 +50,7 @@ final class Plugin
         add_action('admin_menu', [new SiteStructureAdmin(), 'register'], 21);
         add_action('admin_menu', [new MemberAdmin(), 'register'], 20);
         (new PerformanceReleaseAdmin())->register();
-                (new RepresentativeGreetingAdmin())->register();
+        (new RepresentativeGreetingAdmin())->register();
         (new ProductionPresentationAdmin())->register();
         (new ProductionTimeAdmin())->register();
         (new ProductionLayoutAdmin())->register();
@@ -60,12 +60,25 @@ final class Plugin
         add_action('admin_menu', [new SurveyQrAdmin(), 'register'], 32);
         add_action('admin_post_stageart_save_production', static function (): void {
             if (!current_user_can('manage_options')) wp_die('権限がありません。');
+            $postedLabels = (array) ($_POST['stageart_performance_labels'] ?? []);
+            if ($postedLabels) {
+                $performances = (array) ($_POST['performances'] ?? []);
+                foreach ($postedLabels as $rowKey => $labelId) {
+                    if (!isset($performances[$rowKey]) || !is_array($performances[$rowKey])) continue;
+                    $performances[$rowKey]['label_id'] = sanitize_text_field(wp_unslash((string) $labelId));
+                }
+                $_POST['performances'] = $performances;
+            }
             (new ProductionValidator())->validate(wp_unslash($_POST));
         }, 1);
         add_action('admin_head', static function (): void {
+            if (($_GET['page'] ?? '') !== 'stageart-productions') return;
+            echo '<script>(function(){document.addEventListener("DOMContentLoaded",function(){var f=document.getElementById("stageart-production-form");if(!f)return;f.addEventListener("submit",function(){document.querySelectorAll("#sa-performances tbody tr select[name*=\\"[label_id]\\"]").forEach(function(s){var m=s.name.match(/performances\\[([^\\]]+)\\]\\[label_id\\]/);if(!m)return;var n="stageart_performance_labels["+m[1]+"]",h=f.querySelector("input[name=\\""+n+"\\"]");if(!h){h=document.createElement("input");h.type="hidden";h.name=n;f.appendChild(h);}h.value=s.value||"";});});});})();</script>';
+        }, 0);
+        add_action('admin_head', static function (): void {
             if (($_GET['page'] ?? '') !== 'stageart-homepage') return;
             echo '<style>.stageart-homepage-admin .sa-slot-controls{display:flex;align-items:flex-end;gap:12px;flex-wrap:nowrap}.stageart-homepage-admin .sa-slot-controls>label{display:flex;flex-direction:column;align-items:flex-start;gap:4px;white-space:nowrap}.stageart-homepage-admin .sa-slot-controls>label br{display:none}.stageart-homepage-admin .sa-slot-controls>label:first-child{width:150px}.stageart-homepage-admin .sa-slot-controls .sa-slot-content-wrap,.stageart-homepage-admin .sa-slot-controls .sa-slot-heading-wrap{width:300px}.stageart-homepage-admin .sa-slot-controls .sa-slot-content,.stageart-homepage-admin .sa-slot-controls .sa-slot-heading{width:100%;max-width:none}.stageart-homepage-admin .sa-slot-controls .sa-slot-indent{width:100px}.stageart-homepage-admin .sa-home-slot{overflow-x:auto}.stageart-homepage-admin .sa-slot-controls select,.stageart-homepage-admin .sa-slot-controls input{margin:0}@media(max-width:900px){.stageart-homepage-admin .sa-slot-controls{flex-wrap:wrap}.stageart-homepage-admin .sa-slot-controls .sa-slot-content-wrap,.stageart-homepage-admin .sa-slot-controls .sa-slot-heading-wrap{width:260px}}</style>';
-            echo '<script>(function(){document.querySelectorAll(".stageart-homepage-admin .sa-columns").forEach(function(select){for(var i=6;i<=20;i++){if(!select.querySelector("option[value=\""+i+"\"]")){var option=document.createElement("option");option.value=i;option.textContent=i+"件";select.appendChild(option);}}});})();</script>';
+            echo '<script>(function(){document.querySelectorAll(".stageart-homepage-admin .sa-columns").forEach(function(select){for(var i=6;i<=20;i++){if(!select.querySelector("option[value=\\""+i+"\\"]")){var option=document.createElement("option");option.value=i;option.textContent=i+"件";select.appendChild(option);}}});})();</script>';
         });
         add_action('rest_api_init', static function (): void {
             (new HealthController())->register_routes();
