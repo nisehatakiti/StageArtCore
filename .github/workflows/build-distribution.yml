@@ -27,14 +27,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ -f .github/stageart-fixes.b64 ]; then
-            python3 - <<'PY'
-            import base64, gzip
-            from pathlib import Path
-            raw = ''.join(Path('.github/stageart-fixes.b64').read_text(encoding='utf-8-sig').split())
-            patch = gzip.decompress(base64.b64decode(raw + '===', validate=False))
-            Path('/tmp/stageart.patch').write_bytes(patch)
-            print('patch bytes:', len(patch))
-            PY
+            python3 -c "import base64,gzip; from pathlib import Path; raw=''.join(Path('.github/stageart-fixes.b64').read_text(encoding='utf-8-sig').split()); Path('/tmp/stageart.patch').write_bytes(gzip.decompress(base64.b64decode(raw+'===',validate=False)))"
             git apply --whitespace=nowarn /tmp/stageart.patch
             rm -f .github/stageart-fixes.b64 .github/workflows/apply-stageart-fixes.yml
             php -l src/Domain/Production/ProductionRepository.php
@@ -70,11 +63,9 @@ jobs:
           set -euo pipefail
           rm -rf dist StageArtCore.zip
           mkdir -p dist/core/StageArtCore dist/theme/stageart dist/package
-
           rsync -a --exclude='.git' --exclude='.github' --exclude='dist' --exclude='*.zip' ./ dist/core/StageArtCore/
           rm -rf dist/core/StageArtCore/theme
           cp -a theme/stageart/. dist/theme/stageart/
-
           cd dist/core
           zip -r ../package/Core.zip StageArtCore >/dev/null
           cd ../theme
@@ -91,7 +82,6 @@ jobs:
           unzip -l StageArtCore.zip | grep -q '^.* Theme.zip$'
           ! unzip -l StageArtCore.zip | grep -q 'StageArtCore/Core.zip'
           ! unzip -l StageArtCore.zip | grep -q 'StageArtCore/Theme.zip'
-
           rm -rf dist/outer-check
           unzip -q StageArtCore.zip -d dist/outer-check
           test -f dist/outer-check/Core.zip
