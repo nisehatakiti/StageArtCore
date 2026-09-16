@@ -46,8 +46,8 @@ final class ProductionLayout
         return [[
             'section_id' => wp_generate_uuid4(),
             'heading' => '',
-            'columns' => count($slots),
-            'layout' => self::LAYOUT_HORIZONTAL,
+            'columns' => 1,
+            'layout' => self::LAYOUT_VERTICAL,
             'slots' => $slots,
         ]];
     }
@@ -98,10 +98,7 @@ final class ProductionLayout
                     continue;
                 }
 
-                $indent = max(
-                    0,
-                    min(self::MAX_INDENT_LEVEL, absint($slot['indent'] ?? 0))
-                );
+                $indent = max(0, min(self::MAX_INDENT_LEVEL, absint($slot['indent'] ?? 0)));
                 $type = (string) ($slot['type'] ?? self::SLOT_NONE);
 
                 if ($type === self::SLOT_HEADING) {
