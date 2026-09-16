@@ -6,6 +6,8 @@ namespace StageArtCore\Presentation\Admin;
 
 final class SiteSettingsAdmin
 {
+    public const CONTENT_VERSION = '2';
+
     public function __construct()
     {
         add_action('admin_post_stageart_save_site_settings', [$this, 'save']);
@@ -16,7 +18,13 @@ final class SiteSettingsAdmin
     {
         add_submenu_page('stageart-plugin', '団体基本情報', '団体基本情報', 'manage_options', 'stageart-site-settings', [$this, 'render']);
         add_submenu_page('stageart-plugin', '連絡先', '連絡先', 'manage_options', 'stageart-contact', [$this, 'renderContact']);
-        add_action('admin_init', [$this, 'ensureContactPage']);
+    }
+
+    public static function migrate(): void
+    {
+        if ((string) get_option('stageart_core_content_version', '') === self::CONTENT_VERSION) return;
+        (new self())->ensureContactPage();
+        update_option('stageart_core_content_version', self::CONTENT_VERSION, false);
     }
 
     private function guard(string $action): void
@@ -57,26 +65,76 @@ final class SiteSettingsAdmin
         exit;
     }
 
-    public function ensureContactPage(): void
+    public function ensureContactPage(): int
     {
         $id = (int) get_option('stageart_plugin_contact_page_id', 0);
-        if ($id && get_post($id)) {
-            return;
+        $post = $id ? get_post($id) : null;
+        if (!$post || $post->post_type !== 'page') {
+            $id = 0;
+            $post = null;
         }
-        $existing = get_page_by_title('連絡先', OBJECT, 'page');
-        if ($existing) {
-            update_option('stageart_plugin_contact_page_id', (int) $existing->ID, false);
-            return;
+
+        if (!$post) {
+            $posts = get_posts([
+                'post_type' => 'page',
+                'post_status' => ['publish', 'draft', 'pending', 'private', 'trash'],
+                'posts_per_page' => 1,
+                'meta_key' => '_stageart_system_content',
+                'meta_value' => 'contact',
+                'orderby' => 'ID',
+                'order' => 'ASC',
+            ]);
+            $post = $posts[0] ?? null;
         }
-        $id = wp_insert_post(['post_title' => '連絡先', 'post_name' => 'contact', 'post_status' => 'draft', 'post_type' => 'page', 'post_content' => '', 'meta_input' => ['_stageart_system_content' => 'contact']], true);
-        if (!is_wp_error($id)) {
-            update_option('stageart_plugin_contact_page_id', (int) $id, false);
+
+        if (!$post) {
+            $post = get_page_by_path('contact', OBJECT, 'page');
         }
+
+        if (!$post) {
+            $posts = get_posts([
+                'post_type' => 'page',
+                'post_status' => ['publish', 'draft', 'pending', 'private'],
+                'posts_per_page' => 1,
+                'title' => '連絡先',
+                'orderby' => 'ID',
+                'order' => 'ASC',
+            ]);
+            $post = $posts[0] ?? null;
+        }
+
+        if (!$post) {
+            $newId = wp_insert_post([
+                'post_title' => '連絡先',
+                'post_name' => 'contact',
+                'post_status' => 'publish',
+                'post_type' => 'page',
+                'post_content' => '',
+                'meta_input' => ['_stageart_system_content' => 'contact'],
+            ], true);
+            if (is_wp_error($newId)) return 0;
+            $id = (int) $newId;
+        } else {
+            $id = (int) $post->ID;
+            if ($post->post_status === 'trash') {
+                wp_untrash_post($id);
+            }
+            wp_update_post([
+                'ID' => $id,
+                'post_title' => '連絡先',
+                'post_name' => 'contact',
+                'post_status' => 'publish',
+            ]);
+            update_post_meta($id, '_stageart_system_content', 'contact');
+        }
+
+        update_option('stageart_plugin_contact_page_id', $id, false);
+        return $id;
     }
 
     public function renderContact(): void
     {
-        $id = (int) get_option('stageart_plugin_contact_page_id', 0);
+        $id = $this->ensureContactPage();
         $v = static fn($k, $d = '') => get_post_meta($id, '_stageart_contact_' . $k, true) ?: $d;
         echo '<div class="wrap"><h1>連絡先</h1><p>連絡先は独立したシステムコンテンツです。トップページやメニューへの配置は別のコンテンツ配置機能で行います。</p>';
         if (isset($_GET['saved'])) {
@@ -92,7 +150,7 @@ final class SiteSettingsAdmin
     public function saveContact(): void
     {
         $this->guard('stageart_contact');
-        $id = (int) get_option('stageart_plugin_contact_page_id', 0);
+        $id = $this->ensureContactPage();
         update_post_meta($id, '_stageart_contact_address', sanitize_textarea_field(wp_unslash($_POST['address'] ?? '')));
         update_post_meta($id, '_stageart_contact_email', sanitize_email(wp_unslash($_POST['email'] ?? '')));
         update_post_meta($id, '_stageart_contact_phone', sanitize_text_field(wp_unslash($_POST['phone'] ?? '')));
