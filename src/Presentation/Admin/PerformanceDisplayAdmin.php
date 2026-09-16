@@ -15,6 +15,7 @@ final class PerformanceDisplayAdmin
         add_action('admin_enqueue_scripts', [$this, 'assets'], 30);
         add_action('admin_footer', [$this, 'footer'], 30);
         add_action('admin_post_stageart_save_production', [$this, 'save'], -1);
+        add_action('wp_head', [$this, 'publicStyles'], 30);
     }
 
     public function assets(string $hook): void
@@ -22,6 +23,21 @@ final class PerformanceDisplayAdmin
         if (!str_contains($hook, 'stageart-productions')) return;
         $id = (int) ($_GET['id'] ?? 0);
         wp_enqueue_media(['post' => $id ?: null]);
+    }
+
+    public function publicStyles(): void
+    {
+        if (is_admin()) return;
+        echo '<style>
+        .stageart-home-slot>.stageart-production-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),520px));justify-content:center}
+        .stageart-home-slot>.stageart-production-grid .stageart-card{max-width:520px;width:100%;margin-left:auto;margin-right:auto}
+        .stageart-home-slot>.stageart-card{max-width:520px;margin-left:auto;margin-right:auto}
+        .stageart-performance-timeline--grid .stageart-performance-timeline-line{position:relative;display:flex;align-items:center;justify-content:center;min-height:17px}
+        .stageart-performance-timeline--grid .stageart-performance-timeline-line:before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid var(--line)}
+        .stageart-performance-timeline--grid .stageart-performance-timeline-line:after{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px solid var(--line)}
+        .stageart-performance-timeline--grid .stageart-performance-timeline-line b{position:relative;z-index:2;background:var(--paper);padding:0 3px}
+        .stageart-production--dark .stageart-performance-timeline--grid .stageart-performance-timeline-line b,.stageart-production--light .stageart-performance-timeline--grid .stageart-performance-timeline-line b{background:var(--production-bg)}
+        </style>';
     }
 
     public function footer(): void
