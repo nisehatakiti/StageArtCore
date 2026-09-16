@@ -10,7 +10,7 @@ use StageArtCore\Presentation\PublicSite\SurveyRouter;
 
 final class RewriteManager
 {
-    public const VERSION = '11';
+    public const VERSION = '12';
 
     public static function register(): void
     {
