@@ -11,7 +11,7 @@ router.write_text(text.replace(old, new, 1), encoding='utf-8')
 
 admin = root / 'src/Presentation/Admin/ProductionAdmin.php'
 text = admin.read_text(encoding='utf-8')
-old_admin = '<option value="both" '.selected($g(\'label_display\'),\'both\',false).'>記号＋ラベル</option>'
+old_admin = "<option value=\"both\" '.selected($g('label_display'),'both',false).'>記号＋ラベル</option>"
 if old_admin in text:
     text = text.replace(old_admin, '', 1)
 admin.write_text(text, encoding='utf-8')
