@@ -90,16 +90,30 @@ final class ProductionRepository
 
     public function savePerformances(int $id,array $rows):void
     {
-        global$wpdb;$old=$this->performances($id);$oldById=[];foreach($old as$x)$oldById[(int)$x['id']=$x];
-        $validLabels=[];foreach($this->labels($id)as$l)$validLabels[(int)$l['id']=true;
+        global $wpdb;
+        $old=$this->performances($id);$oldById=[];foreach($old as $x){$oldById[(int)$x['id']=$x;}
+        $validLabels=[];foreach($this->labels($id) as $l){$validLabels[(int)$l['id']]=true;}
         $keep=[];$now=gmdate('Y-m-d H:i:s');
-        foreach(array_values($rows)as$i=>$r){$date=preg_match('/^\d{4}-\d{2}-\d{2}$/',(string)($r['date']??''))?$r['date']:'';$start=preg_match('/^\d{2}:\d{2}$/',(string)($r['start']??''))?$r['start']:'';if(!$date||!$start)continue;$end=preg_match('/^\d{2}:\d{2}$/',(string)($r['end']??''))?$r['end']:null;
+        foreach(array_values($rows) as $i=>$r){
+            $date=preg_match('/^\d{4}-\d{2}-\d{2}$/',(string)($r['date']??''))?$r['date']:'';
+            $start=preg_match('/^\d{2}:\d{2}$/',(string)($r['start']??''))?$r['start']:'';
+            if(!$date||!$start)continue;
+            $end=preg_match('/^\d{2}:\d{2}$/',(string)($r['end']??''))?$r['end']:null;
             $rid=(int)($r['id']??0);
             $label=null;
-            if(array_key_exists('label_id',$r)&&$r['label_id']!==''){$candidate=(int)$r['label_id'];$label=isset($validLabels[$candidate])?$candidate:null;}
-            elseif($rid>0&&isset($oldById[$rid])){$existing=$oldById[$rid]['label_id'];$label=$existing!==null?(int)$existing:null;}
+            if(array_key_exists('label_id',$r)&&$r['label_id']!==''){
+                $candidate=(int)$r['label_id'];
+                $label=isset($validLabels[$candidate])?$candidate:null;
+            }elseif($rid>0&&isset($oldById[$rid])){
+                $existing=$oldById[$rid]['label_id'];
+                $label=$existing!==null?(int)$existing:null;
+            }
             $release=isset($r['release_at'])?ReleaseDate::toUtc(sanitize_text_field((string)$r['release_at'])):($rid>0&&isset($oldById[$rid])?$oldById[$rid]['release_at']:null);
-            $data=['production_id'=>$id,'performance_date'=>$date,'start_time'=>$start,'end_time'=>$end,'label_id'=>$label,'release_at'=>$release,'updated_at'=>$now];if($rid>0)$wpdb->update($this->performances,$data,['id'=>$rid,'production_id'=>$id],['%d','%s','%s','%s','%d','%s','%s'],['%d','%d']);else{$data['created_at']=$now;$wpdb->insert($this->performances,$data,['%d','%s','%s','%s','%d','%s','%s','%s']);$rid=(int)$wpdb->insert_id;}$keep[]=$rid;}
+            $data=['production_id'=>$id,'performance_date'=>$date,'start_time'=>$start,'end_time'=>$end,'label_id'=>$label,'release_at'=>$release,'updated_at'=>$now];
+            if($rid>0)$wpdb->update($this->performances,$data,['id'=>$rid,'production_id'=>$id],['%d','%s','%s','%s','%d','%s','%s'],['%d','%d']);
+            else{$data['created_at']=$now;$wpdb->insert($this->performances,$data,['%d','%s','%s','%s','%d','%s','%s','%s']);$rid=(int)$wpdb->insert_id;}
+            $keep[]=$rid;
+        }
         foreach($old as$x)if(!in_array((int)$x['id'],$keep,true))$wpdb->delete($this->performances,['id'=>(int)$x['id'],'production_id'=>$id],['%d','%d']);
     }
 
