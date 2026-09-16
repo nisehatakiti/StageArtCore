@@ -33,10 +33,18 @@ final class Plugin
 {
     public function boot(): void
     {
-        if (get_option('stageart_core_db_version') !== Schema::DB_VERSION) Schema::activate();
-        ProductionMigration::ensure();
-        SurveyMigration::ensure();
-        SiteSettingsAdmin::migrate();
+        // Schema/content migrations are run after WordPress has completed its
+        // core initialization. They are version-gated and therefore do not
+        // execute dbDelta()/content repair work on every request.
+        add_action('init', static function (): void {
+            if (get_option('stageart_core_db_version') !== Schema::DB_VERSION) {
+                Schema::activate();
+            }
+            ProductionMigration::ensure();
+            SurveyMigration::ensure();
+            SiteSettingsAdmin::migrate();
+        }, 1);
+
         add_action('init', static function (): void {
             register_post_type('stageart_production', ['labels'=>['name'=>'公演','singular_name'=>'公演'],'public'=>false,'show_ui'=>false,'supports'=>['title'],'rewrite'=>false]);
         }, 5);
