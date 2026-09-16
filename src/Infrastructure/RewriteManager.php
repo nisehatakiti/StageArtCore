@@ -86,13 +86,6 @@ final class RewriteManager
             return;
         }
 
-        $rules = [
-            'RewriteEngine On',
-            'RewriteRule ^production/([^/]+)/([^/]+)/?$ index.php?stageart_production_slug=$1 [QSA,L]',
-            'RewriteRule ^production/([^/]+)/([^/]+)/?$ index.php?stageart_production_slug=$1&stageart_survey_slug=$2 [QSA,L]',
-            'RewriteRule ^member/([^/]+)/?$ index.php?stageart_member_slug=$1 [QSA,L]',
-        ];
-
         // The two-segment production rule must precede the one-segment rule.
         $rules = [
             'RewriteEngine On',
