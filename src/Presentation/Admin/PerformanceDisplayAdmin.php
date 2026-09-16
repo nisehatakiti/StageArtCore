@@ -16,6 +16,7 @@ final class PerformanceDisplayAdmin
         add_action('admin_footer', [$this, 'footer'], 30);
         add_action('admin_post_stageart_save_production', [$this, 'save'], -1);
         add_action('wp_head', [$this, 'publicStyles'], 30);
+        add_action('template_redirect', [$this, 'startPublicBuffer'], 1);
     }
 
     public function assets(string $hook): void
@@ -23,6 +24,34 @@ final class PerformanceDisplayAdmin
         if (!str_contains($hook, 'stageart-productions')) return;
         $id = (int) ($_GET['id'] ?? 0);
         wp_enqueue_media(['post' => $id ?: null]);
+    }
+
+    public function startPublicBuffer(): void
+    {
+        if (is_admin()) return;
+        $slug = get_query_var('stageart_production_slug');
+        if (!is_string($slug) || $slug === '') return;
+        ob_start([$this, 'filterPublicHtml']);
+    }
+
+    public function filterPublicHtml(string $html): string
+    {
+        $slug = get_query_var('stageart_production_slug');
+        if (!is_string($slug) || $slug === '') return $html;
+        $q = new \WP_Query(['post_type'=>'stageart_production','name'=>$slug,'post_status'=>'publish','posts_per_page'=>1,'fields'=>'ids']);
+        if (!$q->posts || !class_exists('StageArtCore\Presentation\PublicSite\ProductionLayout')) return $html;
+        $layout = \StageArtCore\Presentation\PublicSite\ProductionLayout::get((int)$q->posts[0]);
+        $indents = [];
+        foreach ($layout as $section) foreach ((array)($section['slots'] ?? []) as $slot) {
+            if (($slot['type'] ?? 'link') === 'heading' || !empty($slot['ref'])) $indents[] = max(0,min(3,(int)($slot['indent'] ?? 0)));
+        }
+        if (!$indents) return $html;
+        $i=0;
+        return preg_replace_callback('/class="([^"]*stageart-production-layout-slot[^\"]*)"/', function($m) use (&$i,$indents){
+            $indent=$indents[$i++] ?? 0;
+            if (strpos($m[1],'stageart-indent-')===false && $indent>0) $m[1].=' stageart-indent-'.$indent;
+            return 'class="'.$m[1].'"';
+        }, $html) ?? $html;
     }
 
     public function publicStyles(): void
@@ -35,6 +64,7 @@ final class PerformanceDisplayAdmin
         .stageart-performance-timeline--grid .stageart-performance-timeline-line{position:relative;display:flex;align-items:center;justify-content:center;min-height:17px}
         .stageart-performance-timeline--grid .stageart-performance-timeline-line:before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid var(--line)}
         .stageart-performance-timeline--grid .stageart-performance-timeline-line:after{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px solid var(--line)}
+        .stageart-performance-timeline--grid .stageart-performance-timeline-line:not(.has-marker):after{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px solid var(--line)}
         .stageart-performance-timeline--grid .stageart-performance-timeline-line b{position:relative;z-index:2;background:var(--paper);padding:0 3px}
         .stageart-production--dark .stageart-performance-timeline--grid .stageart-performance-timeline-line b,.stageart-production--light .stageart-performance-timeline--grid .stageart-performance-timeline-line b{background:var(--production-bg)}
         </style>';
