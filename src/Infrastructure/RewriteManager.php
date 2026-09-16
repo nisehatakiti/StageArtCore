@@ -10,7 +10,7 @@ use StageArtCore\Presentation\PublicSite\SurveyRouter;
 
 final class RewriteManager
 {
-    public const VERSION = '9';
+    public const VERSION = '10';
 
     public static function register(): void
     {
@@ -20,15 +20,10 @@ final class RewriteManager
 
     public static function activate(): void
     {
-        (new MemberRouter())->add_rewrite_rules();
-        (new ProductionRouter())->rewrite();
-        (new SurveyRouter())->rewrite();
+        self::registerRoutes();
         self::loadRewriteWriter();
         flush_rewrite_rules(true);
-        if (function_exists('save_mod_rewrite_rules')) {
-            save_mod_rewrite_rules();
-        }
-        update_option('stageart_core_rewrite_version', self::VERSION, false);
+        self::markReadyIfRoutesExist();
     }
 
     public static function maybeFlush(): void
@@ -37,16 +32,11 @@ final class RewriteManager
             return;
         }
 
+        // Ensure the StageArt routes are registered in this request before flushing.
+        self::registerRoutes();
         self::loadRewriteWriter();
         flush_rewrite_rules(true);
-        if (function_exists('save_mod_rewrite_rules')) {
-            save_mod_rewrite_rules();
-        }
-
-        $rules = (array) get_option('rewrite_rules', []);
-        if (self::hasRoute($rules, '^member/') && self::hasRoute($rules, '^production/')) {
-            update_option('stageart_core_rewrite_version', self::VERSION, false);
-        }
+        self::markReadyIfRoutesExist();
     }
 
     public static function adminNotice(): void
@@ -61,6 +51,21 @@ final class RewriteManager
         echo '<div class="notice notice-warning"><p><strong>StageArtCore:</strong> 公開ページのURLルールを自動更新できませんでした。WordPressの「設定 → パーマリンク」を開いて「変更を保存」を一度実行してください。</p></div>';
     }
 
+    private static function registerRoutes(): void
+    {
+        (new MemberRouter())->add_rewrite_rules();
+        (new ProductionRouter())->rewrite();
+        (new SurveyRouter())->rewrite();
+    }
+
+    private static function markReadyIfRoutesExist(): void
+    {
+        $rules = (array) get_option('rewrite_rules', []);
+        if (self::hasRoute($rules, 'member/') && self::hasRoute($rules, 'production/')) {
+            update_option('stageart_core_rewrite_version', self::VERSION, false);
+        }
+    }
+
     private static function loadRewriteWriter(): void
     {
         if (!function_exists('save_mod_rewrite_rules')) {
@@ -71,7 +76,8 @@ final class RewriteManager
     private static function hasRoute(array $rules, string $prefix): bool
     {
         foreach (array_keys($rules) as $regex) {
-            if (str_starts_with((string) $regex, $prefix)) {
+            $regex = ltrim((string) $regex, '^');
+            if (str_starts_with($regex, $prefix)) {
                 return true;
             }
         }
