@@ -22,5 +22,6 @@ register_activation_hook(STAGEART_CORE_FILE,static function():void{StageArtCore\
 add_action('plugins_loaded',static function():void{(new StageArtCore\Plugin())->boot();});
 add_action('plugins_loaded',static function():void{(new StageArtCore\Presentation\Admin\HeroAdmin())->register();},20);
 add_action('plugins_loaded',static function():void{(new StageArtCore\Presentation\Admin\ContentBlockAdmin())->register();},20);
+add_action('plugins_loaded',static function():void{(new StageArtCore\Presentation\Admin\MenuLayoutAdmin())->register();},20);
 add_action('admin_enqueue_scripts',static function(string $hook):void{if(($_GET['page']??'')==='stageart-homepage'&&current_user_can('manage_options'))wp_enqueue_media();});
 // Schedule label persistence and size fixes are included in the 0.6.6 package.
