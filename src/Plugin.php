@@ -49,7 +49,8 @@ final class Plugin
         add_action('admin_menu', [new AdminMenu(), 'register']);
         add_action('admin_menu', [new SiteSettingsAdmin(), 'register'], 20);
         add_action('admin_menu', [new SiteStructureAdmin(), 'register'], 21);
-        (new ThemeAdmin());
+        add_action('admin_menu', [new ThemeAdmin(), 'register'], 22);
+        add_action('admin_init', [new ThemeAdmin(), 'registerSettings']);
         add_action('admin_menu', [new MemberAdmin(), 'register'], 20);
         (new PerformanceReleaseAdmin())->register();
         (new RepresentativeGreetingAdmin())->register();
