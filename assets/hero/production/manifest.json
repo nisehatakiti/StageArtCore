@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0",
+  "title": "StageArt Production Hero Background Presets",
+  "display_size": "1600x900",
+  "aspect_ratio": "16:9",
+  "fit": "cover",
+  "position": "center center",
+  "presets": [
+    {"id":"sky-blue","label":"青空","file":"sky-blue.svg","category":"空"},
+    {"id":"sky-sunset","label":"夕空","file":"sky-sunset.svg","category":"空"},
+    {"id":"sky-cloudy","label":"曇り空","file":"sky-cloudy.svg","category":"空"},
+    {"id":"sky-night","label":"夜空","file":"sky-night.svg","category":"空"},
+    {"id":"sea-blue","label":"青い海","file":"sea-blue.svg","category":"海"},
+    {"id":"sea-horizon","label":"水平線","file":"sea-horizon.svg","category":"海"},
+    {"id":"sea-waves","label":"波","file":"sea-waves.svg","category":"海"},
+    {"id":"forest-green","label":"緑の森","file":"forest-green.svg","category":"森"},
+    {"id":"forest-mist","label":"霧の森","file":"forest-mist.svg","category":"森"},
+    {"id":"town-alley","label":"路地","file":"town-alley.svg","category":"町"},
+    {"id":"town-buildings","label":"ビルの谷間","file":"town-buildings.svg","category":"町"},
+    {"id":"town-skyscraper","label":"見上げた高層ビル","file":"town-skyscraper.svg","category":"町"},
+    {"id":"town-night","label":"夜の町","file":"town-night.svg","category":"町"}
+  ]
+}
