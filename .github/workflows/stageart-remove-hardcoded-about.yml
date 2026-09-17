@@ -1,0 +1,32 @@
+name: StageArt Remove Hardcoded About
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/stageart-remove-hardcoded-about.py'
+      - '.github/workflows/stageart-remove-hardcoded-about.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Remove hardcoded editorial copy
+        run: |
+          python3 .github/stageart-remove-hardcoded-about.py
+          php -l theme/stageart/functions.php
+          git diff --check
+          if git diff --quiet -- theme/stageart/functions.php; then
+            echo 'No source change required.'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add theme/stageart/functions.php
+            git commit -m 'stageart: remove hardcoded editorial copy from theme'
+            git push
+          fi
