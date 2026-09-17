@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "title": "StageArt Production Hero Background Presets",
   "display_size": "1600x900",
   "aspect_ratio": "16:9",
@@ -13,11 +13,19 @@
     {"id":"sea-blue","label":"青い海","file":"sea-blue.svg","category":"海"},
     {"id":"sea-horizon","label":"水平線","file":"sea-horizon.svg","category":"海"},
     {"id":"sea-waves","label":"波","file":"sea-waves.svg","category":"海"},
+    {"id":"sea-sunset","label":"夕暮れの海","file":"sea-sunset.svg","category":"海"},
+    {"id":"sea-deep","label":"深い海","file":"sea-deep.svg","category":"海"},
     {"id":"forest-green","label":"緑の森","file":"forest-green.svg","category":"森"},
     {"id":"forest-mist","label":"霧の森","file":"forest-mist.svg","category":"森"},
+    {"id":"forest-deep","label":"深い森","file":"forest-deep.svg","category":"森"},
+    {"id":"forest-night","label":"森の夜","file":"forest-night.svg","category":"森"},
+    {"id":"town-day","label":"昼の町","file":"town-day.svg","category":"町"},
     {"id":"town-alley","label":"路地","file":"town-alley.svg","category":"町"},
     {"id":"town-buildings","label":"ビルの谷間","file":"town-buildings.svg","category":"町"},
     {"id":"town-skyscraper","label":"見上げた高層ビル","file":"town-skyscraper.svg","category":"町"},
-    {"id":"town-night","label":"夜の町","file":"town-night.svg","category":"町"}
+    {"id":"town-night","label":"夜の町","file":"town-night.svg","category":"町"},
+    {"id":"town-intersection","label":"交差点","file":"town-intersection.svg","category":"町"},
+    {"id":"town-highrise-night","label":"高層ビルの夜景","file":"town-highrise-night.svg","category":"町"},
+    {"id":"town-windows","label":"都市の窓明かり","file":"town-windows.svg","category":"町"}
   ]
 }
