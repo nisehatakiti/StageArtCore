@@ -44,6 +44,88 @@ The default category grouping is:
 
 The category list must be extensible so future categories can be added without changing the fundamental selection model.
 
+### Standard organization TOP content
+
+StageArtCore provides standard organization-level content types as reusable building blocks. Providing a standard content type does not mean that it is automatically placed on the TOP; placement remains a layout decision.
+
+The standard organization TOP content set includes:
+
+- **【団体】** — organization logo, organization name, organization information, representative message, SNS, and contact information.
+- **【公演】** — production list, next production, production archive, and organization timeline.
+- **【メンバー】** — member list and member profiles.
+- **【お知らせ】** — notice list and notices.
+- **【アクセス】** — organization access information.
+- **【自由コンテンツ】** — administrator-created content for organization-specific material that does not fit a predefined functional category.
+
+Some standard content, such as production lists and member lists, is generated from StageArtCore's structured data rather than being manually maintained as duplicate content.
+
+### Production lifecycle content
+
+The production-related standard content distinguishes between upcoming productions, completed production archives, and the organization timeline.
+
+- **Next production** is determined automatically from public productions whose relevant future date/time has not passed. When multiple applicable productions exist, the nearest upcoming production is selected.
+- **Production archive** is determined automatically from the production's end date/time. A production moves into the archive view after its end date/time has passed; the underlying production record is not duplicated or moved between separate data stores.
+- **Organization timeline** is a chronological history of the organization and is not a duplicate production archive. Production data is automatically included in the timeline, while non-production events are entered separately by an administrator.
+
+### Organization timeline
+
+The organization timeline is a standard content type intended to represent the organization's history, activities, and milestones. Its display title is configurable by the administrator; the default title is **「団体年表」**. Possible presentation titles include 「沿革」 or 「私たちの歩み」.
+
+A manually entered timeline event contains:
+
+- **Start year** — required.
+- **Start month** — required.
+- **Start day** — optional.
+- **End year** — optional as a whole.
+- **End month** — required when an end date is specified.
+- **End day** — optional.
+- **Event** — required free text.
+
+The end date is optional, but when an end date is entered, both end year and end month are required. End day may be omitted.
+
+Productions are not entered manually as timeline events. Public production data is automatically integrated into the timeline. Production entries use the production's existing title and relevant production information and link directly to the production detail page. There is no separate manual "related production" field.
+
+The timeline merges manually entered events and automatically included productions into one chronological display.
+
+#### Timeline date display rules
+
+The timeline displays the year as a year heading. Within a year, the item date omits the year unless the displayed range crosses a calendar year.
+
+Examples:
+
+```text
+Start: 2026/04       End: none       -> 4月
+Start: 2026/04/29    End: none       -> 4月29日
+Start: 2026/04       End: 2026/05   -> 4月～5月
+Start: 2026/04/29    End: 2026/05   -> 4月29日～5月
+Start: 2026/04/29    End: 2026/04/30 -> 4月29日～30日
+Start: 2026/04/29    End: 2026/05/03 -> 4月29日～5月3日
+```
+
+If a range crosses a calendar year, the end year must be shown to avoid ambiguity.
+
+#### Timeline sort rules
+
+Timeline items are sorted automatically by their start date. The administrator can choose the display direction in the timeline settings.
+
+The management-screen setting is:
+
+- **Setting name:** `表示順`
+- **Option:** `古い順（過去 → 現在）` — internal value `asc`
+- **Option:** `新しい順（現在 → 過去）` — internal value `desc`
+- **Default:** `古い順（過去 → 現在）`
+
+The sort rules are:
+
+1. Start year ascending or descending according to the selected display order.
+2. Start month ascending or descending.
+3. Within the same year/month, entries without a start day are placed before entries with a start day.
+4. Entries with a start day are ordered by start day.
+5. If the complete start date is identical, registration order is preserved.
+6. The end date is never used as a sort key.
+
+The absence of a start day does not mean that the event is assigned a fictitious calendar date; the ordering rule only determines its position within the same year/month.
+
 ### Layout content selection rules
 
 The selectable candidates are determined by the context being edited and must be filtered both in the UI and on the server side.
