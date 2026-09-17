@@ -24,4 +24,5 @@ add_action('plugins_loaded',static function():void{(new StageArtCore\Presentatio
 add_action('plugins_loaded',static function():void{(new StageArtCore\Presentation\Admin\ContentBlockAdmin())->register();},20);
 add_action('plugins_loaded',static function():void{(new StageArtCore\Presentation\Admin\MenuLayoutAdmin())->register();},20);
 add_action('admin_enqueue_scripts',static function(string $hook):void{if(($_GET['page']??'')==='stageart-homepage'&&current_user_can('manage_options'))wp_enqueue_media();});
+add_filter('body_class',static function(array $classes):array{if(class_exists('StageArtCore\\Presentation\\PublicSite\\SiteStructure'))$classes[]='stageart-menu-layout-'.StageArtCore\Presentation\PublicSite\SiteStructure::menuLayout();return$classes;});
 // Schedule label persistence and size fixes are included in the 0.6.6 package.
