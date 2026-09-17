@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "title": "StageArt Production Hero Background Presets",
   "display_size": "1600x900",
   "aspect_ratio": "16:9",
@@ -26,6 +26,20 @@
     {"id":"town-night","label":"夜の町","file":"town-night.svg","category":"町"},
     {"id":"town-intersection","label":"交差点","file":"town-intersection.svg","category":"町"},
     {"id":"town-highrise-night","label":"高層ビルの夜景","file":"town-highrise-night.svg","category":"町"},
-    {"id":"town-windows","label":"都市の窓明かり","file":"town-windows.svg","category":"町"}
+    {"id":"town-windows","label":"都市の窓明かり","file":"town-windows.svg","category":"町"},
+    {"id":"light-warm-window","label":"暖かな窓明かり","file":"light-warm-window.svg","category":"光"},
+    {"id":"light-spot","label":"一点のスポットライト","file":"light-spot.svg","category":"光"},
+    {"id":"light-stage-baton","label":"舞台照明","file":"light-stage-baton.svg","category":"光"},
+    {"id":"light-rim","label":"縁の光","file":"light-rim.svg","category":"光"},
+    {"id":"season-spring","label":"春","file":"season-spring.svg","category":"季節"},
+    {"id":"season-summer","label":"夏","file":"season-summer.svg","category":"季節"},
+    {"id":"season-autumn","label":"秋","file":"season-autumn.svg","category":"季節"},
+    {"id":"season-winter","label":"冬","file":"season-winter.svg","category":"季節"},
+    {"id":"abstract-mist","label":"霧","file":"abstract-mist.svg","category":"抽象"},
+    {"id":"abstract-beam","label":"光線","file":"abstract-beam.svg","category":"抽象"},
+    {"id":"abstract-shadow","label":"影","file":"abstract-shadow.svg","category":"抽象"},
+    {"id":"abstract-particles","label":"粒子","file":"abstract-particles.svg","category":"抽象"},
+    {"id":"abstract-flow","label":"流れ","file":"abstract-flow.svg","category":"抽象"},
+    {"id":"abstract-boundary","label":"境界","file":"abstract-boundary.svg","category":"抽象"}
   ]
 }
