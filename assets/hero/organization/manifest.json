@@ -1,0 +1,32 @@
+{
+  "version": "1.0.0",
+  "title": "StageArt Organization Hero Background Presets",
+  "display_size": "1600x900",
+  "aspect_ratio": "16:9",
+  "fit": "cover",
+  "position": "center center",
+  "presets": [
+    {"id":"script-open","label":"開かれた台本","file":"script-open.svg","category":"台本・創作"},
+    {"id":"script-notes","label":"書き込みのある台本","file":"script-notes.svg","category":"台本・創作"},
+    {"id":"script-stack","label":"積み重ねた台本","file":"script-stack.svg","category":"台本・創作"},
+    {"id":"creation-desk","label":"創作の机","file":"creation-desk.svg","category":"台本・創作"},
+    {"id":"rehearsal-circle","label":"読み合わせの輪","file":"rehearsal-circle.svg","category":"台本・創作"},
+    {"id":"prop-shelf","label":"小道具の棚","file":"prop-shelf.svg","category":"道具・舞台裏"},
+    {"id":"costume-rack","label":"衣装のラック","file":"costume-rack.svg","category":"道具・舞台裏"},
+    {"id":"prop-box","label":"道具箱","file":"prop-box.svg","category":"道具・舞台裏"},
+    {"id":"stage-tape","label":"貼られた養生テープ","file":"stage-tape.svg","category":"道具・舞台裏"},
+    {"id":"theater-door","label":"劇場の扉","file":"theater-door.svg","category":"道具・舞台裏"},
+    {"id":"curtain-silhouette","label":"カーテン越しの人影","file":"curtain-silhouette.svg","category":"シルエット・影"},
+    {"id":"circle-shadows","label":"輪になる影","file":"circle-shadows.svg","category":"シルエット・影"},
+    {"id":"walking-shadows","label":"歩く影","file":"walking-shadows.svg","category":"シルエット・影"},
+    {"id":"hands-shadow","label":"手を重ねる影","file":"hands-shadow.svg","category":"シルエット・影"},
+    {"id":"theater-town","label":"劇場のある街","file":"theater-town.svg","category":"街・地域"},
+    {"id":"theater-path","label":"劇場への道","file":"theater-path.svg","category":"街・地域"},
+    {"id":"theater-light-town","label":"街の劇場灯","file":"theater-light-town.svg","category":"街・地域"},
+    {"id":"colorful-paint","label":"カラフルペイント","file":"colorful-paint.svg","category":"ポップ・グラフィック"},
+    {"id":"confetti","label":"紙吹雪","file":"confetti.svg","category":"ポップ・グラフィック"},
+    {"id":"theater-collage","label":"劇場コラージュ","file":"theater-collage.svg","category":"ポップ・グラフィック"},
+    {"id":"retro-poster","label":"昔の劇場ポスター","file":"retro-poster.svg","category":"レトロ"},
+    {"id":"japanese-paper-stage","label":"和紙と舞台","file":"japanese-paper-stage.svg","category":"和・伝統"}
+  ]
+}
