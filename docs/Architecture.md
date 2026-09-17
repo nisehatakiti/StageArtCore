@@ -11,9 +11,46 @@ StageArtCore has no dependency on AuthCore.
 StageArt content is separated from layout and theme presentation.
 
 - **Content** defines what is displayed.
-- **Layout** defines where and in what order content is displayed.
-- **Theme** defines how content is visually presented (colors, typography, backgrounds, spacing, cards, buttons, decoration, responsive presentation, etc.).
-- A theme must not invent editorial copy, headings, catchphrases, CTA text, or other substantive content. If such content is required, it must be created as content, normally as a free-content item.
+- **Content blocks** define the reusable presentation unit used to display content.
+- **Page layout** defines which blocks are placed on a page and in what order.
+- **Theme** defines how blocks and content are visually presented (colors, typography, backgrounds, spacing, cards, buttons, decoration, responsive presentation, etc.).
+- A theme must not invent editorial copy, headings, catchphrases, CTA text, or other substantive content. If such content is required, it must be created as content or as an explicit block setting, not silently invented by the theme.
+
+The basic architecture is therefore:
+
+```text
+Page
+  ↓
+Page Layout
+  ↓
+Content Blocks
+  ↓
+Content / Block Settings
+  ↓
+Theme presentation
+```
+
+This separation is intended to make the same StageArt content reusable with different layouts and visual themes without implementing each organization's site as custom HTML.
+
+### Content and content blocks
+
+**Content** answers "what should be displayed?" Examples include organization information, next production, production archive, news, members, organization timeline, and free content.
+
+**Content blocks** answer "as which reusable display component should it be displayed?" Examples include Hero, Feature, Link Card, List, Card Grid, and Timeline. A content block may reference existing content, or it may contain block-specific settings when that is intrinsic to the block.
+
+For example:
+
+```text
+Link Card block
+  ↓
+Content: 公演アーカイブ
+```
+
+renders the selected content as a link card, while the same Link Card block can reference 「団体年表」 or 「団体について」.
+
+A Hero block is a block-specific case. Its settings may include a background image, catch copy, supplementary text, and an optional link, because these values are part of the Hero presentation/content itself.
+
+The initial block system is intentionally constrained to StageArt-oriented reusable components rather than becoming a general-purpose page builder. The exact block catalog and individual block settings are to be defined incrementally.
 
 ### Content ownership
 
@@ -46,7 +83,7 @@ The category list must be extensible so future categories can be added without c
 
 ### Standard organization TOP content
 
-StageArtCore provides standard organization-level content types as reusable building blocks. Providing a standard content type does not mean that it is automatically placed on the TOP; placement remains a layout decision.
+StageArtCore provides standard organization-level content types as reusable building blocks. Providing a standard content type does not mean that it is automatically placed on the TOP; placement remains a page-layout decision.
 
 The standard organization TOP content set includes:
 
