@@ -23,6 +23,7 @@ add_action('plugins_loaded',static function():void{(new StageArtCore\Plugin())->
 add_action('plugins_loaded',static function():void{(new StageArtCore\Presentation\Admin\HeroAdmin())->register();},20);
 add_action('plugins_loaded',static function():void{(new StageArtCore\Presentation\Admin\ContentBlockAdmin())->register();},20);
 add_action('plugins_loaded',static function():void{(new StageArtCore\Presentation\Admin\MenuLayoutAdmin())->register();},20);
+add_action('plugins_loaded',static function():void{(new StageArtCore\Presentation\Admin\ProductionHeroAdmin())->register();},20);
 add_action('admin_enqueue_scripts',static function(string $hook):void{if(($_GET['page']??'')==='stageart-homepage'&&current_user_can('manage_options'))wp_enqueue_media();});
 add_action('wp_enqueue_scripts',static function():void{if(class_exists('StageArtCore\\Presentation\\PublicSite\\SiteStructure'))wp_enqueue_style('stageart-core-menu-layout',STAGEART_CORE_URL.'assets/menu-layout.css',[],STAGEART_CORE_VERSION);});
 add_filter('body_class',static function(array $classes):array{if(class_exists('StageArtCore\\Presentation\\PublicSite\\SiteStructure'))$classes[]='stageart-menu-layout-'.StageArtCore\Presentation\PublicSite\SiteStructure::menuLayout();return $classes;});
