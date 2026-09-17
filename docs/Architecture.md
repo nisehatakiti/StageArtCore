@@ -104,6 +104,30 @@ The production-related standard content distinguishes between upcoming productio
 - **Production archive** is determined automatically from the production's end date/time. A production moves into the archive view after its end date/time has passed; the underlying production record is not duplicated or moved between separate data stores.
 - **Organization timeline** is a chronological history of the organization and is not a duplicate production archive. Production data is automatically included in the timeline, while non-production events are entered separately by an administrator.
 
+### Production crown
+
+A production may have an optional **公演冠** (production crown/prefix). It is stored as production data, independently of the production title.
+
+The production title remains the WordPress production title. The crown is not appended to the stored title and is not included in the production Slug.
+
+When a production is displayed as an automatically included item in the organization timeline/沿革, the display label is:
+
+```text
+公演冠＋「公演タイトル」（会場）
+```
+
+Examples:
+
+```text
+劇団○○ 第10回公演＋「タイトル」（○○劇場）
+劇団○○ 企画公演＋「別タイトル」（駅前ホール）
+「冠なしの公演」（○○劇場）
+```
+
+If no 公演冠 is configured, only the production title is used. If the venue is unavailable or not released, the venue portion is omitted rather than inventing text.
+
+The timeline entry links directly to the existing production detail page. The production is not duplicated into a separate timeline record.
+
 ### Organization timeline
 
 The organization timeline is a standard content type intended to represent the organization's history, activities, and milestones. Its display title is configurable by the administrator; the default title is **「団体年表」**. Possible presentation titles include 「沿革」 or 「私たちの歩み」.
@@ -120,7 +144,7 @@ A manually entered timeline event contains:
 
 The end date is optional, but when an end date is entered, both end year and end month are required. End day may be omitted.
 
-Productions are not entered manually as timeline events. Public production data is automatically integrated into the timeline. Production entries use the production's existing title and relevant production information and link directly to the production detail page. There is no separate manual "related production" field.
+Productions are not entered manually as timeline events. Public production data is automatically integrated into the timeline. Production entries use the production's existing **公演冠＋「公演タイトル」（会場）** display form and link directly to the production detail page. There is no separate manual "related production" field.
 
 The timeline merges manually entered events and automatically included productions into one chronological display.
 
