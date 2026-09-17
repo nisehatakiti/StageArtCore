@@ -9,15 +9,8 @@ if (!defined('ABSPATH')) exit;
 
 final class ThemeAdmin
 {
-    public function __construct()
-    {
-        add_action('admin_init', [$this, 'register']);
-    }
-
     public function register(): void
     {
-        register_setting('stageart_theme_organization', Theme::ORG_OPTION, ['sanitize_callback' => fn($v) => $this->sanitize($v, 'organization')]);
-        register_setting('stageart_theme_production', Theme::PRODUCTION_META, ['sanitize_callback' => fn($v) => $this->sanitize($v, 'production')]);
         add_submenu_page(
             'stageart-plugin',
             'テーマ',
@@ -26,6 +19,12 @@ final class ThemeAdmin
             'stageart-theme',
             [$this, 'render']
         );
+    }
+
+    public function registerSettings(): void
+    {
+        register_setting('stageart_theme_organization', Theme::ORG_OPTION, ['sanitize_callback' => fn($v) => $this->sanitize($v, 'organization')]);
+        register_setting('stageart_theme_production', Theme::PRODUCTION_META, ['sanitize_callback' => fn($v) => $this->sanitize($v, 'production')]);
     }
 
     /** @param mixed $value */
