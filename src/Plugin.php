@@ -20,12 +20,14 @@ use StageArtCore\Presentation\Admin\RepresentativeGreetingAdmin;
 use StageArtCore\Presentation\Admin\SiteSettingsAdmin;
 use StageArtCore\Presentation\Admin\SiteStructureAdmin;
 use StageArtCore\Presentation\Admin\ThemeAdmin;
+use StageArtCore\Presentation\Admin\FreeContentAdmin;
 use StageArtCore\Presentation\Admin\SurveyAdmin;
 use StageArtCore\Presentation\Admin\SurveyResultsAdmin;
 use StageArtCore\Presentation\Admin\SurveyQrAdmin;
 use StageArtCore\Presentation\PublicSite\MemberRouter;
 use StageArtCore\Presentation\PublicSite\MemberShortcodes;
 use StageArtCore\Presentation\PublicSite\ProductionRouter;
+use StageArtCore\Presentation\PublicSite\FreeContentRouter;
 use StageArtCore\Presentation\PublicSite\SurveyRouter;
 use StageArtCore\Presentation\Rest\HealthController;
 use StageArtCore\Presentation\Rest\MemberController;
@@ -50,6 +52,7 @@ final class Plugin
         add_action('admin_menu', [new SiteSettingsAdmin(), 'register'], 20);
         add_action('admin_menu', [new SiteStructureAdmin(), 'register'], 21);
         add_action('admin_menu', [new ThemeAdmin(), 'register'], 22);
+        add_action('admin_menu', [new FreeContentAdmin(), 'register'], 23);
         add_action('admin_init', [new ThemeAdmin(), 'registerSettings']);
         add_action('admin_menu', [new MemberAdmin(), 'register'], 20);
         (new PerformanceReleaseAdmin())->register();
@@ -90,6 +93,7 @@ final class Plugin
         (new MemberShortcodes())->register();
         (new MemberRouter())->register();
         (new ProductionRouter())->register();
+        (new FreeContentRouter())->register();
         (new SurveyRouter())->register();
         RewriteManager::register();
     }
