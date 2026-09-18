@@ -99,12 +99,6 @@ final class OrganizationAdmin
         echo '<p>団体ページの見た目と、トップページに表示するコンテンツを管理します。</p>';
 
         echo '<section class="sa-org-card">';
-        echo '<h2>Hero</h2>';
-        echo '<p>Heroを表示するかどうかと、背景画像を設定します。</p>';
-        echo '<p class="description">下の「コンテンツ配置」フォーム内にHero設定を表示します。</p>';
-        echo '</section>';
-
-        echo '<section class="sa-org-card">';
         echo '<h2>テーマ</h2>';
         (new ThemeAdmin())->renderOrganizationForm();
         echo '</section>';
