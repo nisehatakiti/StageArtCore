@@ -26,6 +26,7 @@ final class SiteStructureAdmin
     public function renderHomepage():void
     {
         $blocks=SiteStructure::homepageContentBlocks();[$p,$m]=$this->data();
+        $organizationPage = (($_GET['page'] ?? '') === 'stageart-organization');
         echo'<div class="wrap stageart-homepage-admin"><style>
         .sa-content-block{margin:18px 0;padding:18px;background:#f6f7f7;border:1px solid #ccd0d4}
         .sa-content-block>h2{margin:0 0 14px;font-size:18px}
