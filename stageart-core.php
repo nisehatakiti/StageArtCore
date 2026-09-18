@@ -2,7 +2,7 @@
 /**
  * Plugin Name: StageArtCore
  * Description: 舞台芸術団体向けの公演・メンバー・アンケート管理基盤。
- * Version: 0.6.9
+ * Version: 0.7.0
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: nisehatakiti
