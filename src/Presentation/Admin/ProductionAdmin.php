@@ -55,12 +55,12 @@ final class ProductionAdmin{
   #stageart-production-display-settings .sa-production-display-card{padding:16px 0;border-bottom:1px solid #ddd}
   #stageart-production-display-settings .sa-production-display-card:last-child{border-bottom:0}
   </style>';
-  echo '<div id="stageart-production-tabs" role="tablist"><button type="button" data-sa-tab="basic">基本情報</button><button type="button" data-sa-tab="content">コンテンツ管理</button><button type="button" data-sa-tab="display">表示管理</button></div>';
   echo '<script>
   document.addEventListener("DOMContentLoaded",function(){
     setTimeout(function(){
       const form=document.getElementById("stageart-production-form");if(!form)return;
-      const tabs=document.getElementById("stageart-production-tabs");if(!tabs)return;
+      const tabs=document.createElement("div");tabs.id="stageart-production-tabs";tabs.setAttribute("role","tablist");tabs.innerHTML='<button type="button" data-sa-tab="basic">基本情報</button><button type="button" data-sa-tab="content">コンテンツ管理</button><button type="button" data-sa-tab="display">表示管理</button>';
+      const firstHeading=form.querySelector("h2");if(firstHeading)form.insertBefore(tabs,firstHeading);else form.insertBefore(tabs,form.firstChild);
       const panes={basic:document.createElement("div"),content:document.createElement("div"),display:document.createElement("div")};
       Object.keys(panes).forEach(function(k){panes[k].className="sa-production-pane";panes[k].dataset.saPane=k;});
       const children=Array.from(form.children),skip=new Set(["stageart-production-tabs"]);
