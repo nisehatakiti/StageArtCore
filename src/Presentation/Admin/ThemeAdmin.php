@@ -11,14 +11,7 @@ final class ThemeAdmin
 {
     public function register(): void
     {
-        add_submenu_page(
-            'stageart-plugin',
-            'テーマ',
-            'テーマ',
-            'manage_options',
-            'stageart-theme',
-            [$this, 'render']
-        );
+        // 団体ページ／公演ページの表示管理から編集します。
     }
 
     public function registerSettings(): void
