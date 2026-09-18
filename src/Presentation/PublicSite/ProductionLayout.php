@@ -104,9 +104,9 @@ final class ProductionLayout
                 }
 
                 if ($type === self::SLOT_LINK) {
-                    $ref = sanitize_key((string) ($slot['ref'] ?? ''));
-                    if ($ref === 'free_content') {
-                        $refId = absint($slot['ref_id'] ?? 0);
+                    $rawRef = (string) ($slot['ref'] ?? '');
+                    if (str_starts_with($rawRef, 'free_content:')) {
+                        $refId = absint(substr($rawRef, 13));
                         if (!$refId || !FreeContentAdmin::canReference($refId, $productionId)) {
                             $slots[] = ['type'=>self::SLOT_NONE,'ref'=>'','indent'=>$indent];
                             continue;
@@ -114,9 +114,10 @@ final class ProductionLayout
                         $slots[] = ['type'=>'free_content','ref'=>(string)$refId,'indent'=>$indent];
                         continue;
                     }
+                    $ref = sanitize_key($rawRef);
                 }
 
-                if ($type !== self::SLOT_LINK) {
+                if ($type !== self::SLOT_LINK && $type !== 'free_content') {
                     $slots[] = [
                         'type' => self::SLOT_NONE,
                         'ref' => '',
