@@ -40,9 +40,17 @@ final class HeroAdmin
             STAGEART_CORE_URL . 'assets/hero',
             'StageArt標準'
         );
+
+        $organizationDir = defined('STAGEART_HERO_ASSETS_DIR')
+            ? STAGEART_HERO_ASSETS_DIR . 'assets/hero/organization/'
+            : STAGEART_CORE_DIR . 'assets/hero/organization/';
+        $organizationUrl = defined('STAGEART_HERO_ASSETS_URL')
+            ? STAGEART_HERO_ASSETS_URL . 'assets/hero/organization'
+            : STAGEART_CORE_URL . 'assets/hero/organization';
+
         $organization = $this->readManifest(
-            STAGEART_CORE_DIR . 'assets/hero/organization/manifest.json',
-            STAGEART_CORE_URL . 'assets/hero/organization',
+            $organizationDir . 'manifest.json',
+            $organizationUrl,
             '団体'
         );
         $seen = array_column($out, 'id');
