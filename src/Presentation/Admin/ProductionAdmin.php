@@ -59,7 +59,7 @@ final class ProductionAdmin{
   document.addEventListener("DOMContentLoaded",function(){
     setTimeout(function(){
       const form=document.getElementById("stageart-production-form");if(!form)return;
-      const tabs=document.createElement("div");tabs.id="stageart-production-tabs";tabs.setAttribute("role","tablist");tabs.innerHTML='<button type="button" data-sa-tab="basic">基本情報</button><button type="button" data-sa-tab="content">コンテンツ管理</button><button type="button" data-sa-tab="display">表示管理</button>';
+      const tabs=document.createElement("div");tabs.id="stageart-production-tabs";tabs.setAttribute("role","tablist");tabs.innerHTML=`<button type="button" data-sa-tab="basic">基本情報</button><button type="button" data-sa-tab="content">コンテンツ管理</button><button type="button" data-sa-tab="display">表示管理</button>`;
       const firstHeading=form.querySelector("h2");if(firstHeading)form.insertBefore(tabs,firstHeading);else form.insertBefore(tabs,form.firstChild);
       const panes={basic:document.createElement("div"),content:document.createElement("div"),display:document.createElement("div")};
       Object.keys(panes).forEach(function(k){panes[k].className="sa-production-pane";panes[k].dataset.saPane=k;});
@@ -67,7 +67,7 @@ final class ProductionAdmin{
       let group="basic";
       children.forEach(function(el){
         if(el===tabs||el.tagName==="SCRIPT"||el.tagName==="STYLE")return;
-        if(el.querySelector&&el.querySelector('button[type="submit"]')){form.dataset.saSaveActions=el.outerHTML;el.remove();return;}
+        if(el.querySelector&&el.querySelector("button[type=\"submit\"]")){form.dataset.saSaveActions=el.outerHTML;el.remove();return;}
         if(el.tagName==="H2"){
           const t=el.textContent.trim();
           if(t==="公演スケジュール"||t==="公演クレジット")group="content";
@@ -80,7 +80,7 @@ final class ProductionAdmin{
       form.insertBefore(panes.basic,tabs.nextSibling);
       form.insertBefore(panes.content,panes.basic.nextSibling);
       form.insertBefore(panes.display,panes.content.nextSibling);
-      const saveActions=document.createElement("div");saveActions.className="sa-production-save-actions";saveActions.innerHTML=form.dataset.saSaveActions||'<p><button class="button button-primary button-large" type="submit">保存</button></p>';form.appendChild(saveActions);
+      const saveActions=document.createElement("div");saveActions.className="sa-production-save-actions";saveActions.innerHTML=form.dataset.saSaveActions||"<p><button class=\"button button-primary button-large\" type=\"submit\">保存</button></p>";form.appendChild(saveActions);
       function moveHero(){
         const mount=document.getElementById("stageart-production-hero-mount");
         if(!mount)return;
