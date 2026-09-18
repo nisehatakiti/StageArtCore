@@ -34,7 +34,17 @@ final class ProductionRouter
     }
     private function performanceList(array $ps, string $display, string $marker): void
     {
-        $groups=[];foreach($ps as$x){$date=(string)$x['performance_date'];$start=substr((string)$x['start_time'],0,5);$hasLabel=!empty($x['symbol']);$cell=$display==='none'||!$hasLabel?'':$this->performanceCell($x,$display,$marker);$groups[$date][]=['time'=>$start,'cell'=>$cell];}ksort($groups);echo '<div class="stageart-performance-list">';foreach($groups as$date=>$items){usort($items,static fn(array$a,array$b):int=>strcmp($a['time'],$b['time']));$times=[];foreach($items as$item){$value=esc_html($item['time']);if($item['cell']!=='')$value.=' '.esc_html($item['cell']);$times[]=$value;}echo '<div class="stageart-performance-list-row"><span class="stageart-performance-list-date">'.esc_html(wp_date('n/j',strtotime($date))).'</span><span class="stageart-performance-list-time">'.implode(' / ',$times).'</span></div>';}echo '</div>';
+        usort($ps,static function(array $a,array $b): int {
+            $ad=(string)$a['performance_date'];$bd=(string)$b['performance_date'];
+            return $ad===$bd?strcmp(substr((string)$a['start_time'],0,5),substr((string)$b['start_time'],0,5)):strcmp($ad,$bd);
+        });
+        echo '<div class="stageart-performance-list">';
+        foreach($ps as$x){
+            $date=(string)$x['performance_date'];$start=substr((string)$x['start_time'],0,5);
+            $hasLabel=!empty($x['symbol']);$cell=$display==='none'||!$hasLabel?'':$this->performanceCell($x,$display,$marker);
+            echo '<div class="stageart-performance-list-row"><span class="stageart-performance-list-date">'.esc_html(wp_date('n/j',strtotime($date))).'</span><span class="stageart-performance-list-time">'.esc_html($start).'</span><span class="stageart-performance-list-label">'.($cell!==''?esc_html($cell):'').'</span></div>';
+        }
+        echo '</div>';
     }
     private function performanceTimeline(array $ps, string $display, string $marker, string $style): void
     {
