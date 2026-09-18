@@ -73,7 +73,7 @@ final class ProductionLayoutAdmin
         $pickerJson=wp_json_encode($picker,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
         $nonce=wp_create_nonce('stageart_production_layout');
 
-        echo '<div id="stageart-production-layout"><h2>公演ページ・コンテンツ配置</h2><p class="description">公演ページに表示する項目を、ブロック・セクション・スロットの順に配置します。スタッフ・出演者などの標準項目に加え、自由コンテンツも配置できます。</p><div id="sa-pl-root"></div><p><button type="button" class="button" id="sa-pl-add-block">＋ コンテンツブロックを追加</button></p></div>';
+        echo '<div id="stageart-production-layout"><h2>公演ページ・コンテンツ配置</h2><p class="description">公演ページに表示する項目を、ブロック・セクション・スロットの順に配置します。スタッフ・出演者などの標準項目に加え、自由コンテンツも配置できます。</p><div id="sa-pl-root"></div><p><button type="button" class="button" id="sa-pl-add-block">＋ コンテンツブロックを追加</button></p></div>';        echo '<script>(function(){var target=document.getElementById("stageart-production-layout-mount"),panel=document.getElementById("stageart-production-layout");if(target&&panel)target.appendChild(panel);})();</script>';
         $script=<<<'JS'
 (function(){
 
