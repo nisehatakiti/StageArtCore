@@ -16,3 +16,6 @@ function stageart_theme_print_theme_css():void{
     if($css)echo'<style id="stageart-theme-vars">'.$css.'</style>';
 }
 add_action('wp_head','stageart_theme_print_theme_css',20);
+
+function stageart_theme_print_org_favicon():void{if(is_admin())return;$logoId=(int)get_option('stageart_org_logo_id',0);if(!$logoId)return;$url=wp_get_attachment_image_url($logoId,'full');if(!$url)return;echo'<link rel="icon" href="'.esc_url($url).'"><link rel="apple-touch-icon" href="'.esc_url($url).'">';}
+add_action('wp_head','stageart_theme_print_org_favicon',1);
