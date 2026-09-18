@@ -16,8 +16,7 @@ final class SiteSettingsAdmin
 
     public function register(): void
     {
-        add_submenu_page('stageart-plugin', '団体基本情報', '団体基本情報', 'manage_options', 'stageart-site-settings', [$this, 'render']);
-        add_submenu_page('stageart-plugin', '連絡先', '連絡先', 'manage_options', 'stageart-contact', [$this, 'renderContact']);
+        
     }
 
     public static function migrate(): void
