@@ -54,6 +54,7 @@ final class Plugin
         add_action('admin_menu', [new ThemeAdmin(), 'register'], 22);
         add_action('admin_menu', [new FreeContentAdmin(), 'register'], 23);
         add_action('admin_init', [new ThemeAdmin(), 'registerSettings']);
+        add_action('admin_init', [new ThemeAdmin(), 'registerActions']);
         add_action('admin_menu', [new MemberAdmin(), 'register'], 20);
         (new PerformanceReleaseAdmin())->register();
         (new RepresentativeGreetingAdmin())->register();
