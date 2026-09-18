@@ -72,6 +72,7 @@ final class HeroAdmin
     public function script(): void
     {
         if (!current_user_can('manage_options') || !in_array(($_GET['page'] ?? ''), ['stageart-homepage','stageart-organization'], true)) return;
+        if (($_GET['page'] ?? '') === 'stageart-organization' && ($_GET['tab'] ?? 'basic') !== 'display') return;
         $presets = wp_json_encode($this->presets(), JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
         $saved = get_option(self::OPTION, []);
         if (!is_array($saved)) $saved = [];
@@ -95,17 +96,20 @@ if(!form)return;
 const ps=__PRESETS__,s=__STATE__;
 const b=document.createElement('fieldset');
 b.className='sa-hero-block';
-b.innerHTML='<legend><strong>Hero</strong></legend><p class="description">'+(organization?'団体ページのHeroです。':'団体トップページの独立したHeroブロックです。')+'</p><p><label><input type="checkbox" class="sa-hero-enabled"> Heroを表示する</label></p><h3>背景画像</h3><p class="description">StageArt標準の背景から選択できます。自分で用意した画像はWordPressメディアから選択します。</p><div class="sa-hero-groups"></div><p><button type="button" class="button sa-hero-media">自分で用意した画像を選択</button> <button type="button" class="button-link-delete sa-hero-clear">自前画像を解除</button></p><div class="sa-hero-preview"></div>';
+b.innerHTML='<legend><strong>Hero</strong></legend><p class="description">'+(organization?'団体ページのHeroです。':'団体トップページの独立したHeroブロックです。')+'</p><p><label><input type="checkbox" class="sa-hero-enabled"> Heroを表示する</label></p><div class="sa-hero-background-controls"><h3>背景画像</h3><p class="description">StageArt標準の背景から選択できます。自分で用意した画像はWordPressメディアから選択します。</p><div class="sa-hero-groups"></div><p><button type="button" class="button sa-hero-media">自分で用意した画像を選択</button> <button type="button" class="button-link-delete sa-hero-clear">自前画像を解除</button></p><div class="sa-hero-preview"></div></div><p><button type="submit" class="button button-primary">Hero設定を保存</button></p>';
 const hidden=(n,v)=>{let e=form.querySelector('[name="'+n+'"]');if(!e){e=document.createElement('input');e.type='hidden';e.name=n;form.appendChild(e)}e.value=v||'';return e};
 const en=b.querySelector('.sa-hero-enabled'),groups=b.querySelector('.sa-hero-groups'),preview=b.querySelector('.sa-hero-preview');
 const ht=hidden('stageart_hero_enabled',s.enabled?'1':'0'),ty=hidden('stageart_hero_background_type',s.type),pr=hidden('stageart_hero_background_preset',s.preset),ur=hidden('stageart_hero_background_url',s.url);
 en.checked=s.enabled;
+const bg=b.querySelector('.sa-hero-background-controls');
+function syncEnabled(){if(bg)bg.style.display=en.checked?'block':'none';}
 function previewImg(){preview.innerHTML='';const p=ps.find(x=>x.id===s.preset),src=s.type==='custom'?s.url:(p?.url||'');if(src){const img=document.createElement('img');img.src=src;img.alt='Hero背景プレビュー';preview.appendChild(img)}}
 function pick(id){s.type='preset';s.preset=id;s.url='';ty.value='preset';pr.value=id;ur.value='';groups.querySelectorAll('button.sa-hero-preset').forEach(x=>x.classList.toggle('is-selected',x.dataset.id===id));previewImg()}
 const grouped={};ps.forEach(x=>{(grouped[x.category]??=[]).push(x)});
 Object.entries(grouped).forEach(([category,items])=>{const g=document.createElement('div');g.className='sa-hero-group';const title=document.createElement('h4');title.className='sa-hero-group-title';title.textContent=category;const grid=document.createElement('div');grid.className='sa-hero-presets';g.appendChild(title);g.appendChild(grid);items.forEach(x=>{const q=document.createElement('button');q.type='button';q.className='sa-hero-preset';q.dataset.id=x.id;const check=document.createElement('span');check.className='sa-hero-check';check.textContent='✓';const img=document.createElement('img');img.src=x.url;img.alt='';const label=document.createElement('span');label.className='sa-hero-preset-label';label.textContent=x.label;q.appendChild(check);q.appendChild(img);q.appendChild(label);q.onclick=()=>pick(x.id);grid.appendChild(q)});groups.appendChild(g)});
 if(s.type==='preset')pick(s.preset);else previewImg();
-en.onchange=()=>{s.enabled=en.checked;ht.value=s.enabled?'1':'0'};
+syncEnabled();
+en.onchange=()=>{s.enabled=en.checked;ht.value=s.enabled?'1':'0';syncEnabled()};
 b.querySelector('.sa-hero-media').onclick=()=>{if(!window.wp?.media)return;const f=wp.media({title:'Hero背景画像を選択',button:{text:'この画像を使用'},multiple:false,library:{type:'image'}});f.on('select',()=>{const a=f.state().get('selection').first().toJSON();if(!a?.url)return;s.type='custom';s.url=a.url;ty.value='custom';ur.value=a.url;groups.querySelectorAll('button.sa-hero-preset').forEach(x=>x.classList.remove('is-selected'));previewImg()});f.open()};
 b.querySelector('.sa-hero-clear').onclick=()=>pick(s.preset||ps[0]?.id||'');
 if(organization){form.appendChild(b);const panel=document.querySelector('.sa-org-panel');const cards=panel?.querySelectorAll('.sa-org-card');const theme=cards?.[0];if(panel)panel.insertBefore(form,theme||null)}else{form.insertBefore(b,form.querySelector('#stageart-home-sections')||form.firstElementChild);}
