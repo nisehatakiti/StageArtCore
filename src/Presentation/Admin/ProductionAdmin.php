@@ -39,7 +39,11 @@ final class ProductionAdmin{
   }
   echo '</tbody></table><p><button type="button" class="button" data-add-credit-item="1">＋ 項目を追加</button></p></div>';
  }
- private function scripts(array$labels):void{$labelOptions='';foreach($labels as$l)$labelOptions.='<option value="'.(int)$l['id'].'">'.esc_html($l['symbol'].' '.$l['name']).'</option>';$script=<<<JS
+ private function scripts(array $labels):void
+ {
+  $labelOptions='';
+  foreach($labels as $l)$labelOptions.='<option value="'.(int)$l['id'].'">'.esc_html($l['symbol'].' '.$l['name']).'</option>';
+  $script=<<<JS
 <script>
 (function(){
  const f=document.getElementById('stageart-production-form');if(!f)return;
@@ -48,43 +52,57 @@ final class ProductionAdmin{
  let ticketN=document.querySelectorAll('#sa-tickets tbody tr').length;
  f.addEventListener('click',function(e){
   const remove=e.target.closest('.sa-remove-row');
-  if(remove){remove.closest('tr')?.remove();}
+  if(remove){remove.closest('tr')?.remove();return;}
   const add=e.target.closest('[data-add]');
-  if(!add)return;
-  const type=add.dataset.add;
-  if(type==='label'){
-   const key='new'+labelN++;
-   const tr=document.createElement('tr');tr.className='sa-label-row';tr.dataset.newKey=key;tr.innerHTML='<td><input name="labels['+key+'][symbol]" required></td><td><input name="labels['+key+'][name]"></td><td>未使用</td><td><button type="button" class="button-link-delete sa-remove-row">削除</button></td>';
-   document.querySelector('#sa-labels tbody').appendChild(tr);
+  if(add){
+   const type=add.dataset.add;
+   if(type==='label'){
+    const key='new'+labelN++;
+    const tr=document.createElement('tr');tr.className='sa-label-row';tr.dataset.newKey=key;
+    tr.innerHTML='<td><input name="labels['+key+'][symbol]" required></td><td><input name="labels['+key+'][name]"></td><td>未使用</td><td><button type="button" class="button-link-delete sa-remove-row">削除</button></td>';
+    document.querySelector('#sa-labels tbody').appendChild(tr);
+   }
+   if(type==='performance'){
+    const i=perfN++;const tr=document.createElement('tr');
+    tr.innerHTML='<td><input type="hidden" name="performances['+i+'][id]" value="0"><input type="date" name="performances['+i+'][date]"></td><td><input type="time" name="performances['+i+'][start]"></td><td><input type="time" name="performances['+i+'][end]"></td><td><select name="performances['+i+'][label_id]"><option value="">なし</option>'+LABEL_OPTIONS+'</select></td><td><button type="button" class="button-link-delete sa-remove-row">削除</button></td>';
+    document.querySelector('#sa-performances tbody').appendChild(tr);
+   }
+   if(type==='ticket'){
+    const i=ticketN++;const tr=document.createElement('tr');
+    tr.innerHTML='<td><input type="hidden" name="tickets['+i+'][id]" value="0"><input name="tickets['+i+'][description]"></td><td><input type="number" min="0" name="tickets['+i+'][amount]" value="0"></td><td><label><input type="checkbox" name="tickets['+i+'][show_on_reservation]" value="1" checked> 表示</label></td><td><button type="button" class="button-link-delete sa-remove-row">削除</button></td>';
+    document.querySelector('#sa-tickets tbody').appendChild(tr);
+   }
+   if(type==='participant'){
+    const kind=add.dataset.kind,n=document.querySelectorAll('.sa-participants[data-kind="'+kind+'"] tbody tr').length;
+    const source=document.querySelector('.sa-participants[data-kind="'+kind+'"] select');
+    const memberOptions=source?source.innerHTML:'<option value="0">未紐付け</option>';
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td><input type="hidden" name="participants['+kind+']['+n+'][id]" value="0"><input name="participants['+kind+']['+n+'][name]"></td><td><input name="participants['+kind+']['+n+'][role]"></td><td><select name="participants['+kind+']['+n+'][member_id]">'+memberOptions+'</select></td><td><input type="number" min="1" name="participants['+kind+']['+n+'][auth_user_id]"></td><td><button type="button" class="button-link-delete sa-remove-row">削除</button></td>';
+    document.querySelector('.sa-participants[data-kind="'+kind+'"] tbody').appendChild(tr);
+   }
   }
-  if(type==='performance'){
-   const i=perfN++;const tr=document.createElement('tr');tr.innerHTML='<td><input type="hidden" name="performances['+i+'][id]" value="0"><input type="date" name="performances['+i+'][date]"></td><td><input type="time" name="performances['+i+'][start]"></td><td><input type="time" name="performances['+i+'][end]"></td><td><select name="performances['+i+'][label_id]"><option value="">なし</option>__LABEL_OPTIONS__</select></td><td><button type="button" class="button-link-delete sa-remove-row">削除</button></td>';
-   document.querySelector('#sa-performances tbody').appendChild(tr);
-  }
-  if(type==='ticket'){
-   const i=ticketN++;const tr=document.createElement('tr');tr.innerHTML='<td><input type="hidden" name="tickets['+i+'][id]" value="0"><input name="tickets['+i+'][description]"></td><td><input type="number" min="0" name="tickets['+i+'][amount]" value="0"></td><td><label><input type="checkbox" name="tickets['+i+'][show_on_reservation]" value="1" checked> 表示</label></td><td><button type="button" class="button-link-delete sa-remove-row">削除</button></td>';
-   document.querySelector('#sa-tickets tbody').appendChild(tr);
-  }
-  if(type==='participant'){
-   const kind=add.dataset.kind,n=document.querySelectorAll('.sa-participants[data-kind="'+kind+'"] tbody tr').length;const memberOptions='<option value="0">未紐付け</option>'+document.querySelector('.sa-participants[data-kind="'+kind+'"] select')?.innerHTML.replace(/^<option[^>]*>未紐付け<\/option>/,'')||'';
-   const tr=document.createElement('tr');tr.innerHTML='<td><input type="hidden" name="participants['+kind+']['+n+'][id]" value="0"><input name="participants['+kind+']['+n+'][name]"></td><td><input name="participants['+kind+']['+n+'][role]"></td><td><select name="participants['+kind+']['+n+'][member_id]">'+memberOptions+'</select></td><td><input type="number" min="1" name="participants['+kind+']['+n+'][auth_user_id]"></td><td><button type="button" class="button-link-delete sa-remove-row">削除</button></td>';
-   document.querySelector('.sa-participants[data-kind="'+kind+'"] tbody').appendChild(tr);
-  }
- });
- f.addEventListener('click',function(e){
   const addItem=e.target.closest('[data-add-credit-item]');
-  if(addItem){const box=addItem.closest('.sa-credit'),idx=box.dataset.index,wrap=box.querySelector('.sa-credit-items'),j=wrap.querySelectorAll('p').length;const p=document.createElement('p');p.innerHTML='<input type="hidden" name="credits['+idx+'][items]['+j+'][id]" value="0"><input name="credits['+idx+'][items]['+j+'][name]" placeholder="項目名"><input name="credits['+idx+'][items]['+j+'][url]" placeholder="URL"><button type="button" class="button-link-delete sa-remove-item">削除</button>';wrap.appendChild(p);}
-  const removeCredit=e.target.closest('.sa-remove-credit');if(removeCredit){removeCredit.closest('.sa-credit')?.remove();}
-  const removeItem=e.target.closest('.sa-remove-item');if(removeItem){removeItem.closest('p')?.remove();}
- });
- f.addEventListener('click',function(e){
-  const picker=e.target.closest('#sa-media-picker');if(picker){const frame=wp.media({title:'画像を選択',button:{text:'使用する'},multiple:false});frame.on('select',function(){const a=frame.state().get('selection').first().toJSON();document.getElementById('sa-main-image-id').value=a.id;document.getElementById('sa-media-preview').innerHTML='<img src="'+a.url+'" style="max-width:180px;height:auto">';});frame.open();}
+  if(addItem){
+   const box=addItem.closest('.sa-credit'),idx=box.dataset.index,tbody=box.querySelector('.sa-credit-items tbody'),j=tbody.querySelectorAll('tr').length;
+   const tr=document.createElement('tr');
+   tr.innerHTML='<td><input type="hidden" name="credits['+idx+'][items]['+j+'][id]" value="0"><input name="credits['+idx+'][items]['+j+'][name]" placeholder="例：舞台監督"></td><td><input name="credits['+idx+'][items]['+j+'][url]" placeholder="https://example.com"></td><td><button type="button" class="button-link-delete sa-remove-item">削除</button></td>';
+   tbody.appendChild(tr);
+  }
+  const removeCredit=e.target.closest('.sa-remove-credit');if(removeCredit){removeCredit.closest('.sa-credit')?.remove();return;}
+  const removeItem=e.target.closest('.sa-remove-item');if(removeItem){removeItem.closest('tr')?.remove();return;}
+  const release=e.target.closest('.sa-credit-release-enabled');
+  if(release){const date=release.closest('.sa-credit').querySelector('.sa-credit-release-at');if(date){date.disabled=!release.checked;if(!release.checked)date.value='';}}
+  const picker=e.target.closest('#sa-media-picker');
+  if(picker){const frame=wp.media({title:'画像を選択',button:{text:'使用する'},multiple:false});frame.on('select',function(){const x=frame.state().get('selection').first().toJSON();document.getElementById('sa-main-image-id').value=x.id;document.getElementById('sa-media-preview').innerHTML='<img src="'+x.url+'" style="max-width:180px;height:auto">';});frame.open();}
   const clear=e.target.closest('#sa-media-clear');if(clear){document.getElementById('sa-main-image-id').value='';document.getElementById('sa-media-preview').innerHTML='';}
+ });
+ document.querySelectorAll('.sa-credit-release-enabled').forEach(function(cb){
+  const date=cb.closest('.sa-credit').querySelector('.sa-credit-release-at');if(date)date.disabled=!cb.checked;
  });
 })();
 </script>
 JS;
-  $script=str_replace('__LABEL_OPTIONS__', wp_json_encode($labelOptions, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $script);
+  $script=str_replace('LABEL_OPTIONS',wp_json_encode($labelOptions,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES),$script);
   echo $script;
  }
  public function save():void{$this->guard();$id=(int)($_POST['id']??0);$title=sanitize_text_field(wp_unslash($_POST['title']??''));if($title==='')wp_die('公演名を入力してください。');$requested=sanitize_title(wp_unslash($_POST['slug']??''));if($requested==='')$requested=sanitize_title($title);$existing=$id?get_post($id):null;if($existing&&$existing->post_type!=='stageart_production')wp_die('不正な公演です。');$oldSlug=$existing?(string)$existing->post_name:'';$historical=$this->repo->productionIdByHistoricalSlug($requested);if($historical&&$historical!==$id){$base=$requested;$n=2;while($this->repo->productionIdByHistoricalSlug($requested))$requested=$base.'-'.$n++;}$post=['post_type'=>'stageart_production','post_title'=>$title,'post_status'=>($_POST['post_status']??'draft')==='publish'?'publish':'draft','post_name'=>$requested];$id=$id?wp_update_post(array_merge(['ID'=>$id],$post),true):wp_insert_post($post,true);if(is_wp_error($id))wp_die(esc_html($id->get_error_message()));$id=(int)$id;if($oldSlug&&$oldSlug!==$requested)$this->repo->addSlugHistory($id,$oldSlug);$this->repo->addSlugHistory($id,$requested);foreach(['main_image_id','summary','description','schedule_start','schedule_end','venue_name','venue_map','performance_marker','ticket_comment']as$k){$v=isset($_POST[$k])?wp_unslash($_POST[$k]):'';$this->meta($id,$k,$k==='description'?wp_kses_post((string)$v):sanitize_textarea_field((string)$v));}if(isset($_POST['main_image_id']))update_post_meta($id,'main_image_id',max(0,(int)$_POST['main_image_id']));foreach(['main_image_release','summary_release','description_release','schedule_release','performance_release','venue_release','venue_map_release','cast_release','staff_release','ticket_release']as$k)$this->meta($id,$k,$this->utc(isset($_POST[$k])?(string)wp_unslash($_POST[$k]):null));update_post_meta($id,'use_labels',!empty($_POST['use_labels'])?'1':'0');update_post_meta($id,'label_display',in_array($_POST['label_display']??'symbol',['symbol','both'],true)?$_POST['label_display']:'symbol');update_post_meta($id,'legend',in_array($_POST['legend']??'none',['none','above','below'],true)?$_POST['legend']:'none');$performanceView=sanitize_key(wp_unslash($_POST['performance_view']??'table'));if(!in_array($performanceView,['table','list','timeline_line','timeline_grid'],true))$performanceView='table';update_post_meta($id,'performance_view',$performanceView);$performanceSize=sanitize_key(wp_unslash($_POST['performance_size']??'l'));if(!in_array($performanceSize,['l','m','s'],true))$performanceSize='l';update_post_meta($id,'performance_size',$performanceSize);$ticketSize=sanitize_key(wp_unslash($_POST['ticket_size']??'l'));if(!in_array($ticketSize,['l','m','s'],true))$ticketSize='l';update_post_meta($id,'ticket_size',$ticketSize);update_post_meta($id,'tax_display',in_array($_POST['tax_display']??'included',['included','excluded','none'],true)?$_POST['tax_display']:'included');$rawLabels=[];$labelsJson=trim((string)wp_unslash($_POST['labels_json']??''));if($labelsJson!==''){$decoded=json_decode($labelsJson,true);if(is_array($decoded))$rawLabels=$decoded;}if(!$rawLabels)$rawLabels=isset($_POST['labels'])?(array)$_POST['labels']:[];$labelRows=[];foreach($rawLabels as$rowKey=>$row){if(!is_array($row))continue;$labelRows[$rowKey]=['id'=>isset($row['id'])?(int)$row['id']:0,'symbol'=>sanitize_text_field(wp_unslash((string)($row['symbol']??''))),'name'=>sanitize_text_field(wp_unslash((string)($row['name']??'')))];}$labelIds=$this->repo->saveLabels($id,$labelRows,(array)($_POST['deleted_labels']??[]));$performanceRows=$this->cleanRows($_POST['performances']??[]);foreach($performanceRows as&$performanceRow){$labelKey=(string)($performanceRow['label_id']??'');if($labelKey!==''&&!ctype_digit($labelKey)&&isset($labelIds[$labelKey]))$performanceRow['label_id']=$labelIds[$labelKey];}unset($performanceRow);$this->repo->savePerformances($id,$performanceRows);$this->repo->saveTickets($id,$this->cleanRows($_POST['tickets']??[]));foreach(['cast','staff']as$kind)$this->repo->saveParticipants($id,$kind,$this->cleanRows((array)($_POST['participants'][$kind]??[])));$submittedSections=[];foreach((array)($_POST['credits']??[])as$s)if(!empty($s['name']))$submittedSections[]=$s;$oldSections=$this->credits->sections($id,false);$keepSections=[];foreach(array_values($submittedSections)as$order=>$s){$sid=(int)($s['id']??0);$release=!empty($s['release_enabled'])?$this->utc(isset($s['release_at'])?(string)$s['release_at']:null):null;if($sid)$this->credits->updateSection($sid,sanitize_text_field(wp_unslash($s['name'])),$release,$order);else$sid=$this->credits->createSection($id,sanitize_text_field(wp_unslash($s['name'])),$release,$order);$keepSections[]=$sid;$oldItems=$this->credits->items($sid);$keepItems=[];foreach(array_values((array)($s['items']??[]))as$j=>$it){$name=sanitize_text_field(wp_unslash($it['name']??''));if($name==='')continue;$iid=(int)($it['id']??0);$url=esc_url_raw(wp_unslash($it['url']??''));if($iid)$this->credits->updateItem($iid,$name,$url?:null,$j);else$iid=$this->credits->createItem($sid,$name,$url?:null,$j);$keepItems[]=$iid;}foreach($oldItems as$it)if(!in_array((int)$it['id'],$keepItems,true))$this->credits->deleteItem((int)$it['id']);}foreach($oldSections as$s)if(!in_array((int)$s['id'],$keepSections,true))$this->credits->deleteSection((int)$s['id']);wp_safe_redirect(admin_url('admin.php?page=stageart-productions&id='.$id.'&saved=1'));exit;}
