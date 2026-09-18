@@ -117,13 +117,13 @@ final class ThemeAdmin
         $custom = array_merge(Theme::customDefaults(), is_array($saved['custom'] ?? null) ? $saved['custom'] : []);
         $option = 'production_theme';
 
-        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
+        echo '<form id="stageart-production-theme-settings" method="post" action="' . esc_url(admin_url('admin-post.php')) . '" data-stageart-theme-settings="1">';
         wp_nonce_field('stageart_save_production_theme');
         echo '<input type="hidden" name="action" value="stageart_save_production_theme">';
         echo '<input type="hidden" name="production_id" value="' . esc_attr((string)$productionId) . '">';
         echo '<h3>「' . esc_html(get_the_title($productionId)) . '」のテーマ</h3>';
         echo '<table class="form-table">';
-        echo '<tr><th>テーマ</th><td><select name="' . $option . '[preset]">';
+        echo '<tr><th>テーマ</th><td><select id="stageart-production-theme-preset" name="' . $option . '[preset]" autofocus> ';
         foreach (Theme::presets('production') as $key => $theme) {
             echo '<option value="' . esc_attr($key) . '"' . selected($preset, $key, false) . '>' . esc_html($theme['label']) . '</option>';
         }
