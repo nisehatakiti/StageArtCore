@@ -69,12 +69,14 @@ final class ProductionLayoutAdmin
         $nonce=wp_create_nonce('stageart_production_layout');
 
         echo '<div id="stageart-production-layout"><h2>公演ページ・コンテンツ配置</h2><p class="description">公演ページに表示する項目を、ブロック・セクション・スロットの順に配置します。スタッフ・出演者などの標準項目に加え、自由コンテンツも配置できます。</p><div id="sa-pl-root"></div><p><button type="button" class="button" id="sa-pl-add-block">＋ コンテンツブロックを追加</button></p></div>';
-        echo '<script>(function(){
+        $script=<<<'JS'
+(function(){
+
 const form=document.getElementById("stageart-production-form"),mount=document.getElementById("stageart-production-layout"),root=document.getElementById("sa-pl-root");
 if(!form||!mount||!root)return;
-let blocks='.$json.';
-const picker='.$pickerJson.';
-const nonce="'.esc_js($nonce).'";
+let blocks=__BLOCKS__;
+const picker=__PICKER__;
+const nonce="__NONCE__";'.esc_js($nonce).'";
 const hidden=document.createElement("input");hidden.type="hidden";hidden.name="stageart_production_layout";hidden.value="";form.appendChild(hidden);
 const nonceInput=document.createElement("input");nonceInput.type="hidden";nonceInput.name="stageart_production_layout_nonce";nonceInput.value=nonce;form.appendChild(nonceInput);
 function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
@@ -138,7 +140,11 @@ function draw(){
 document.getElementById("sa-pl-add-block").onclick=()=>{blocks.push({block_id:"new-"+Date.now(),sections:[{section_id:"new-"+Date.now()+"-s",heading:"",columns:1,layout:"horizontal",slots:[{type:"none",ref:"",indent:0}]}]});draw();sync();};
 form.addEventListener("submit",sync);
 draw();sync();
-})();</script>';
+
+})();
+JS;
+        $script=str_replace(['__BLOCKS__','__PICKER__','__NONCE__'],[$json,$pickerJson,esc_js($nonce)],$script);
+        echo '<script>'.$script.'</script>';
     }
 
     public function save(): void
