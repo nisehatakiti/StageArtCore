@@ -46,7 +46,7 @@ final class ProductionLayoutAdmin
         .sa-pl-slot .slot-type{width:150px}.sa-pl-slot .slot-content{width:100%;min-width:0}.sa-pl-slot .slot-indent{width:110px}
         .sa-pl-slot .slot-heading{width:100%;min-width:0}
         .sa-pl-slot select,.sa-pl-slot input{max-width:100%;min-width:0}
-        .sa-pl-free-warning{display:block;color:#b32d2e;font-weight:600;font-size:12px}
+        .sa-pl-free-warning{display:block;color:#b32d2e;font-weight:600;font-size:12px}.sa-pl-free-warning[hidden]{display:none}
         @media(max-width:900px){.sa-pl-slot{grid-template-columns:150px minmax(200px,1fr);}.sa-pl-slot .slot-indent{width:110px}.sa-pl-slot .sa-remove-slot{justify-self:start}}
         </style>';
     }
