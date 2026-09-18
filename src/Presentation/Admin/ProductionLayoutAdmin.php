@@ -146,7 +146,7 @@ final class ProductionLayoutAdmin
                         const heading=sl.type==="heading";
                         r.innerHTML="<div class=\"sa-pl-slot-label\">"+(i+1)+"件目</div><div class=\"sa-pl-controls\"><label>項目種別<select data-type><option value=\"link\""+(sl.type!=="heading"?" selected":"")+">コンテンツリンク</option><option value=\"heading\""+(heading?" selected":"")+">見出し</option></select></label><label class=\"sa-pl-content-wrap\">コンテンツ<select class=\"sa-pl-content\">"+picker+"</select></label><label class=\"sa-pl-heading-wrap\">見出し<input class=\"sa-pl-heading\" value=\"\" placeholder=\"見出し\"></label><label>インデント<select class=\"sa-pl-indent\"><option value=\"0\">インデントなし</option><option value=\"1\">1段</option><option value=\"2\">2段</option><option value=\"3\">3段</option></select></label></div>";
                         const c=r.querySelector(".sa-pl-content"),h=r.querySelector(".sa-pl-heading"),hw=r.querySelector(".sa-pl-heading-wrap");
-                        if(heading){h.value=String(sl.ref||"")}else{c.value=sl.ref||""}
+                        if(heading){h.value=String(sl.ref||"")}else{c.value=sl.type==="free_content"?"free_content:"+String(sl.ref||""):String(sl.ref||"")}
                         r.querySelector(".sa-pl-indent").value=String(sl.indent||0);
                         if(!heading)hw.style.display="none";
                         slots.appendChild(r);
