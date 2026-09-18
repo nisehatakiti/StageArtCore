@@ -46,7 +46,7 @@ final class ProductionLayoutAdmin
         .sa-pl-slot .slot-type{width:150px}.sa-pl-slot .slot-content{width:100%;min-width:0}.sa-pl-slot .slot-indent{width:110px}
         .sa-pl-slot .slot-heading{width:100%;min-width:0}
         .sa-pl-slot select,.sa-pl-slot input{max-width:100%;min-width:0}
-        .sa-pl-free-warning{display:block;color:#b32d2e;font-weight:600;font-size:12px}.sa-pl-free-warning[hidden]{display:none}
+        
         @media(max-width:900px){.sa-pl-slot{grid-template-columns:150px minmax(200px,1fr);}.sa-pl-slot .slot-indent{width:110px}.sa-pl-slot .sa-remove-slot{justify-self:start}}
         </style>';
     }
@@ -66,8 +66,7 @@ final class ProductionLayoutAdmin
         foreach($labels as $key=>$label)$picker.='<option value="'.esc_attr($key).'">'.esc_html($label).'</option>';
         foreach($choices as $freeId=>$free){
             $label=(string)$free['title'];
-            if(empty($free['published']))$label.='（現在非公開）';
-            $picker.='<option value="free_content:'.(int)$freeId.'" data-published="'.(!empty($free['published'])?'1':'0').'">'.esc_html($label).'</option>';
+            $picker.='<option value="free_content:'.(int)$freeId.'">'.esc_html($label).'</option>';
         }
         $json=wp_json_encode($blocks,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
         $pickerJson=wp_json_encode($picker,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
@@ -106,15 +105,14 @@ function sync(){
 }
 function slotHtml(slot){
  const type=slot?.type||"none", heading=type==="heading", value=heading?"":(type==="free_content"?"free_content:"+String(slot?.ref||""):String(slot?.ref||""));
- return '<div class="sa-pl-slot"><label class="slot-type">項目種別<select data-type><option value="link" '+(!heading?"selected":"")+'>コンテンツ</option><option value="heading" '+(heading?"selected":"")+'>見出し</option></select></label><label class="slot-content" style="display:'+(heading?"none":"flex")+'">コンテンツ<select data-content>'+picker+'</select><span class="sa-pl-free-warning" hidden>現在非公開</span></label><label class="slot-heading" style="display:'+(heading?"flex":"none")+'">見出し<input data-heading value="'+esc(slot?.ref||"")+'"></label><label class="slot-indent">インデント<select data-indent><option value="0">なし</option><option value="1">1段</option><option value="2">2段</option><option value="3">3段</option></select></label><button type="button" class="button-link-delete sa-remove-slot">削除</button></div>';
+ return '<div class="sa-pl-slot"><label class="slot-type">項目種別<select data-type><option value="link" '+(!heading?"selected":"")+'>コンテンツ</option><option value="heading" '+(heading?"selected":"")+'>見出し</option></select></label><label class="slot-content" style="display:'+(heading?"none":"flex")+'">コンテンツ<select data-content>'+picker+'</select></label><label class="slot-heading" style="display:'+(heading?"flex":"none")+'">見出し<input data-heading value="'+esc(slot?.ref||"")+'"></label><label class="slot-indent">インデント<select data-indent><option value="0">なし</option><option value="1">1段</option><option value="2">2段</option><option value="3">3段</option></select></label><button type="button" class="button-link-delete sa-remove-slot">削除</button></div>';
 }
 function wireSlot(row,slot){
- const c=row.querySelector("[data-content]"),t=row.querySelector("[data-type]"),warn=row.querySelector(".sa-pl-free-warning"),indent=row.querySelector("[data-indent]");
+ const c=row.querySelector("[data-content]"),t=row.querySelector("[data-type]"),indent=row.querySelector("[data-indent]");
  if(c)c.value=slot?.type==="free_content"?"free_content:"+String(slot?.ref||""):String(slot?.ref||"");
  if(indent)indent.value=String(slot?.indent||0);
- const refresh=()=>{const o=c?.options[c.selectedIndex];if(warn)warn.hidden=!(c&&c.value.indexOf("free_content:")===0&&o&&o.dataset.published==="0");};
  t?.addEventListener("change",()=>{const h=t.value==="heading";row.querySelector(".slot-content").style.display=h?"none":"flex";row.querySelector(".slot-heading").style.display=h?"flex":"none";});
- c?.addEventListener("change",refresh);refresh();
+ c?.addEventListener("change",()=>{});
  row.querySelector(".sa-remove-slot").onclick=()=>{row.remove();sync();};
 }
 function draw(){
