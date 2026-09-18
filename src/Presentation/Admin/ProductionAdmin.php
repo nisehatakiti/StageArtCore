@@ -71,8 +71,7 @@ final class ProductionAdmin{
           const t=el.textContent.trim();
           if(t==="公演スケジュール"||t==="公演クレジット")group="content";
         }
-        if(el.id==="stageart-production-display-settings")group="display";
-        if(el.id==="stageart-production-display-settings"){panes.display.appendChild(el);return;}
+        if(el.id==="stageart-production-display-settings"){panes.display.appendChild(el);group="content";return;}
         if(el.id==="stageart-production-layout-mount"){panes.display.appendChild(el);return;}
         if(group==="content"&&el.id==="stageart-production-layout-mount")return;
         panes[group].appendChild(el);
