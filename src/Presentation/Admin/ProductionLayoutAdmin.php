@@ -76,7 +76,7 @@ const form=document.getElementById("stageart-production-form"),mount=document.ge
 if(!form||!mount||!root)return;
 let blocks=__BLOCKS__;
 const picker=__PICKER__;
-const nonce="__NONCE__";'.esc_js($nonce).'";
+const nonce="__NONCE__";
 const hidden=document.createElement("input");hidden.type="hidden";hidden.name="stageart_production_layout";hidden.value="";form.appendChild(hidden);
 const nonceInput=document.createElement("input");nonceInput.type="hidden";nonceInput.name="stageart_production_layout_nonce";nonceInput.value=nonce;form.appendChild(nonceInput);
 function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
