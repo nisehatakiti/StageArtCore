@@ -167,21 +167,23 @@ final class ProductionHeroAdmin
     private function html(string $type, string $selected, int $image, array $presets): string
     {
         $enabled = $type !== '' || $selected !== '' || $image > 0;
-        $html = '<div class="sa-production-mode"><label><input type="checkbox" name="hero_enabled" value="1" ' . checked($enabled, true, false) . '> 公演Heroを使用する</label></div><div class="sa-production-hero-options" style="' . ($enabled ? '' : 'display:none;') . '">';';
-        $html .= '<label><input type="radio" name="hero_image_type" value="preset" ' . checked($type ?: 'preset', 'preset', false) . '> プリセットから選択</label>　';
+        $html = '<div class="sa-production-mode"><label><input type="checkbox" name="hero_enabled" value="1" ' . checked($enabled, true, false) . '> 公演Heroを使用する</label></div>';
+        $html .= '<div class="sa-production-hero-options" style="' . ($enabled ? '' : 'display:none;') . '">';
+        $html .= '<div class="sa-production-mode"><label><input type="radio" name="hero_image_type" value="preset" ' . checked($type ?: 'preset', 'preset', false) . '> プリセットから選択</label>　';
         $html .= '<label><input type="radio" name="hero_image_type" value="custom" ' . checked($type, 'custom', false) . '> 独自画像を使用</label></div>';
         $html .= '<div class="sa-production-presets-wrap"><p>公演の世界観に合わせた抽象イメージを選択できます。</p><div class="sa-production-presets">';
         foreach ($presets as $item) {
-            $id = sanitize_key((string) ($item['id'] ?? ''));
+            $presetId = sanitize_key((string) ($item['id'] ?? ''));
             $file = basename((string) ($item['file'] ?? ''));
-            $label = (string) ($item['label'] ?? $id);
+            $label = (string) ($item['label'] ?? $presetId);
             $category = (string) ($item['category'] ?? '');
             $src = STAGEART_CORE_URL . 'assets/hero/production/' . rawurlencode($file);
-            $class = $selected === $id ? ' is-selected' : '';
-            $html .= '<button type="button" class="sa-production-preset' . $class . '" data-preset="' . esc_attr($id) . '"><img src="' . esc_url($src) . '" alt=""><span>' . esc_html($category . ' / ' . $label) . '</span></button>';
+            $class = $selected === $presetId ? ' is-selected' : '';
+            $html .= '<button type="button" class="sa-production-preset' . $class . '" data-preset="' . esc_attr($presetId) . '"><img src="' . esc_url($src) . '" alt=""><span>' . esc_html($category . ' / ' . $label) . '</span></button>';
         }
         $html .= '</div><input type="hidden" name="hero_image_preset" value="' . esc_attr($selected) . '"></div>';
-        $html .= '</div><div class="sa-production-custom"><input type="hidden" name="hero_image_id" value="' . (int) $image . '"><button type="button" class="button sa-production-media-picker">メディアライブラリから画像を選択</button> <button type="button" class="button sa-production-media-clear">クリア</button><div class="sa-production-custom-preview">' . ($image ? wp_get_attachment_image($image, 'medium') : '') . '</div></div>';
+        $html .= '<div class="sa-production-custom"><input type="hidden" name="hero_image_id" value="' . (int) $image . '"><button type="button" class="button sa-production-media-picker">メディアライブラリから画像を選択</button> <button type="button" class="button sa-production-media-clear">クリア</button><div class="sa-production-custom-preview">' . ($image ? wp_get_attachment_image($image, 'medium') : '') . '</div></div>';
+        $html .= '</div>';
         return $html;
     }
 }
