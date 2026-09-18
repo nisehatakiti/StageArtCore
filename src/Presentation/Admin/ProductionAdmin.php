@@ -54,6 +54,7 @@ final class ProductionAdmin{
  let labelN=document.querySelectorAll('#sa-labels tbody tr').length;
  let perfN=document.querySelectorAll('#sa-performances tbody tr').length;
  let ticketN=document.querySelectorAll('#sa-tickets tbody tr').length;
+ let creditItemN=0;
  f.addEventListener('submit',function(){
   document.querySelectorAll('#sa-credits .sa-credit').forEach(function(box,si){
    box.dataset.index=String(si);
@@ -119,7 +120,7 @@ final class ProductionAdmin{
    const list=box?box.querySelector('.sa-credit-item-list'):null;
    if(!box||!list)return;
    const idx=box.dataset.index||'0';
-   const key='new_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+   const key='new_'+(creditItemN++);
    const item=document.createElement('div');
    item.className='sa-credit-item';
    item.dataset.creditItemKey=key;
@@ -181,8 +182,10 @@ foreach(array_values($submittedSections)as$order=>$s){
  $existingIds=[];
  foreach($existingItems as $existing)$existingIds[(int)$existing['id']]=true;
  $keepItems=[];
+ $itemOrder=0;
  foreach($s['items'] as $itemKey=>$item){
   $itemId=ctype_digit((string)$itemKey)?(int)$itemKey:(int)($item['id']??0);
+  $j=$itemOrder++;
   if($itemId>0&&isset($existingIds[$itemId])){
    if(!$this->credits->updateItem($itemId,$sid,$item['name'],$item['url']??null,$j))wp_die('公演クレジット項目の更新に失敗しました。DB更新エラー');
    $keepItems[]=$itemId;
