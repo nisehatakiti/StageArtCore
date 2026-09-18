@@ -96,7 +96,7 @@ final class ProductionAdmin{
    list.appendChild(item);
   }
   const removeCredit=e.target.closest('.sa-remove-credit');if(removeCredit){removeCredit.closest('.sa-credit')?.remove();return;}
-  const removeItem=e.target.closest('.sa-remove-item');if(removeItem){removeItem.closest('tr')?.remove();return;}
+  const removeItem=e.target.closest('.sa-remove-item');if(removeItem){removeItem.closest('.sa-credit-item')?.remove();return;}
   const release=e.target.closest('.sa-credit-release-enabled');
   if(release){const date=release.closest('.sa-credit').querySelector('.sa-credit-release-at');if(date){date.disabled=!release.checked;if(!release.checked)date.value='';}}
   const picker=e.target.closest('#sa-media-picker');
