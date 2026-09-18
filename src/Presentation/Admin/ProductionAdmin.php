@@ -35,10 +35,10 @@ final class ProductionAdmin{
    if(trim((string)($item['name']??''))==='') continue;
    echo '<div class="sa-credit-item"><input type="hidden" data-credit-item-field="id" name="credits['.(int)$i.'][items]['.(int)$j.'][id]" value="'.(int)$item['id'].'"><input data-credit-item-field="name" name="credits['.(int)$i.'][items]['.(int)$j.'][name]" value="'.esc_attr($item['name']).'" placeholder="例：○○株式会社"><input data-credit-item-field="url" name="credits['.(int)$i.'][items]['.(int)$j.'][url]" value="'.esc_attr($item['url']??'').'" placeholder="リンクURL（任意）"><button type="button" class="button-link-delete sa-remove-item">削除</button></div>';
   }
-  echo '</div><p><button type="button" class="button" data-add-credit-item="1">＋ 項目を追加</button></p></div></div>';
+  echo '</div><p class="sa-credit-item-add"><button type="button" class="button" data-add-credit-item="1">＋ 項目を追加</button></p></div></div>';
  }
  public function creditStyles():void{if(($_GET['page']??'')==='stageart-productions')echo '<style>
-.sa-credit-items{margin:10px 0}.sa-credit-item-list{display:flex;flex-direction:column;gap:8px}.sa-credit-item{display:flex;align-items:center;gap:8px}.sa-credit-item input:not([type=hidden]){width:min(520px,100%)}.sa-credit-item input[data-credit-item-field="url"]{width:min(520px,100%)}.sa-credit-item .sa-remove-item{white-space:nowrap}
+.sa-credit-items{margin:10px 0}.sa-credit-item-list{display:flex;flex-direction:column;gap:8px}.sa-credit-item{display:flex;align-items:center;gap:8px}.sa-credit-item input:not([type=hidden]){width:min(520px,100%)}.sa-credit-item input[data-credit-item-field="url"]{width:min(520px,100%)}.sa-credit-item .sa-remove-item{white-space:nowrap}.sa-credit-item-add{margin-top:8px}
 </style>';}
  private function scripts(array $labels):void
  {
@@ -111,10 +111,24 @@ final class ProductionAdmin{
   }
   const addItem=e.target.closest('[data-add-credit-item]');
   if(addItem){
-   const box=addItem.closest('.sa-credit'),idx=box.dataset.index,list=box.querySelector('.sa-credit-item-list'),j=list.querySelectorAll('.sa-credit-item').length;
-   const item=document.createElement('div');item.className='sa-credit-item';
-   item.innerHTML='<input type="hidden" data-credit-item-field="id" name="credits['+idx+'][items]['+j+'][id]" value="0"><input data-credit-item-field="name" name="credits['+idx+'][items]['+j+'][name]" placeholder="例：○○株式会社"><input data-credit-item-field="url" name="credits['+idx+'][items]['+j+'][url]" placeholder="リンクURL（任意）"><button type="button" class="button-link-delete sa-remove-item">削除</button>';
+   e.preventDefault();
+   const box=addItem.closest('.sa-credit');
+   const list=box?box.querySelector('.sa-credit-item-list'):null;
+   if(!box||!list)return;
+   const idx=box.dataset.index||'0';
+   const j=list.querySelectorAll('.sa-credit-item').length;
+   const item=document.createElement('div');
+   item.className='sa-credit-item';
+   item.innerHTML='<input type="hidden" data-credit-item-field="id" value="0"><input type="text" data-credit-item-field="name" value="" placeholder="名称"><input type="url" data-credit-item-field="url" value="" placeholder="リンクURL（任意）"><button type="button" class="button-link-delete sa-remove-item">削除</button>';
    list.appendChild(item);
+   const itemId=item.querySelector('input[data-credit-item-field="id"]');
+   const itemName=item.querySelector('input[data-credit-item-field="name"]');
+   const itemUrl=item.querySelector('input[data-credit-item-field="url"]');
+   if(itemId)itemId.name='credits['+idx+'][items]['+j+'][id]';
+   if(itemName)itemName.name='credits['+idx+'][items]['+j+'][name]';
+   if(itemUrl)itemUrl.name='credits['+idx+'][items]['+j+'][url]';
+   if(itemName)itemName.focus();
+   return;
   }
   const removeCredit=e.target.closest('.sa-remove-credit');if(removeCredit){removeCredit.closest('.sa-credit')?.remove();return;}
   const removeItem=e.target.closest('.sa-remove-item');if(removeItem){removeItem.closest('.sa-credit-item')?.remove();return;}
