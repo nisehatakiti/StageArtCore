@@ -32,10 +32,13 @@ final class ProductionAdmin{
   echo ' <button type="button" class="button-link-delete sa-remove-credit">区分を削除</button></p>';
   echo '<div class="sa-credit-items"><div class="sa-credit-item-list">';
   foreach($section['items'] as $j=>$item){
-   if(trim((string)($item['name']??''))==='') continue;
-   echo '<div class="sa-credit-item"><input type="hidden" data-credit-item-field="id" name="credits['.(int)$i.'][items]['.(int)$j.'][id]" value="'.(int)$item['id'].'"><input data-credit-item-field="name" name="credits['.(int)$i.'][items]['.(int)$j.'][name]" value="'.esc_attr($item['name']).'" placeholder="例：○○株式会社"><input data-credit-item-field="url" name="credits['.(int)$i.'][items]['.(int)$j.'][url]" value="'.esc_attr($item['url']??'').'" placeholder="リンクURL（任意）"><button type="button" class="button-link-delete sa-remove-item">削除</button></div>';
+   $itemName=trim((string)($item['name']??''));
+   if($itemName==='') continue;
+   $itemId=(int)($item['id']??0);
+   $itemKey=$itemId>0?(string)$itemId:'legacy_'.(int)$i.'_'.(int)$j;
+   echo '<div class="sa-credit-item" data-credit-item-key="'.esc_attr($itemKey).'"><input type="text" data-credit-item-field="name" name="credits['.(int)$i.'][items]['.esc_attr($itemKey).'][name]" value="'.esc_attr($itemName).'" placeholder="名称"><input type="url" data-credit-item-field="url" name="credits['.(int)$i.'][items]['.esc_attr($itemKey).'][url]" value="'.esc_attr($item['url']??'').'" placeholder="リンクURL（任意）"><button type="button" class="button-link-delete sa-remove-item">削除</button></div>';
   }
-  echo '</div><p class="sa-credit-item-add"><button type="button" class="button" data-add-credit-item="1">＋ 項目を追加</button></p><template class="sa-credit-item-template"><div class="sa-credit-item"><input type="hidden" data-credit-item-field="id" value="0"><input type="text" data-credit-item-field="name" value="" placeholder="名称"><input type="url" data-credit-item-field="url" value="" placeholder="リンクURL（任意）"><button type="button" class="button-link-delete sa-remove-item">削除</button></div></template></div></div>';
+  echo '</div><p class="sa-credit-item-add"><button type="button" class="button" data-add-credit-item="1">＋ 項目を追加</button></p></div></div>';
  }
  public function creditStyles():void{if(($_GET['page']??'')==='stageart-productions')echo '<style>
 .sa-credit-items{margin:10px 0}.sa-credit-item-list{display:flex;flex-direction:column;gap:8px}.sa-credit-item{display:flex;align-items:center;gap:8px}.sa-credit-item input:not([type=hidden]){width:min(520px,100%)}.sa-credit-item input[data-credit-item-field="url"]{width:min(520px,100%)}.sa-credit-item .sa-remove-item{white-space:nowrap}.sa-credit-item-add{margin-top:8px}
@@ -62,13 +65,13 @@ final class ProductionAdmin{
    if(sectionName)sectionName.name='credits['+si+'][name]';
    if(releaseEnabled)releaseEnabled.name='credits['+si+'][release_enabled]';
    if(releaseAt)releaseAt.name='credits['+si+'][release_at]';
-   box.querySelectorAll('.sa-credit-item').forEach(function(item,ii){
-    const itemId=item.querySelector('input[data-credit-item-field="id"]');
+   box.querySelectorAll('.sa-credit-item').forEach(function(item){
+    const key=item.dataset.creditItemKey;
     const itemName=item.querySelector('input[data-credit-item-field="name"]');
-    if(itemId)itemId.name='credits['+si+'][items]['+ii+'][id]';
-    if(itemName)itemName.name='credits['+si+'][items]['+ii+'][name]';
     const itemUrl=item.querySelector('input[data-credit-item-field="url"]');
-    if(itemUrl)itemUrl.name='credits['+si+'][items]['+ii+'][url]';
+    if(!key)return;
+    if(itemName)itemName.name='credits['+si+'][items]['+key+'][name]';
+    if(itemUrl)itemUrl.name='credits['+si+'][items]['+key+'][url]';
    });
   });
  });
@@ -116,17 +119,16 @@ final class ProductionAdmin{
    const list=box?box.querySelector('.sa-credit-item-list'):null;
    if(!box||!list)return;
    const idx=box.dataset.index||'0';
-   const j=list.querySelectorAll('.sa-credit-item').length;
-   const template=box.querySelector('.sa-credit-item-template');
-   if(!template)return;
-   const item=template.content.firstElementChild.cloneNode(true);
+   const key='new_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+   const item=document.createElement('div');
+   item.className='sa-credit-item';
+   item.dataset.creditItemKey=key;
+   item.innerHTML='<input type="text" data-credit-item-field="name" value="" placeholder="名称"><input type="url" data-credit-item-field="url" value="" placeholder="リンクURL（任意）"><button type="button" class="button-link-delete sa-remove-item">削除</button>';
    list.appendChild(item);
-   const itemId=item.querySelector('input[data-credit-item-field="id"]');
    const itemName=item.querySelector('input[data-credit-item-field="name"]');
    const itemUrl=item.querySelector('input[data-credit-item-field="url"]');
-   if(itemId)itemId.name='credits['+idx+'][items]['+j+'][id]';
-   if(itemName)itemName.name='credits['+idx+'][items]['+j+'][name]';
-   if(itemUrl)itemUrl.name='credits['+idx+'][items]['+j+'][url]';
+   if(itemName)itemName.name='credits['+idx+'][items]['+key+'][name]';
+   if(itemUrl)itemUrl.name='credits['+idx+'][items]['+key+'][url]';
    if(itemName)itemName.focus();
    return;
   }
@@ -137,9 +139,6 @@ final class ProductionAdmin{
   const picker=e.target.closest('#sa-media-picker');
   if(picker){const frame=wp.media({title:'画像を選択',button:{text:'使用する'},multiple:false});frame.on('select',function(){const x=frame.state().get('selection').first().toJSON();document.getElementById('sa-main-image-id').value=x.id;document.getElementById('sa-media-preview').innerHTML='<img src="'+x.url+'" style="max-width:180px;height:auto">';});frame.open();}
   const clear=e.target.closest('#sa-media-clear');if(clear){document.getElementById('sa-main-image-id').value='';document.getElementById('sa-media-preview').innerHTML='';}
- });
- document.querySelectorAll('#sa-credits .sa-credit').forEach(function(box){
-  box.querySelectorAll('.sa-credit-items > .sa-credit-item').forEach(function(stray){stray.remove();});
  });
  document.querySelectorAll('.sa-credit-release-enabled').forEach(function(cb){
   const date=cb.closest('.sa-credit').querySelector('.sa-credit-release-at');if(date)date.disabled=!cb.checked;
@@ -156,11 +155,12 @@ foreach((array)($_POST['credits']??[]) as $s){
  $name=sanitize_text_field(wp_unslash((string)($s['name']??'')));
  if($name==='')continue;
  $items=[];
- foreach((array)($s['items']??[]) as $it){
+ foreach((array)($s['items']??[]) as $itemKey=>$it){
   if(!is_array($it))continue;
   $itemName=sanitize_text_field(wp_unslash((string)($it['name']??'')));
   if($itemName==='')continue;
-  $items[]=['id'=>(int)($it['id']??0),'name'=>$itemName,'url'=>esc_url_raw(wp_unslash((string)($it['url']??'')))];
+  $key=(string)$itemKey;
+  $items[$key]=['id'=>ctype_digit($key)?(int)$key:0,'name'=>$itemName,'url'=>esc_url_raw(wp_unslash((string)($it['url']??'')))];
  }
  $submittedSections[]=['id'=>(int)($s['id']??0),'name'=>$name,'release_enabled'=>!empty($s['release_enabled']),'release_at'=>(string)($s['release_at']??''),'items'=>$items];
 }
@@ -181,8 +181,8 @@ foreach(array_values($submittedSections)as$order=>$s){
  $existingIds=[];
  foreach($existingItems as $existing)$existingIds[(int)$existing['id']]=true;
  $keepItems=[];
- foreach(array_values($s['items'])as$j=>$item){
-  $itemId=(int)$item['id'];
+ foreach($s['items'] as $itemKey=>$item){
+  $itemId=ctype_digit((string)$itemKey)?(int)$itemKey:(int)($item['id']??0);
   if($itemId>0&&isset($existingIds[$itemId])){
    if(!$this->credits->updateItem($itemId,$sid,$item['name'],$item['url']??null,$j))wp_die('公演クレジット項目の更新に失敗しました。DB更新エラー');
    $keepItems[]=$itemId;
