@@ -35,7 +35,7 @@ final class ProductionAdmin{
    if(trim((string)($item['name']??''))==='') continue;
    echo '<div class="sa-credit-item"><input type="hidden" data-credit-item-field="id" name="credits['.(int)$i.'][items]['.(int)$j.'][id]" value="'.(int)$item['id'].'"><input data-credit-item-field="name" name="credits['.(int)$i.'][items]['.(int)$j.'][name]" value="'.esc_attr($item['name']).'" placeholder="例：○○株式会社"><input data-credit-item-field="url" name="credits['.(int)$i.'][items]['.(int)$j.'][url]" value="'.esc_attr($item['url']??'').'" placeholder="リンクURL（任意）"><button type="button" class="button-link-delete sa-remove-item">削除</button></div>';
   }
-  echo '</div><p class="sa-credit-item-add"><button type="button" class="button" data-add-credit-item="1">＋ 項目を追加</button></p></div></div>';
+  echo '</div><p class="sa-credit-item-add"><button type="button" class="button" data-add-credit-item="1">＋ 項目を追加</button></p><template class="sa-credit-item-template"><div class="sa-credit-item"><input type="hidden" data-credit-item-field="id" value="0"><input type="text" data-credit-item-field="name" value="" placeholder="名称"><input type="url" data-credit-item-field="url" value="" placeholder="リンクURL（任意）"><button type="button" class="button-link-delete sa-remove-item">削除</button></div></template></div></div>';
  }
  public function creditStyles():void{if(($_GET['page']??'')==='stageart-productions')echo '<style>
 .sa-credit-items{margin:10px 0}.sa-credit-item-list{display:flex;flex-direction:column;gap:8px}.sa-credit-item{display:flex;align-items:center;gap:8px}.sa-credit-item input:not([type=hidden]){width:min(520px,100%)}.sa-credit-item input[data-credit-item-field="url"]{width:min(520px,100%)}.sa-credit-item .sa-remove-item{white-space:nowrap}.sa-credit-item-add{margin-top:8px}
@@ -117,9 +117,9 @@ final class ProductionAdmin{
    if(!box||!list)return;
    const idx=box.dataset.index||'0';
    const j=list.querySelectorAll('.sa-credit-item').length;
-   const item=document.createElement('div');
-   item.className='sa-credit-item';
-   item.innerHTML='<input type="hidden" data-credit-item-field="id" value="0"><input type="text" data-credit-item-field="name" value="" placeholder="名称"><input type="url" data-credit-item-field="url" value="" placeholder="リンクURL（任意）"><button type="button" class="button-link-delete sa-remove-item">削除</button>';
+   const template=box.querySelector('.sa-credit-item-template');
+   if(!template)return;
+   const item=template.content.firstElementChild.cloneNode(true);
    list.appendChild(item);
    const itemId=item.querySelector('input[data-credit-item-field="id"]');
    const itemName=item.querySelector('input[data-credit-item-field="name"]');
@@ -137,6 +137,9 @@ final class ProductionAdmin{
   const picker=e.target.closest('#sa-media-picker');
   if(picker){const frame=wp.media({title:'画像を選択',button:{text:'使用する'},multiple:false});frame.on('select',function(){const x=frame.state().get('selection').first().toJSON();document.getElementById('sa-main-image-id').value=x.id;document.getElementById('sa-media-preview').innerHTML='<img src="'+x.url+'" style="max-width:180px;height:auto">';});frame.open();}
   const clear=e.target.closest('#sa-media-clear');if(clear){document.getElementById('sa-main-image-id').value='';document.getElementById('sa-media-preview').innerHTML='';}
+ });
+ document.querySelectorAll('#sa-credits .sa-credit').forEach(function(box){
+  box.querySelectorAll('.sa-credit-items > .sa-credit-item').forEach(function(stray){stray.remove();});
  });
  document.querySelectorAll('.sa-credit-release-enabled').forEach(function(cb){
   const date=cb.closest('.sa-credit').querySelector('.sa-credit-release-at');if(date)date.disabled=!cb.checked;
