@@ -46,6 +46,63 @@ final class ProductionAdmin{
 </style>';}
  private function scripts(array $labels):void
  {
+  echo '<style>
+  #stageart-production-tabs{display:flex;gap:0;margin:20px 0 0;border-bottom:1px solid #c3c4c7}
+  #stageart-production-tabs button{border:1px solid #c3c4c7;border-bottom:0;background:#f6f7f7;padding:10px 18px;font-weight:600;cursor:pointer;margin-right:4px;border-radius:4px 4px 0 0}
+  #stageart-production-tabs button.is-active{background:#fff;color:#2271b1;box-shadow:0 -1px 0 #fff}
+  .sa-production-pane{background:#fff;padding:20px;border:1px solid #c3c4c7;border-top:0;margin-bottom:20px}
+  #stageart-production-display-settings{display:block}
+  #stageart-production-display-settings .sa-production-display-card{padding:16px 0;border-bottom:1px solid #ddd}
+  #stageart-production-display-settings .sa-production-display-card:last-child{border-bottom:0}
+  </style>';
+  echo '<div id="stageart-production-tabs" role="tablist"><button type="button" data-sa-tab="basic">基本情報</button><button type="button" data-sa-tab="content">コンテンツ管理</button><button type="button" data-sa-tab="display">表示管理</button></div>';
+  echo '<script>
+  document.addEventListener("DOMContentLoaded",function(){
+    setTimeout(function(){
+      const form=document.getElementById("stageart-production-form");if(!form)return;
+      const tabs=document.getElementById("stageart-production-tabs");if(!tabs)return;
+      const panes={basic:document.createElement("div"),content:document.createElement("div"),display:document.createElement("div")};
+      Object.keys(panes).forEach(function(k){panes[k].className="sa-production-pane";panes[k].dataset.saPane=k;});
+      const children=Array.from(form.children),skip=new Set(["stageart-production-tabs"]);
+      let group="basic";
+      children.forEach(function(el){
+        if(el===tabs||el.tagName==="SCRIPT"||el.tagName==="STYLE")return;
+        if(el.tagName==="H2"){
+          const t=el.textContent.trim();
+          if(t==="公演スケジュール"||t==="公演クレジット")group="content";
+        }
+        if(el.id==="stageart-production-display-settings")group="display";
+        if(el.id==="stageart-production-display-settings"){panes.display.appendChild(el);return;}
+        if(el.id==="stageart-production-layout-mount"){panes.display.appendChild(el);return;}
+        if(group==="content"&&el.id==="stageart-production-layout-mount")return;
+        panes[group].appendChild(el);
+      });
+      form.insertBefore(panes.basic,tabs.nextSibling);
+      form.insertBefore(panes.content,panes.basic.nextSibling);
+      form.insertBefore(panes.display,panes.content.nextSibling);
+      function moveHero(){
+        const mount=document.getElementById("stageart-production-hero-mount");
+        if(!mount)return;
+        const hero=document.getElementById("stageart-production-hero-settings");
+        if(hero&&!mount.contains(hero)){
+          const row=hero.closest("tr");
+          if(row){const wrap=document.createElement("div");wrap.className="sa-production-display-card";wrap.appendChild(row);mount.appendChild(wrap);}
+          else mount.appendChild(hero);
+        }
+      }
+      moveHero();
+      setTimeout(moveHero,50);
+      function show(key){
+        Object.keys(panes).forEach(function(k){panes[k].style.display=k===key?"block":"none";});
+        tabs.querySelectorAll("button").forEach(function(b){b.classList.toggle("is-active",b.dataset.saTab===key);});
+        try{localStorage.setItem("stageart-production-tab",key);}catch(e){}
+      }
+      tabs.querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){show(b.dataset.saTab);});});
+      let initial="basic";try{initial=localStorage.getItem("stageart-production-tab")||"basic";}catch(e){}
+      if(!panes[initial])initial="basic";show(initial);
+    },0);
+  });
+  </script>';
   $labelOptions='';
   foreach($labels as $l)$labelOptions.='<option value="'.(int)$l['id'].'">'.esc_html($l['symbol'].' '.$l['name']).'</option>';
   $script=<<<JS
