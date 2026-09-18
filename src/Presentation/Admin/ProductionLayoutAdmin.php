@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StageArtCore\Presentation\Admin;
 
 use StageArtCore\Presentation\PublicSite\ProductionLayout;
+use StageArtCore\Presentation\Admin\FreeContentAdmin;
 
 final class ProductionLayoutAdmin
 {
@@ -43,6 +44,8 @@ final class ProductionLayoutAdmin
         foreach ($labels as $key => $value) {
             $picker .= '<option value="' . esc_attr($key) . '">' . esc_html($value) . '</option>';
         }
+
+        foreach (FreeContentAdmin::choices($id) as $freeId => $free) { $picker .= '<option value="free_content:' . (int)$freeId . '">' . esc_html($free['title']) . '</option>'; }
 
         $json = wp_json_encode($sections, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $pickerJson = wp_json_encode($picker, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
