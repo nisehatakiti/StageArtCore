@@ -71,3 +71,15 @@ Text Domain: stageart-theatre
 .stageart-performance-timeline--grid td:after{content:""!important;position:absolute!important;top:0!important;bottom:0!important;left:50%!important;border-left:1px solid var(--line)!important;transform:translateX(-50%)!important;z-index:0!important}
 .stageart-performance-timeline--grid .stageart-performance-timeline-line:before{content:none!important}.stageart-performance-timeline--grid .stageart-performance-timeline-line:after{content:none!important}
 .stageart-performance-timeline--grid .stageart-performance-timeline-line b{position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;z-index:2!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:1.4em!important;min-height:1.4em!important;padding:0 4px!important;background:var(--card-bg,var(--paper))!important;font-weight:600!important;white-space:nowrap!important}
+
+
+/* Production content typography */
+.stageart-production-layout-slot--title .stageart-production-crown{font-size:1.4rem!important;line-height:1.4!important;letter-spacing:.12em!important;margin-bottom:18px!important;}
+.stageart-production-layout-slot--title h1{font-size:clamp(4rem,7vw,6.5rem)!important;}
+.stageart-production-layout-slot--venue h2,.stageart-production-layout-slot--venue h3{font-size:2rem!important;}
+.stageart-production-layout-slot--venue p{font-size:1.5rem!important;line-height:1.7!important;}
+.stageart-production-layout-slot--tickets .stageart-ticket-list{font-size:1.5rem!important;line-height:1.8!important;}
+.stageart-production-layout-slot--tickets.stageart-size-s .stageart-ticket-list{font-size:1.3rem!important;}
+.stageart-production-layout-slot--tickets.stageart-size-m .stageart-ticket-list{font-size:1.6rem!important;}
+.stageart-production-layout-slot--tickets.stageart-size-l .stageart-ticket-list{font-size:2rem!important;}
+.stageart-production-layout-slot--tickets .stageart-ticket-comment{font-size:1.15rem!important;line-height:1.8!important;}
