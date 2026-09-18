@@ -33,12 +33,12 @@ final class ProductionAdmin{
   echo '<div class="sa-credit-items"><div class="sa-credit-item-list">';
   foreach($section['items'] as $j=>$item){
    if(trim((string)($item['name']??''))==='') continue;
-   echo '<div class="sa-credit-item"><input type="hidden" data-credit-item-field="id" name="credits['.(int)$i.'][items]['.(int)$j.'][id]" value="'.(int)$item['id'].'"><input data-credit-item-field="name" name="credits['.(int)$i.'][items]['.(int)$j.'][name]" value="'.esc_attr($item['name']).'" placeholder="例：○○株式会社"><button type="button" class="button-link-delete sa-remove-item">削除</button></div>';
+   echo '<div class="sa-credit-item"><input type="hidden" data-credit-item-field="id" name="credits['.(int)$i.'][items]['.(int)$j.'][id]" value="'.(int)$item['id'].'"><input data-credit-item-field="name" name="credits['.(int)$i.'][items]['.(int)$j.'][name]" value="'.esc_attr($item['name']).'" placeholder="例：○○株式会社"><input data-credit-item-field="url" name="credits['.(int)$i.'][items]['.(int)$j.'][url]" value="'.esc_attr($item['url']??'').'" placeholder="リンクURL（任意）"><button type="button" class="button-link-delete sa-remove-item">削除</button></div>';
   }
   echo '</div><p><button type="button" class="button" data-add-credit-item="1">＋ 項目を追加</button></p></div></div>';
  }
  public function creditStyles():void{if(($_GET['page']??'')==='stageart-productions')echo '<style>
-.sa-credit-items{margin:10px 0}.sa-credit-item-list{display:flex;flex-direction:column;gap:8px}.sa-credit-item{display:flex;align-items:center;gap:8px}.sa-credit-item input:not([type=hidden]){width:min(520px,100%)}.sa-credit-item .sa-remove-item{white-space:nowrap}
+.sa-credit-items{margin:10px 0}.sa-credit-item-list{display:flex;flex-direction:column;gap:8px}.sa-credit-item{display:flex;align-items:center;gap:8px}.sa-credit-item input:not([type=hidden]){width:min(520px,100%)}.sa-credit-item input[data-credit-item-field="url"]{width:min(520px,100%)}.sa-credit-item .sa-remove-item{white-space:nowrap}
 </style>';}
  private function scripts(array $labels):void
  {
@@ -90,6 +90,8 @@ final class ProductionAdmin{
     const itemName=item.querySelector('input[data-credit-item-field="name"]');
     if(itemId)itemId.name='credits['+si+'][items]['+ii+'][id]';
     if(itemName)itemName.name='credits['+si+'][items]['+ii+'][name]';
+    const itemUrl=item.querySelector('input[data-credit-item-field="url"]');
+    if(itemUrl)itemUrl.name='credits['+si+'][items]['+ii+'][url]';
    });
   });
  });
@@ -134,7 +136,7 @@ final class ProductionAdmin{
   if(addItem){
    const box=addItem.closest('.sa-credit'),idx=box.dataset.index,list=box.querySelector('.sa-credit-item-list'),j=list.querySelectorAll('.sa-credit-item').length;
    const item=document.createElement('div');item.className='sa-credit-item';
-   item.innerHTML='<input type="hidden" data-credit-item-field="id" name="credits['+idx+'][items]['+j+'][id]" value="0"><input data-credit-item-field="name" name="credits['+idx+'][items]['+j+'][name]" placeholder="例：○○株式会社"><button type="button" class="button-link-delete sa-remove-item">削除</button>';
+   item.innerHTML='<input type="hidden" data-credit-item-field="id" name="credits['+idx+'][items]['+j+'][id]" value="0"><input data-credit-item-field="name" name="credits['+idx+'][items]['+j+'][name]" placeholder="例：○○株式会社"><input data-credit-item-field="url" name="credits['+idx+'][items]['+j+'][url]" placeholder="リンクURL（任意）"><button type="button" class="button-link-delete sa-remove-item">削除</button>';
    list.appendChild(item);
   }
   const removeCredit=e.target.closest('.sa-remove-credit');if(removeCredit){removeCredit.closest('.sa-credit')?.remove();return;}
@@ -164,7 +166,7 @@ foreach((array)($_POST['credits']??[]) as $s){
   if(!is_array($it))continue;
   $itemName=sanitize_text_field(wp_unslash((string)($it['name']??'')));
   if($itemName==='')continue;
-  $items[]=['id'=>(int)($it['id']??0),'name'=>$itemName];
+  $items[]=['id'=>(int)($it['id']??0),'name'=>$itemName,'url'=>esc_url_raw(wp_unslash((string)($it['url']??'')))];
  }
  $submittedSections[]=['id'=>(int)($s['id']??0),'name'=>$name,'release_enabled'=>!empty($s['release_enabled']),'release_at'=>(string)($s['release_at']??''),'items'=>$items];
 }
@@ -174,7 +176,7 @@ foreach(array_values($submittedSections)as$order=>$s){
  $sid=(int)$s['id'];
  $release=!empty($s['release_enabled'])?$this->utc((string)$s['release_at']):null;
  if($sid){
-  $ok=$this->credits->updateSection($sid,$s['name'],$release,$order);
+  $ok=$this->credits->updateSection($sid,$id,$s['name'],$release,$order);
   if(!$ok)wp_die('公演クレジット区分の更新に失敗しました。DB更新エラー');
  }else{
   $sid=$this->credits->createSection($id,$s['name'],$release,$order);
@@ -188,22 +190,22 @@ foreach(array_values($submittedSections)as$order=>$s){
  foreach(array_values($s['items'])as$j=>$item){
   $itemId=(int)$item['id'];
   if($itemId>0&&isset($existingIds[$itemId])){
-   if(!$this->credits->updateItem($itemId,$item['name'],null,$j))wp_die('公演クレジット項目の更新に失敗しました。DB更新エラー');
+   if(!$this->credits->updateItem($itemId,$sid,$item['name'],$item['url']??null,$j))wp_die('公演クレジット項目の更新に失敗しました。DB更新エラー');
    $keepItems[]=$itemId;
   }else{
-   $newItemId=$this->credits->createItem($sid,$item['name'],null,$j);
+   $newItemId=$this->credits->createItem($sid,$item['name'],$item['url']??null,$j);
    if($newItemId<=0)wp_die('公演クレジット項目の追加に失敗しました。DB更新エラー');
    $keepItems[]=$newItemId;
   }
  }
  foreach($existingItems as $existing){
   $existingId=(int)$existing['id'];
-  if(!in_array($existingId,$keepItems,true)&&!$this->credits->deleteItem($existingId))wp_die('公演クレジット項目の削除に失敗しました。DB更新エラー');
+  if(!in_array($existingId,$keepItems,true)&&!$this->credits->deleteItem($existingId,$sid))wp_die('公演クレジット項目の削除に失敗しました。DB更新エラー');
  }
  $savedItems=$this->credits->items($sid);
  if(count($savedItems)!==count($s['items']))wp_die('公演クレジット項目の保存件数を確認できませんでした。');
 }
-foreach($oldSections as$s)if(!in_array((int)$s['id'],$keepSections,true))$this->credits->deleteSection((int)$s['id']);
+foreach($oldSections as$s)if(!in_array((int)$s['id'],$keepSections,true))$this->credits->deleteSection((int)$s['id'],$id);
 
 wp_safe_redirect(admin_url('admin.php?page=stageart-productions&id='.$id.'&saved=1'));exit;}
  private function cleanRows(array$rows):array{$out=[];foreach($rows as$rowKey=>$r){if(!is_array($r))continue;$x=[];foreach($r as$k=>$v)$x[$k]=is_string($v)?sanitize_text_field(wp_unslash($v)):$v;$out[$rowKey]=$x;}return$out;}
