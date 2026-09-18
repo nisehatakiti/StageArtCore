@@ -18,7 +18,7 @@ final class RepresentativeGreetingAdmin
 
     public function registerMenu(): void
     {
-        add_submenu_page('stageart-plugin', '劇団代表挨拶', '劇団代表挨拶', 'manage_options', 'stageart-representative-greeting', [$this, 'render']);
+        // 団体ページの「コンテンツ管理」から編集します。
     }
 
     private function guard(): void
