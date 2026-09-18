@@ -25,15 +25,15 @@ final class ProductionAdmin{
  {
   $releaseEnabled=!empty($section['release_at']);
   echo '<div class="sa-credit" data-index="'.(int)$i.'">';
-  echo '<p><input type="hidden" name="credits['.(int)$i.'][id]" value="'.(int)$section['id'].'">';
-  echo '<input name="credits['.(int)$i.'][name]" value="'.esc_attr($section['name']).'" placeholder="例：協賛">';
-  echo ' <label><input type="checkbox" class="sa-credit-release-enabled" name="credits['.(int)$i.'][release_enabled]" value="1" '.checked($releaseEnabled,true,false).'> 情報解禁日を設定する</label>';
-  echo ' <input type="datetime-local" class="sa-credit-release-at" name="credits['.(int)$i.'][release_at]" value="'.esc_attr($this->jst($section['release_at']??'')).'" '.disabled(!$releaseEnabled,true,false).'>';
+  echo '<p><input type="hidden" data-credit-field="id" name="credits['.(int)$i.'][id]" value="'.(int)$section['id'].'">';
+  echo '<input data-credit-field="name" name="credits['.(int)$i.'][name]" value="'.esc_attr($section['name']).'" placeholder="例：協賛">';
+  echo ' <label><input type="checkbox" class="sa-credit-release-enabled" data-credit-field="release_enabled" name="credits['.(int)$i.'][release_enabled]" value="1" '.checked($releaseEnabled,true,false).'> 情報解禁日を設定する</label>';
+  echo ' <input type="datetime-local" class="sa-credit-release-at" data-credit-field="release_at" name="credits['.(int)$i.'][release_at]" value="'.esc_attr($this->jst($section['release_at']??'')).'" '.disabled(!$releaseEnabled,true,false).'>';
   echo ' <button type="button" class="button-link-delete sa-remove-credit">区分を削除</button></p>';
   echo '<div class="sa-credit-items"><div class="sa-credit-item-list">';
   foreach($section['items'] as $j=>$item){
    if(trim((string)($item['name']??''))==='') continue;
-   echo '<div class="sa-credit-item"><input type="hidden" name="credits['.(int)$i.'][items]['.(int)$j.'][id]" value="'.(int)$item['id'].'"><input name="credits['.(int)$i.'][items]['.(int)$j.'][name]" value="'.esc_attr($item['name']).'" placeholder="例：○○株式会社"><button type="button" class="button-link-delete sa-remove-item">削除</button></div>';
+   echo '<div class="sa-credit-item"><input type="hidden" data-credit-item-field="id" name="credits['.(int)$i.'][items]['.(int)$j.'][id]" value="'.(int)$item['id'].'"><input data-credit-item-field="name" name="credits['.(int)$i.'][items]['.(int)$j.'][name]" value="'.esc_attr($item['name']).'" placeholder="例：○○株式会社"><button type="button" class="button-link-delete sa-remove-item">削除</button></div>';
   }
   echo '</div><p><button type="button" class="button" data-add-credit-item="1">＋ 項目を追加</button></p></div></div>';
  }
@@ -54,16 +54,19 @@ final class ProductionAdmin{
  f.addEventListener('submit',function(){
   document.querySelectorAll('#sa-credits .sa-credit').forEach(function(box,si){
    box.dataset.index=String(si);
-   box.querySelectorAll('input[name],select[name],textarea[name]').forEach(function(el){
-    const name=el.getAttribute('name');
-    if(!name||name.indexOf('credits[')!==0)return;
-    const m=name.match(/^credits\\[[^\\]]+\\]\\[(id|name|release_enabled|release_at)\\]$/);
-    if(m){el.name='credits['+si+']['+m[1]+']';return;}
-    const im=name.match(/^credits\\[[^\\]]+\\]\\[items\\]\\[[^\\]]+\\]\\[(id|name)\\]$/);
-    if(im){
-     const item=el.closest('.sa-credit-item');
-     if(item){const list=box.querySelectorAll('.sa-credit-item');let ii=0;list.forEach(function(x,n){if(x===item)ii=n;});el.name='credits['+si+'][items]['+ii+']['+im[1]+']';}
-    }
+   const sectionId=box.querySelector('input[data-credit-field="id"]');
+   const sectionName=box.querySelector('input[data-credit-field="name"]');
+   const releaseEnabled=box.querySelector('input[data-credit-field="release_enabled"]');
+   const releaseAt=box.querySelector('input[data-credit-field="release_at"]');
+   if(sectionId)sectionId.name='credits['+si+'][id]';
+   if(sectionName)sectionName.name='credits['+si+'][name]';
+   if(releaseEnabled)releaseEnabled.name='credits['+si+'][release_enabled]';
+   if(releaseAt)releaseAt.name='credits['+si+'][release_at]';
+   box.querySelectorAll('.sa-credit-item').forEach(function(item,ii){
+    const itemId=item.querySelector('input[data-credit-item-field="id"]');
+    const itemName=item.querySelector('input[data-credit-item-field="name"]');
+    if(itemId)itemId.name='credits['+si+'][items]['+ii+'][id]';
+    if(itemName)itemName.name='credits['+si+'][items]['+ii+'][name]';
    });
   });
  });
@@ -101,14 +104,14 @@ final class ProductionAdmin{
   if(add&&add.dataset.add==='credit'){
    const credits=document.getElementById('sa-credits'),idx=credits.querySelectorAll('.sa-credit').length;
    const box=document.createElement('div');box.className='sa-credit';box.dataset.index=String(idx);
-   box.innerHTML='<p><input type="hidden" name="credits['+idx+'][id]" value="0"><input name="credits['+idx+'][name]" placeholder="例：協賛"> <label><input type="checkbox" class="sa-credit-release-enabled" name="credits['+idx+'][release_enabled]" value="1"> 情報解禁日を設定する</label> <input type="datetime-local" class="sa-credit-release-at" name="credits['+idx+'][release_at]" disabled> <button type="button" class="button-link-delete sa-remove-credit">区分を削除</button></p><div class="sa-credit-items"><div class="sa-credit-item-list"></div><p><button type="button" class="button" data-add-credit-item="1">＋ 項目を追加</button></p></div></div>';
+   box.innerHTML='<p><input type="hidden" data-credit-field="id" name="credits['+idx+'][id]" value="0"><input data-credit-field="name" name="credits['+idx+'][name]" placeholder="例：協賛"> <label><input type="checkbox" class="sa-credit-release-enabled" data-credit-field="release_enabled" name="credits['+idx+'][release_enabled]" value="1"> 情報解禁日を設定する</label> <input type="datetime-local" class="sa-credit-release-at" data-credit-field="release_at" name="credits['+idx+'][release_at]" disabled> <button type="button" class="button-link-delete sa-remove-credit">区分を削除</button></p><div class="sa-credit-items"><div class="sa-credit-item-list"></div><p><button type="button" class="button" data-add-credit-item="1">＋ 項目を追加</button></p></div></div>';
    credits.appendChild(box);
   }
   const addItem=e.target.closest('[data-add-credit-item]');
   if(addItem){
    const box=addItem.closest('.sa-credit'),idx=box.dataset.index,list=box.querySelector('.sa-credit-item-list'),j=list.querySelectorAll('.sa-credit-item').length;
    const item=document.createElement('div');item.className='sa-credit-item';
-   item.innerHTML='<input type="hidden" name="credits['+idx+'][items]['+j+'][id]" value="0"><input name="credits['+idx+'][items]['+j+'][name]" placeholder="例：○○株式会社"><button type="button" class="button-link-delete sa-remove-item">削除</button>';
+   item.innerHTML='<input type="hidden" data-credit-item-field="id" name="credits['+idx+'][items]['+j+'][id]" value="0"><input data-credit-item-field="name" name="credits['+idx+'][items]['+j+'][name]" placeholder="例：○○株式会社"><button type="button" class="button-link-delete sa-remove-item">削除</button>';
    list.appendChild(item);
   }
   const removeCredit=e.target.closest('.sa-remove-credit');if(removeCredit){removeCredit.closest('.sa-credit')?.remove();return;}
