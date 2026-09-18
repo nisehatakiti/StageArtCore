@@ -51,6 +51,22 @@ final class ProductionAdmin{
  let labelN=document.querySelectorAll('#sa-labels tbody tr').length;
  let perfN=document.querySelectorAll('#sa-performances tbody tr').length;
  let ticketN=document.querySelectorAll('#sa-tickets tbody tr').length;
+ f.addEventListener('submit',function(){
+  document.querySelectorAll('#sa-credits .sa-credit').forEach(function(box,si){
+   box.dataset.index=String(si);
+   box.querySelectorAll('input[name],select[name],textarea[name]').forEach(function(el){
+    const name=el.getAttribute('name');
+    if(!name||name.indexOf('credits[')!==0)return;
+    const m=name.match(/^credits\\[[^\\]]+\\]\\[(id|name|release_enabled|release_at)\\]$/);
+    if(m){el.name='credits['+si+']['+m[1]+']';return;}
+    const im=name.match(/^credits\\[[^\\]]+\\]\\[items\\]\\[[^\\]]+\\]\\[(id|name)\\]$/);
+    if(im){
+     const item=el.closest('.sa-credit-item');
+     if(item){const list=box.querySelectorAll('.sa-credit-item');let ii=0;list.forEach(function(x,n){if(x===item)ii=n;});el.name='credits['+si+'][items]['+ii+']['+im[1]+']';}
+    }
+   });
+  });
+ });
  f.addEventListener('click',function(e){
   const remove=e.target.closest('.sa-remove-row');
   if(remove){remove.closest('tr')?.remove();return;}
