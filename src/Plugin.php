@@ -21,6 +21,7 @@ use StageArtCore\Presentation\Admin\SiteSettingsAdmin;
 use StageArtCore\Presentation\Admin\SiteStructureAdmin;
 use StageArtCore\Presentation\Admin\ThemeAdmin;
 use StageArtCore\Presentation\Admin\FreeContentAdmin;
+use StageArtCore\Presentation\Admin\OrganizationAdmin;
 use StageArtCore\Presentation\Admin\SurveyAdmin;
 use StageArtCore\Presentation\Admin\SurveyResultsAdmin;
 use StageArtCore\Presentation\Admin\SurveyQrAdmin;
@@ -49,6 +50,7 @@ final class Plugin
             register_post_type('stageart_production', ['labels'=>['name'=>'公演','singular_name'=>'公演'],'public'=>false,'show_ui'=>false,'supports'=>['title'],'rewrite'=>false]);
         }, 5);
         add_action('admin_menu', [new AdminMenu(), 'register']);
+        add_action('admin_menu', [new OrganizationAdmin(), 'register'], 20);
         add_action('admin_menu', [new SiteSettingsAdmin(), 'register'], 20);
         add_action('admin_menu', [new SiteStructureAdmin(), 'register'], 21);
         add_action('admin_menu', [new ThemeAdmin(), 'register'], 22);
