@@ -10,7 +10,6 @@ final class FreeContentAdmin
     public function register():void
     {
         register_post_type(self::POST_TYPE,['labels'=>['name'=>'自由コンテンツ','singular_name'=>'自由コンテンツ'],'public'=>false,'show_ui'=>false,'show_in_menu'=>false,'supports'=>['title','editor'],'rewrite'=>false]);
-        add_submenu_page('stageart-plugin','自由コンテンツ','自由コンテンツ','manage_options','stageart-free-content',[$this,'renderList']);
         add_action('admin_post_stageart_save_free_content',[$this,'save']);$legacy=get_posts(['post_type'=>self::POST_TYPE,'post_status'=>'draft','numberposts'=>-1]);foreach($legacy as $legacyPost)wp_update_post(['ID'=>$legacyPost->ID,'post_status'=>'publish']);
     }
     public static function choices(?int $productionId = null, array $includeIds = []): array
