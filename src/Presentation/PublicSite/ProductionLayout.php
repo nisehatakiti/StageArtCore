@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace StageArtCore\Presentation\PublicSite;
 
+use StageArtCore\Presentation\Admin\FreeContentAdmin;
+
 final class ProductionLayout
 {
     public const OPTION = 'stageart_core_production_layout';
@@ -31,6 +33,7 @@ final class ProductionLayout
             'tickets' => 'チケット料金',
             'survey' => 'アンケート',
             'credits' => '公演クレジット',
+            'free_content' => '自由コンテンツ',
         ];
     }
 
@@ -51,10 +54,10 @@ final class ProductionLayout
 
     public static function save(int $id, array $sections): void
     {
-        update_post_meta($id, self::OPTION, self::normalize($sections));
+        update_post_meta($id, self::OPTION, self::normalize($sections, $id));
     }
 
-    private static function normalize(array $sections): array
+    private static function normalize(array $sections, ?int $productionId = null): array
     {
         $labels = self::contentLabels();
         $out = [];
@@ -98,6 +101,19 @@ final class ProductionLayout
                         ];
                     }
                     continue;
+                }
+
+                if ($type === self::SLOT_LINK) {
+                    $ref = sanitize_key((string) ($slot['ref'] ?? ''));
+                    if ($ref === 'free_content') {
+                        $refId = absint($slot['ref_id'] ?? 0);
+                        if (!$refId || !FreeContentAdmin::canReference($refId, $productionId)) {
+                            $slots[] = ['type'=>self::SLOT_NONE,'ref'=>'','indent'=>$indent];
+                            continue;
+                        }
+                        $slots[] = ['type'=>'free_content','ref'=>(string)$refId,'indent'=>$indent];
+                        continue;
+                    }
                 }
 
                 if ($type !== self::SLOT_LINK) {
