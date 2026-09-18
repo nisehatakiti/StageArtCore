@@ -13,9 +13,16 @@ final class OrganizationHeroPublic
 
     private function presets(): array
     {
+        $organizationDir = defined('STAGEART_HERO_ASSETS_DIR')
+            ? STAGEART_HERO_ASSETS_DIR . 'assets/hero/organization/'
+            : STAGEART_CORE_DIR . 'assets/hero/organization/';
+        $organizationUrl = defined('STAGEART_HERO_ASSETS_URL')
+            ? STAGEART_HERO_ASSETS_URL . 'assets/hero/organization'
+            : STAGEART_CORE_URL . 'assets/hero/organization';
+
         $manifests = [
             [STAGEART_CORE_DIR . 'assets/hero/manifest.json', STAGEART_CORE_URL . 'assets/hero'],
-            [STAGEART_CORE_DIR . 'assets/hero/organization/manifest.json', STAGEART_CORE_URL . 'assets/hero/organization'],
+            [$organizationDir . 'manifest.json', $organizationUrl],
         ];
         $out = [];
         foreach ($manifests as [$path, $baseUrl]) {
