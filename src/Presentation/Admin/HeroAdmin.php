@@ -65,7 +65,7 @@ final class HeroAdmin
 
     public function styles(): void
     {
-        if (!current_user_can('manage_options') || ($_GET['page'] ?? '') !== 'stageart-homepage') return;
+        if (!current_user_can('manage_options') || !in_array(($_GET['page'] ?? ''), ['stageart-homepage','stageart-organization'], true)) return;
         echo '<style>.sa-hero-block{margin:22px 0;padding:18px;background:#fff;border:1px solid #ccd0d4}.sa-hero-group{margin:18px 0}.sa-hero-group-title{margin:0 0 10px;font-size:15px}.sa-hero-presets{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:14px}.sa-hero-preset{position:relative;padding:0;border:2px solid #dcdcde;background:#fff;cursor:pointer;border-radius:4px;overflow:hidden;text-align:left}.sa-hero-preset.is-selected{border-color:#2271b1;box-shadow:0 0 0 1px #2271b1}.sa-hero-preset img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#111}.sa-hero-preset-label{display:block;padding:8px 10px;font-weight:600}.sa-hero-check{position:absolute!important;top:8px;right:8px;background:#2271b1;color:#fff;border-radius:50%;width:24px;padding:0!important;line-height:24px;text-align:center;display:none}.sa-hero-preset.is-selected .sa-hero-check{display:block}.sa-hero-preview{max-width:520px;margin-top:12px}.sa-hero-preview img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#111;border:1px solid #ccd0d4}@media(max-width:900px){.sa-hero-presets{grid-template-columns:repeat(2,minmax(150px,1fr))}}</style>';
     }
 
