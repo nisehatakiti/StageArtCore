@@ -37,6 +37,7 @@ final class SiteSettingsAdmin
 
     public function render(): void
     {
+        wp_enqueue_media();
         $v = static fn($k, $d = '') => get_option('stageart_org_' . $k, $d);
         echo '<div class="wrap"><h1>団体基本情報</h1>';
         if (isset($_GET['saved'])) {
@@ -44,9 +45,9 @@ final class SiteSettingsAdmin
         }
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '"><input type="hidden" name="action" value="stageart_save_site_settings">';
         wp_nonce_field('stageart_site_settings');
-        echo '<table class="form-table"><tr><th>団体名 *</th><td><input class="regular-text" required name="name" value="' . esc_attr($v('name')) . '" /></td></tr><tr><th>団体紹介</th><td><textarea class="large-text" rows="8" name="description">' . esc_textarea($v('description')) . '</textarea></td></tr>';
-        foreach (['x' => 'X', 'instagram' => 'Instagram', 'youtube' => 'YouTube', 'facebook' => 'Facebook'] as $k => $label) {
-            echo '<tr><th>' . esc_html($label) . '</th><td><input class="regular-text" type="url" name="' . $k . '" value="' . esc_attr($v($k)) . '" /></td></tr>';
+        echo '<table class="form-table"><tr><th>団体名 *</th><td><input class="regular-text" required name="name" value="' . esc_attr($v('name')) . '" /></td></tr><tr><th>団体ロゴ</th><td><div id="stageart-logo-preview">';$logoId=(int)get_option('stageart_org_logo_id',0);if($logoId)echo wp_get_attachment_image($logoId,'medium',['style'=>'max-width:320px;height:auto;display:block;margin-bottom:8px']);echo '</div><input type="hidden" name="logo_id" id="stageart-logo-id" value="'.esc_attr((string)$logoId).'" /><button type="button" class="button" id="stageart-select-logo">画像を選択</button> <button type="button" class="button" id="stageart-remove-logo">ロゴを削除</button><p class="description">サイトヘッダーなどで使用する団体ロゴを設定できます。</p></td></tr><tr><th>団体紹介</th><td><textarea class="large-text" rows="8" name="description">' . esc_textarea($v('description')) . '</textarea></td></tr>';
+        foreach (['x' => ['label'=>'X','placeholder'=>'https://x.com/your-account'], 'instagram' => ['label'=>'Instagram','placeholder'=>'https://www.instagram.com/your-account/'], 'youtube' => ['label'=>'YouTube','placeholder'=>'https://www.youtube.com/@your-channel'], 'facebook' => ['label'=>'Facebook','placeholder'=>'https://www.facebook.com/your-page']] as $k => $info) {
+            echo '<tr><th>' . esc_html($info['label']) . '</th><td><input class="regular-text" type="url" name="' . $k . '" value="' . esc_attr($v($k)) . '" placeholder="' . esc_attr($info['placeholder']) . '" /><p class="description">例：' . esc_html($info['placeholder']) . '</p></td></tr>';
         }
         echo '</table>';
         submit_button('保存');
@@ -56,6 +57,7 @@ final class SiteSettingsAdmin
     public function save(): void
     {
         $this->guard('stageart_site_settings');
+        update_option('stageart_org_logo_id', max(0, (int)($_POST['logo_id'] ?? 0)), false);
         foreach (['name' => 'text', 'description' => 'textarea', 'x' => 'url', 'instagram' => 'url', 'youtube' => 'url', 'facebook' => 'url'] as $k => $type) {
             $raw = wp_unslash($_POST[$k] ?? '');
             $value = $type === 'url' ? esc_url_raw($raw) : ($type === 'textarea' ? sanitize_textarea_field($raw) : sanitize_text_field($raw));
