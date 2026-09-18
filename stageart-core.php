@@ -25,7 +25,6 @@ add_action('plugins_loaded',static function():void{(new StageArtCore\Presentatio
 add_action('plugins_loaded',static function():void{(new StageArtCore\Presentation\Admin\MenuLayoutAdmin())->register();},20);
 add_action('plugins_loaded',static function():void{(new StageArtCore\Presentation\Admin\ProductionHeroAdmin())->register();},20);
 add_action('plugins_loaded',static function():void{(new StageArtCore\Presentation\Admin\ProductionCrownAdmin())->register();},20);
-add_action('plugins_loaded',static function():void{(new StageArtCore\Presentation\Admin\ProductionLayoutAdmin())->register();},20);
 add_action('plugins_loaded',static function():void{(new StageArtCore\Presentation\PublicSite\ProductionHeroPublic())->register();},20);
 add_action('plugins_loaded',static function():void{(new StageArtCore\Presentation\PublicSite\OrganizationHeroPublic())->register();},20);
 add_action('admin_enqueue_scripts',static function(string $hook):void{if(($_GET['page']??'')==='stageart-homepage'&&current_user_can('manage_options'))wp_enqueue_media();});
