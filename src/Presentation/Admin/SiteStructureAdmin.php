@@ -39,7 +39,7 @@ final class SiteStructureAdmin
         .sa-field select,.sa-field input{margin:0;box-sizing:border-box}
         .sa-field-wide select{width:100%}
         .sa-section-actions{margin-top:12px}
-        </style><h1>トップページ設定</h1>';
+        </style><h1>'.($organizationPage?'団体ページ・コンテンツ配置':'トップページ設定').'</h1>';
         if(isset($_GET['saved']))echo'<div class="notice notice-success"><p>保存しました。</p></div>';
         echo'<p>トップページは「コンテンツブロック」の中に複数の「セクション」を配置して構成します。セクションごとに表示する項目数と表示方向を設定できます。</p><form method="post" action="'.esc_url(admin_url('admin-post.php')).'">';
         wp_nonce_field('stageart_homepage');echo'<input type="hidden" name="action" value="stageart_save_homepage"><div id="stageart-content-blocks">';
