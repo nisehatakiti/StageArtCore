@@ -104,6 +104,15 @@ final class SurveyResultsAdmin
             echo '</table>';
         } else {
             echo '<p>自由回答 ' . count($responses) . '件</p>';
+            if ($responses) {
+                echo '<ul>';
+                foreach ($responses as $response) {
+                    $value = $response['answers'][(string) $question['id']] ?? '';
+                    if ($value === '' || $value === []) continue;
+                    echo '<li>' . nl2br(esc_html(is_array($value) ? implode('、', $value) : (string) $value)) . '</li>';
+                }
+                echo '</ul>';
+            }
         }
         echo '</div>';
     }
