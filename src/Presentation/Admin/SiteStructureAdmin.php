@@ -8,7 +8,7 @@ use StageArtCore\Presentation\Admin\FreeContentAdmin;
 final class SiteStructureAdmin
 {
     public function __construct(){add_action('admin_post_stageart_save_homepage',[$this,'saveHomepage']);add_action('admin_post_stageart_save_menu',[$this,'saveMenu']);}
-    public function register():void{add_submenu_page('stageart-plugin','トップページ設定','トップページ設定','manage_options','stageart-homepage',[$this,'renderHomepage']);add_submenu_page('stageart-plugin','メニュー構成','メニュー構成','manage_options','stageart-menu',[$this,'renderMenu']);}
+    public function register():void{add_submenu_page('stageart-plugin','メニュー構成','メニュー構成','manage_options','stageart-menu',[$this,'renderMenu']);}
     private function data():array{return[get_posts(['post_type'=>'stageart_production','post_status'=>['publish','draft'],'numberposts'=>-1,'orderby'=>'title','order'=>'ASC']),(new MemberRepository())->all(false)];}
     private function picker(array $p,array $m,string $selected=''):string
     {
