@@ -1,18 +1,9 @@
 {
-  "version": "1.0.0",
+  "version": "1.2.0",
   "title": "StageArt Hero Background Presets",
   "display_size": "1600x900",
   "aspect_ratio": "16:9",
   "fit": "cover",
   "position": "center center",
-  "presets": [
-    {"id":"stage","label":"小劇場の舞台","file":"stageart_hero_01_stage.svg"},
-    {"id":"rehearsal","label":"稽古場","file":"stageart_hero_02_rehearsal.svg"},
-    {"id":"spotlight","label":"スポットライト","file":"stageart_hero_03_spotlight.svg"},
-    {"id":"wings","label":"舞台袖","file":"stageart_hero_04_wings.svg"},
-    {"id":"lighting","label":"バトン・照明","file":"stageart_hero_05_lighting.svg"},
-    {"id":"minimal","label":"ミニマル舞台","file":"stageart_hero_06_minimal.svg"},
-    {"id":"abstract","label":"抽象・光と影","file":"stageart_hero_07_abstract.svg"},
-    {"id":"monochrome","label":"モノクロの小劇場","file":"stageart_hero_08_monochrome.svg"}
-  ]
+  "presets": []
 }
