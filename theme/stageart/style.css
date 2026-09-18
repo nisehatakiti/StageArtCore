@@ -67,3 +67,13 @@ Text Domain: stageart-theatre
 .stageart-performance-timeline--grid .stageart-performance-timeline-line:before{content:none!important}
 .stageart-performance-timeline--grid .stageart-performance-timeline-line b{position:relative;z-index:2;display:inline-flex;align-items:center;justify-content:center;min-width:1.4em;min-height:1.4em;padding:0 4px!important;background:var(--stageart-bg,var(--paper))!important;font-weight:600}
 .stageart-performance-timeline--grid .stageart-performance-timeline-line.has-marker:after{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid var(--line);z-index:1}
+
+/* Timeline symbols belong on the grid intersections (directly below each date). */
+.stageart-performance-timeline--grid table{border-collapse:separate!important;border-spacing:0!important}
+.stageart-performance-timeline--grid th,.stageart-performance-timeline--grid td{border:0!important;height:52px!important;position:relative!important;padding:0!important;background:transparent!important}
+.stageart-performance-timeline--grid thead th{height:38px!important}
+.stageart-performance-timeline--grid tbody th,.stageart-performance-timeline--grid tbody td{border-top:1px solid var(--line)!important}
+.stageart-performance-timeline--grid tbody td:after{content:""!important;position:absolute!important;top:0!important;bottom:0!important;left:50%!important;border-left:1px solid var(--line)!important;transform:translateX(-50%)!important;z-index:0!important}
+.stageart-performance-timeline--grid .stageart-performance-timeline-line{display:block!important;width:100%!important;height:100%!important;min-height:0!important;position:relative!important}
+.stageart-performance-timeline--grid .stageart-performance-timeline-line:after{content:none!important}
+.stageart-performance-timeline--grid .stageart-performance-timeline-line b{position:absolute!important;left:50%!important;top:0!important;transform:translate(-50%,-50%)!important;z-index:3!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:1.4em!important;min-height:1.4em!important;padding:0 4px!important;background:var(--stageart-bg,var(--paper))!important;font-weight:600!important;white-space:nowrap!important}
