@@ -81,6 +81,12 @@ final class ProductionAdmin{
     document.querySelector('.sa-participants[data-kind="'+kind+'"] tbody').appendChild(tr);
    }
   }
+  if(add&&add.dataset.add==='credit'){
+   const credits=document.getElementById('sa-credits'),idx=credits.querySelectorAll('.sa-credit').length;
+   const box=document.createElement('div');box.className='sa-credit';box.dataset.index=String(idx);
+   box.innerHTML='<p><input type="hidden" name="credits['+idx+'][id]" value="0"><input name="credits['+idx+'][name]" placeholder="例：スタッフ"> <label><input type="checkbox" class="sa-credit-release-enabled" name="credits['+idx+'][release_enabled]" value="1"> 情報解禁日を設定する</label> <input type="datetime-local" class="sa-credit-release-at" name="credits['+idx+'][release_at]" disabled> <button type="button" class="button-link-delete sa-remove-credit">区分を削除</button></p><table class="widefat sa-credit-items"><thead><tr><th>名称</th><th>リンクURL（任意）</th><th></th></tr></thead><tbody></tbody></table><p><button type="button" class="button" data-add-credit-item="1">＋ 項目を追加</button></p>';
+   credits.appendChild(box);
+  }
   const addItem=e.target.closest('[data-add-credit-item]');
   if(addItem){
    const box=addItem.closest('.sa-credit'),idx=box.dataset.index,tbody=box.querySelector('.sa-credit-items tbody'),j=tbody.querySelectorAll('tr').length;
