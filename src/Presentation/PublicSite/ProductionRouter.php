@@ -9,6 +9,7 @@ use StageArtCore\Domain\Production\ProductionCreditRepository;
 use StageArtCore\Domain\Member\MemberRepository;
 use StageArtCore\Domain\Release\ReleaseDate;
 use StageArtCore\Domain\Survey\SurveyRepository;
+use StageArtCore\Presentation\Admin\FreeContentAdmin;
 
 final class ProductionRouter
 {
@@ -76,17 +77,29 @@ final class ProductionRouter
             case 'tickets':echo '<h2>チケット料金</h2>';if(!$this->released($g('ticket_release')))$this->placeholder('料金は後日公開');else{$ts=$r->tickets($p->ID);if(!$ts)$this->placeholder('チケット料金は登録されていません。');else{echo '<ul class="stageart-ticket-list">';foreach($ts as$x){$tax=$g('tax_display','included')==='included'?'（税込）':($g('tax_display')==='excluded'?'（税別）':'');echo '<li>'.esc_html($x['description']).'：'.number_format($x['amount']).'円'.esc_html($tax).'</li>';}echo '</ul>';if($g('ticket_comment'))echo '<div class="stageart-ticket-comment">'.wp_kses_post(wpautop($g('ticket_comment'))).'</div>';}}break;
             case 'survey':echo '<h2>アンケート</h2>';$survey=(new SurveyRepository())->findByProduction($p->ID);if($survey&&(string)$survey['status']==='publish')echo '<p><a href="'.esc_url(home_url('/production/'.$p->post_name.'/'.rawurlencode((string)$survey['slug']).'/')).'">アンケートに回答する</a></p>';break;
             case 'free_content':
-                $fc=get_post((int)$id);
-                if($fc&&$fc->post_type==='stageart_free_content'&&$fc->post_status==='publish'){
-                    $owner=(string)get_post_meta($fc->ID,'_stageart_free_owner',true);
-                    $target=(int)get_post_meta($fc->ID,'_stageart_free_production_id',true);
-                    if($owner==='top'||$target===$p->ID) echo '<h2>'.esc_html($fc->post_title).'</h2><div class="stageart-free-content-body">'.wp_kses_post($fc->post_content).'</div>';
-                }
+                $this->renderFreeContent((int) $id, $p);
                 break;
             case 'credits':foreach($c->sections($p->ID,true)as$s){if(!$s['items'])continue;if(!$inner)echo '<h2>'.esc_html($s['name']).'</h2>';echo '<h3>'.esc_html($s['name']).'</h3><ul>';foreach($s['items']as$x)echo '<li>'.($x['url']?'<a href="'.esc_url($x['url']).'" target="_blank" rel="noopener">'.esc_html($x['name']).'</a>':esc_html($x['name'])).'</li>';echo '</ul>';}break;
         }
         if(!$inner)echo '</section>';
     }
+    private function renderFreeContent(int $id, \WP_Post $production): void
+    {
+        $fc = get_post($id);
+        if (!$fc || $fc->post_type !== FreeContentAdmin::POST_TYPE || $fc->post_status !== 'publish') {
+            return;
+        }
+
+        // ProductionRouter is the final public rendering boundary. Re-check
+        // ownership here even if the layout data was already normalized.
+        if (!FreeContentAdmin::canReference($fc->ID, $production->ID)) {
+            return;
+        }
+
+        echo '<h2>' . esc_html($fc->post_title) . '</h2>';
+        echo '<div class="stageart-free-content-body">' . wp_kses_post($fc->post_content) . '</div>';
+    }
+
     private function participants(\WP_Post $p, callable $g, ProductionRepository $r, string $kind, string $title): void
     {echo '<h3>'.esc_html($title).'</h3>';$release=$kind==='cast'?$g('cast_release'):$g('staff_release');if(!$this->released($release)){$this->placeholder('近日公開');return;}$rows=$r->participants($p->ID,$kind);if(!$rows){$this->placeholder($title.'は登録されていません。');return;}echo '<ul>';foreach($rows as$x){$n=esc_html($x['name']);if(!empty($x['member_id'])){$mem=(new MemberRepository())->find((int)$x['member_id']);if($mem&&$mem['status']==='published'&&$this->released($mem['release_at']??null))$n='<a href="'.esc_url(home_url('/member/'.rawurlencode($mem['slug']).'/')).'">'.$n.'</a>';}echo '<li>'.$n.($x['role']?'　'.esc_html($x['role']):'').'</li>';}echo '</ul>';}
 }
