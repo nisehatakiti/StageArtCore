@@ -88,7 +88,7 @@ let form=document.querySelector('form[action*="admin-post.php"] input[name="acti
 if(organization){
   form=document.createElement('form');
   form.method='post';form.action='__ADMIN_POST__';
-  form.innerHTML='<input type="hidden" name="action" value="stageart_save_homepage">';
+  form.innerHTML='<input type="hidden" name="action" value="stageart_save_homepage"><input type="hidden" name="stageart_hero_return" value="organization">';
   const nonce=document.createElement('input');nonce.type='hidden';nonce.name="_wpnonce";nonce.value='__NONCE__';form.appendChild(nonce);
 }
 if(!form)return;
@@ -134,5 +134,9 @@ JS;
             'background_preset' => $preset,
             'background_url' => $url,
         ], false);
+        if (sanitize_key((string)($_POST['stageart_hero_return'] ?? '')) === 'organization') {
+            wp_safe_redirect(admin_url('admin.php?page=stageart-organization&tab=display&saved=1'));
+            exit;
+        }
     }
 }
