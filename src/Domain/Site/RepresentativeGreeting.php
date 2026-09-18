@@ -26,7 +26,6 @@ final class RepresentativeGreeting
     public static function save(int $memberId, string $body, ?string $releaseAt, string $label = '劇団代表'): void
     {
         update_option(self::OPTION_LABEL, sanitize_text_field($label) !== '' ? sanitize_text_field($label) : '劇団代表', false);
-        update_option(self::OPTION_LABEL, sanitize_text_field($label) !== '' ? sanitize_text_field($label) : '劇団代表', false);
         update_option(self::OPTION_MEMBER, max(0, $memberId), false);
         update_option(self::OPTION_BODY, wp_kses_post($body), false);
         if ($releaseAt === null || trim($releaseAt) === '') delete_option(self::OPTION_RELEASE);
