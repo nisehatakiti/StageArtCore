@@ -54,3 +54,16 @@ Text Domain: stageart-theatre
 .stageart-card-meta{color:var(--stageart-primary,var(--wine))}
 
 .stageart-org-logo{display:block;max-height:52px;max-width:180px;width:auto;height:auto;object-fit:contain}.stageart-brand:has(.stageart-org-logo){display:flex;align-items:center;gap:12px}.stageart-brand-name{display:inline-block}
+
+/* Performance timeline grid: draw a complete cross-grid and center symbols at date/time intersections. */
+.stageart-performance-timeline--grid table{width:100%;border-collapse:collapse;table-layout:fixed;background:transparent}
+.stageart-performance-timeline--grid th,.stageart-performance-timeline--grid td{border:1px solid var(--line)!important;position:relative;height:52px;padding:0!important;background:transparent!important}
+.stageart-performance-timeline--grid thead th{height:38px;border-top:0!important;font-weight:600;background:transparent!important}
+.stageart-performance-timeline--grid thead th:first-child{border-left:0!important}
+.stageart-performance-timeline--grid tbody th{width:64px;border-left:0!important;font-weight:500;white-space:nowrap}
+.stageart-performance-timeline--grid tbody tr:last-child th,.stageart-performance-timeline--grid tbody tr:last-child td{border-bottom:0!important}
+.stageart-performance-timeline--grid td:last-child,.stageart-performance-timeline--grid thead th:last-child{border-right:0!important}
+.stageart-performance-timeline--grid .stageart-performance-timeline-line{display:flex;width:100%;height:100%;align-items:center;justify-content:center;position:relative}
+.stageart-performance-timeline--grid .stageart-performance-timeline-line:before{content:none!important}
+.stageart-performance-timeline--grid .stageart-performance-timeline-line b{position:relative;z-index:2;display:inline-flex;align-items:center;justify-content:center;min-width:1.4em;min-height:1.4em;padding:0 4px!important;background:var(--stageart-bg,var(--paper))!important;font-weight:600}
+.stageart-performance-timeline--grid .stageart-performance-timeline-line.has-marker:after{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px solid var(--line);z-index:1}
