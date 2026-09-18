@@ -50,7 +50,13 @@ final class ProductionRouter
     {
         $dates=[];$times=[];$map=[];foreach($ps as$x){$d=(string)$x['performance_date'];$t=substr((string)$x['start_time'],0,5);$dates[$d]=true;$times[$t]=true;$map[$d][$t][]=$x;}$dates=array_keys($dates);$times=array_keys($times);sort($dates);sort($times);$modifier=$style==='timeline_grid'?'stageart-performance-timeline--grid':'stageart-performance-timeline--line';echo '<div class="stageart-performance-timeline '.$modifier.'"><table><thead><tr><th></th>';foreach($dates as$d)echo '<th>'.esc_html(wp_date('n/j',strtotime($d))).'</th>';echo '</tr></thead><tbody>';foreach($times as$t){echo '<tr><th>'.esc_html($t).'</th>';foreach($dates as$d){$items=$map[$d][$t]??[];$hasMarker=!empty($items);echo '<td><span class="stageart-performance-timeline-line'.($hasMarker?' has-marker':'').'">';if($hasMarker){foreach($items as$x){$cell=$display==='none'?$marker:$this->performanceCell($x,$display,$marker);echo '<b>'.esc_html($cell).'</b>';}}echo '</span></td>';}echo '</tr>';}echo '</tbody></table></div>';
     }
-    private function performanceView(array $ps,array $labels,string $display,string $marker,string $legend,string $view):void{if($view==='list'){$this->performanceList($ps,$display,$marker);return;}if($view==='timeline_line'||$view==='timeline_grid'){$this->performanceTimeline($ps,$display,$marker,$view);return;}$this->performanceTable($ps,$labels,$display,$marker,$legend);}
+    private function performanceView(array $ps,array $labels,string $display,string $marker,string $legend,string $view):void{
+        if($legend==='above')$this->performanceLegend($labels);
+        if($view==='list')$this->performanceList($ps,$display,$marker);
+        elseif($view==='timeline_line'||$view==='timeline_grid')$this->performanceTimeline($ps,$display,$marker,$view);
+        else $this->performanceTable($ps,$labels,$display,$marker,'none');
+        if($legend==='below')$this->performanceLegend($labels);
+    }
 
     public function render(): void
     {
