@@ -47,7 +47,7 @@ final class ProductionAdmin{
   $script=<<<JS
 <script>
 (function(){
- const f=document.getElementById('stageart-production-form');if(!f)return;
+ const f=document.getElementById('stageart-production-form');if(!f||f.dataset.saProductionScriptsBound==='1')return;f.dataset.saProductionScriptsBound='1';
  let labelN=document.querySelectorAll('#sa-labels tbody tr').length;
  let perfN=document.querySelectorAll('#sa-performances tbody tr').length;
  let ticketN=document.querySelectorAll('#sa-tickets tbody tr').length;
