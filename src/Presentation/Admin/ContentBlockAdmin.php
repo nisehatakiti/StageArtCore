@@ -16,7 +16,7 @@ final class ContentBlockAdmin
 
     private function isHomepage(): bool
     {
-        return current_user_can('manage_options') && (($_GET['page'] ?? '') === 'stageart-homepage');
+        return current_user_can('manage_options') && in_array(($_GET['page'] ?? ''), ['stageart-homepage','stageart-organization'], true);
     }
 
     public function styles(): void
