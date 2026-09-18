@@ -37,12 +37,17 @@ final class ProductionLayoutAdmin
         .sa-pl-field{display:flex;flex-direction:column;gap:4px;min-width:180px}
         .sa-pl-field.wide{min-width:300px}
         .sa-pl-slots{display:grid;gap:8px}
-        .sa-pl-slot{display:flex;gap:10px;align-items:flex-end;padding:10px;border-top:1px solid #eee}
-        .sa-pl-slot label{display:flex;flex-direction:column;gap:4px}
-        .sa-pl-slot .slot-type{width:150px}.sa-pl-slot .slot-content{min-width:300px;flex:1}.sa-pl-slot .slot-indent{width:110px}
-        .sa-pl-slot .slot-heading{min-width:300px;flex:1}
+        #stageart-production-layout{box-sizing:border-box;width:100%;max-width:100%;overflow:hidden}
+        #stageart-production-layout *{box-sizing:border-box}
+        .sa-pl-block{width:100%;max-width:100%;overflow:hidden}
+        .sa-pl-section{width:100%;max-width:100%;overflow:hidden}
+        .sa-pl-slot{display:grid;grid-template-columns:150px minmax(240px,1fr) 110px auto;gap:12px;align-items:end;padding:12px 8px;border-top:1px solid #eee;width:100%;min-width:0}
+        .sa-pl-slot label{display:flex;flex-direction:column;gap:4px;min-width:0}
+        .sa-pl-slot .slot-type{width:150px}.sa-pl-slot .slot-content{width:100%;min-width:0}.sa-pl-slot .slot-indent{width:110px}
+        .sa-pl-slot .slot-heading{width:100%;min-width:0}
+        .sa-pl-slot select,.sa-pl-slot input{max-width:100%;min-width:0}
         .sa-pl-free-warning{display:block;color:#b32d2e;font-weight:600;font-size:12px}
-        @media(max-width:900px){.sa-pl-slot{flex-wrap:wrap}.sa-pl-slot .slot-content,.sa-pl-slot .slot-heading{min-width:240px}}
+        @media(max-width:900px){.sa-pl-slot{grid-template-columns:150px minmax(200px,1fr);}.sa-pl-slot .slot-indent{width:110px}.sa-pl-slot .sa-remove-slot{justify-self:start}}
         </style>';
     }
 
