@@ -126,7 +126,15 @@ final class ProductionLayoutAdmin
                         const content=row.querySelector(".sa-pl-content")?.value||"";
                         const heading=row.querySelector(".sa-pl-heading")?.value||"";
                         const indent=+(row.querySelector(".sa-pl-indent")?.value||0);
-                        s.slots.push({type:type==="heading"?"heading":"link",ref:type==="heading"?heading:content,indent:indent});
+                        if(type==="heading"){
+                            s.slots.push({type:"heading",ref:heading,indent:indent});
+                        }else if(content.indexOf("free_content:")===0){
+                            s.slots.push({type:"free_content",ref:content.substring(13),indent:indent});
+                        }else if(content){
+                            s.slots.push({type:"link",ref:content,indent:indent});
+                        }else{
+                            s.slots.push({type:"none",ref:"",indent:indent});
+                        }
                     });
                     s.slots=s.slots.slice(0,s.columns);
                 });
@@ -160,14 +168,14 @@ final class ProductionLayoutAdmin
                         r.className="sa-pl-slot";
                         r.hidden=i>=+(s.columns||1);
                         const heading=sl.type==="heading";
-                        r.innerHTML="<div class=\"sa-pl-slot-label\">"+(i+1)+"件目</div><div class=\"sa-pl-controls\"><label>項目種別<select data-type><option value=\"link\""+(sl.type!=="heading"?" selected":"")+">コンテンツリンク</option><option value=\"heading\""+(heading?" selected":"")+">見出し</option></select></label><label class=\"sa-pl-content-wrap\">コンテンツ<select class=\"sa-pl-content\">"+picker+"</select></label><label class=\"sa-pl-heading-wrap\">見出し<input class=\"sa-pl-heading\" value=\"\" placeholder=\"見出し\"></label><label>インデント<select class=\"sa-pl-indent\"><option value=\"0\">インデントなし</option><option value=\"1\">1段</option><option value=\"2\">2段</option><option value=\"3\">3段</option></select></label></div>";
+                        r.innerHTML="<div class=\"sa-pl-slot-label\">"+(i+1)+"件目</div><div class=\"sa-pl-controls\"><label>項目種別<select data-type><option value=\"link\""+(sl.type!=="heading"?" selected":"")+">コンテンツリンク</option><option value=\"heading\""+(heading?" selected":"")+">見出し</option></select></label><label class=\"sa-pl-content-wrap\">コンテンツ<select class=\"sa-pl-content\">"+picker+"</select><span class=\"sa-pl-free-warning\" hidden>現在非公開</span></label><label class=\"sa-pl-heading-wrap\">見出し<input class=\"sa-pl-heading\" value=\"\" placeholder=\"見出し\"></label><label>インデント<select class=\"sa-pl-indent\"><option value=\"0\">インデントなし</option><option value=\"1\">1段</option><option value=\"2\">2段</option><option value=\"3\">3段</option></select></label></div>";
                         const c=r.querySelector(".sa-pl-content"),h=r.querySelector(".sa-pl-heading"),hw=r.querySelector(".sa-pl-heading-wrap");
                         if(heading){h.value=String(sl.ref||"")}else{c.value=sl.type==="free_content"?"free_content:"+String(sl.ref||""):String(sl.ref||"")}
                         r.querySelector(".sa-pl-indent").value=String(sl.indent||0);
                         const warn=r.querySelector(".sa-pl-free-warning");
                         const refreshWarning=function(){
                             const selected=c.options[c.selectedIndex];
-                            warn.hidden=!(c.value.indexOf("free_content:")===0 && selected && selected.dataset.stageartPublished==="0");
+                            if(warn)warn.hidden=!(c.value.indexOf("free_content:")===0 && selected && selected.dataset.stageartPublished==="0");
                         };
                         c.addEventListener("change",refreshWarning);
                         refreshWarning();
