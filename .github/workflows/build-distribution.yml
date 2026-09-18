@@ -98,27 +98,46 @@ jobs:
           rm -rf dist/core/StageArtCore/theme
           cp -a theme/stageart/. dist/theme/stageart/
           cd dist/core
-          zip -r ../package/Core.zip StageArtCore >/dev/null
+          zip -r ../package/StageArtCore.zip StageArtCore >/dev/null
           cd ../theme
-          zip -r ../package/Theme.zip stageart >/dev/null
+          zip -r ../package/StageArtTheme.zip stageart >/dev/null
           cd ../package
-          zip -r ../../StageArtCore.zip Core.zip Theme.zip >/dev/null
+          zip -r ../../StageArtCore.zip StageArtCore.zip StageArtTheme.zip >/dev/null
 
       - name: Validate ZIP structure
         shell: bash
         run: |
           set -euo pipefail
           unzip -l StageArtCore.zip
-          unzip -l StageArtCore.zip | grep -q '^.* Core.zip$'
-          unzip -l StageArtCore.zip | grep -q '^.* Theme.zip$'
-          ! unzip -l StageArtCore.zip | grep -q 'StageArtCore/Core.zip'
-          ! unzip -l StageArtCore.zip | grep -q 'StageArtCore/Theme.zip'
+          unzip -l StageArtCore.zip > /tmp/stageart-outer-list.txt
+          grep -q 'StageArtCore.zip
+
+      - name: Upload StageArt package
+        uses: actions/upload-artifact@v4
+        with:
+          name: StageArtCore
+          path: StageArtCore.zip
+          if-no-files-found: error
+          retention-days: 90 /tmp/stageart-outer-list.txt
+          grep -q 'StageArtTheme.zip
+
+      - name: Upload StageArt package
+        uses: actions/upload-artifact@v4
+        with:
+          name: StageArtCore
+          path: StageArtCore.zip
+          if-no-files-found: error
+          retention-days: 90 /tmp/stageart-outer-list.txt
+          ! grep -q 'StageArtCore/StageArtCore.zip' /tmp/stageart-outer-list.txt
+          ! grep -q 'StageArtCore/StageArtTheme.zip' /tmp/stageart-outer-list.txt
           rm -rf dist/outer-check
           unzip -q StageArtCore.zip -d dist/outer-check
-          test -f dist/outer-check/Core.zip
-          test -f dist/outer-check/Theme.zip
-          unzip -l dist/outer-check/Core.zip | grep -q 'StageArtCore/stageart-core.php'
-          unzip -l dist/outer-check/Theme.zip | grep -q 'stageart/style.css'
+          test -f dist/outer-check/StageArtCore.zip
+          test -f dist/outer-check/StageArtTheme.zip
+          unzip -l dist/outer-check/StageArtCore.zip > /tmp/stageart-core-list.txt
+          unzip -l dist/outer-check/StageArtTheme.zip > /tmp/stageart-theme-list.txt
+          grep -q 'StageArtCore/stageart-core.php' /tmp/stageart-core-list.txt
+          grep -q 'stageart/style.css' /tmp/stageart-theme-list.txt
 
       - name: Upload StageArt package
         uses: actions/upload-artifact@v4
