@@ -54,7 +54,7 @@ final class ThemeAdmin
         $this->renderProductionForm();
     }
 
-    private function renderOrganizationForm(): void
+    public function renderOrganizationForm(): void
     {
         $saved = get_option(Theme::ORG_OPTION, ['mode' => 'preset', 'preset' => 'light_standard', 'custom' => Theme::customDefaults()]);
         $this->renderForm(
