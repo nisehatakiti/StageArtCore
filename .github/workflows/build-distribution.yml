@@ -97,10 +97,13 @@ jobs:
           rsync -a --exclude='.git' --exclude='.github' --exclude='dist' --exclude='*.zip' ./ dist/core/StageArtCore/
           rm -rf dist/core/StageArtCore/theme
           cp -a theme/stageart/. dist/theme/stageart/
+
           cd dist/core
           zip -r ../package/StageArtCore.zip StageArtCore >/dev/null
+
           cd ../theme
           zip -r ../package/StageArtTheme.zip stageart >/dev/null
+
           cd ../package
           zip -r ../../StageArtCore.zip StageArtCore.zip StageArtTheme.zip >/dev/null
 
@@ -108,32 +111,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          unzip -l StageArtCore.zip
           unzip -l StageArtCore.zip > /tmp/stageart-outer-list.txt
-          grep -q 'StageArtCore.zip
-
-      - name: Upload StageArt package
-        uses: actions/upload-artifact@v4
-        with:
-          name: StageArtCore
-          path: StageArtCore.zip
-          if-no-files-found: error
-          retention-days: 90 /tmp/stageart-outer-list.txt
-          grep -q 'StageArtTheme.zip
-
-      - name: Upload StageArt package
-        uses: actions/upload-artifact@v4
-        with:
-          name: StageArtCore
-          path: StageArtCore.zip
-          if-no-files-found: error
-          retention-days: 90 /tmp/stageart-outer-list.txt
+          grep -q 'StageArtCore.zip' /tmp/stageart-outer-list.txt
+          grep -q 'StageArtTheme.zip' /tmp/stageart-outer-list.txt
           ! grep -q 'StageArtCore/StageArtCore.zip' /tmp/stageart-outer-list.txt
           ! grep -q 'StageArtCore/StageArtTheme.zip' /tmp/stageart-outer-list.txt
+
           rm -rf dist/outer-check
           unzip -q StageArtCore.zip -d dist/outer-check
           test -f dist/outer-check/StageArtCore.zip
           test -f dist/outer-check/StageArtTheme.zip
+
           unzip -l dist/outer-check/StageArtCore.zip > /tmp/stageart-core-list.txt
           unzip -l dist/outer-check/StageArtTheme.zip > /tmp/stageart-theme-list.txt
           grep -q 'StageArtCore/stageart-core.php' /tmp/stageart-core-list.txt
