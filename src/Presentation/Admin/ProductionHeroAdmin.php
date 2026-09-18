@@ -56,6 +56,7 @@ final class ProductionHeroAdmin
         if ($id <= 0 || get_post_type($id) !== 'stageart_production') {
             return;
         }
+        $enabled = !empty($_POST['hero_enabled']);
         $type = sanitize_key((string) ($_POST['hero_image_type'] ?? ''));
         $preset = sanitize_key((string) ($_POST['hero_image_preset'] ?? ''));
         $image = absint($_POST['hero_image_id'] ?? 0);
@@ -64,6 +65,13 @@ final class ProductionHeroAdmin
             if (!empty($item['id'])) {
                 $valid[(string) $item['id']] = true;
             }
+        }
+
+        if (!$enabled) {
+            delete_post_meta($id, self::META_TYPE);
+            delete_post_meta($id, self::META_PRESET);
+            delete_post_meta($id, self::META_IMAGE);
+            return;
         }
 
         if ($type === 'preset' && isset($valid[$preset])) {
@@ -109,24 +117,27 @@ final class ProductionHeroAdmin
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('stageart-production-form');
             if (!form || document.getElementById('stageart-production-hero-settings')) return;
-            const row = document.createElement('tr');
-            row.innerHTML = '<th>公演Hero画像</th><td><div id="stageart-production-hero-settings"></div></td>';
-            const target = Array.from(form.querySelectorAll('tr')).find(function (tr) {
-                return tr.querySelector('th') && tr.querySelector('th').textContent.trim() === 'メイン画像';
-            });
-            if (target) target.parentNode.insertBefore(row, target.nextSibling);
-            const root = row.querySelector('#stageart-production-hero-settings');
-            if (!root) return;
+            const mount = document.getElementById('stageart-production-hero-mount');
+            if (!mount) return;
+            const root = document.createElement('div');
+            root.id = 'stageart-production-hero-settings';
+            root.className = 'sa-production-display-card';
             root.innerHTML = <?php echo wp_json_encode($this->html($type, $preset, $image, $presets)); ?>;
+            mount.appendChild(root);
             const typeInputs = root.querySelectorAll('input[name="hero_image_type"]');
             const presetInput = root.querySelector('input[name="hero_image_preset"]');
             const customId = root.querySelector('input[name="hero_image_id"]');
             const customPreview = root.querySelector('.sa-production-custom-preview');
             function refresh() {
+                const enabled = root.querySelector('input[name="hero_enabled"]')?.checked;
+                const options = root.querySelector('.sa-production-hero-options');
+                if (options) options.style.display = enabled ? '' : 'none';
                 const type = root.querySelector('input[name="hero_image_type"]:checked')?.value || '';
                 root.querySelector('.sa-production-presets-wrap').style.display = type === 'preset' ? '' : 'none';
                 root.querySelector('.sa-production-custom').style.display = type === 'custom' ? '' : 'none';
             }
+            const enabledInput = root.querySelector('input[name="hero_enabled"]');
+            if (enabledInput) enabledInput.addEventListener('change', refresh);
             typeInputs.forEach(function (input) { input.addEventListener('change', refresh); });
             root.querySelectorAll('.sa-production-preset').forEach(function (button) {
                 button.addEventListener('click', function () {
@@ -155,7 +166,8 @@ final class ProductionHeroAdmin
 
     private function html(string $type, string $selected, int $image, array $presets): string
     {
-        $html = '<div class="sa-production-mode">';
+        $enabled = $type !== '' || $selected !== '' || $image > 0;
+        $html = '<div class="sa-production-mode"><label><input type="checkbox" name="hero_enabled" value="1" ' . checked($enabled, true, false) . '> 公演Heroを使用する</label></div><div class="sa-production-hero-options" style="' . ($enabled ? '' : 'display:none;') . '">';';
         $html .= '<label><input type="radio" name="hero_image_type" value="preset" ' . checked($type ?: 'preset', 'preset', false) . '> プリセットから選択</label>　';
         $html .= '<label><input type="radio" name="hero_image_type" value="custom" ' . checked($type, 'custom', false) . '> 独自画像を使用</label></div>';
         $html .= '<div class="sa-production-presets-wrap"><p>公演の世界観に合わせた抽象イメージを選択できます。</p><div class="sa-production-presets">';
@@ -169,7 +181,7 @@ final class ProductionHeroAdmin
             $html .= '<button type="button" class="sa-production-preset' . $class . '" data-preset="' . esc_attr($id) . '"><img src="' . esc_url($src) . '" alt=""><span>' . esc_html($category . ' / ' . $label) . '</span></button>';
         }
         $html .= '</div><input type="hidden" name="hero_image_preset" value="' . esc_attr($selected) . '"></div>';
-        $html .= '<div class="sa-production-custom"><input type="hidden" name="hero_image_id" value="' . (int) $image . '"><button type="button" class="button sa-production-media-picker">メディアライブラリから画像を選択</button> <button type="button" class="button sa-production-media-clear">クリア</button><div class="sa-production-custom-preview">' . ($image ? wp_get_attachment_image($image, 'medium') : '') . '</div></div>';
+        $html .= '</div><div class="sa-production-custom"><input type="hidden" name="hero_image_id" value="' . (int) $image . '"><button type="button" class="button sa-production-media-picker">メディアライブラリから画像を選択</button> <button type="button" class="button sa-production-media-clear">クリア</button><div class="sa-production-custom-preview">' . ($image ? wp_get_attachment_image($image, 'medium') : '') . '</div></div>';
         return $html;
     }
 }
