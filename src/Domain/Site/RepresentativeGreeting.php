@@ -8,6 +8,7 @@ use StageArtCore\Domain\Release\ReleaseDate;
 
 final class RepresentativeGreeting
 {
+    public const OPTION_LABEL = 'stageart_core_representative_label';
     public const OPTION_MEMBER = 'stageart_core_representative_member_id';
     public const OPTION_BODY = 'stageart_core_representative_greeting';
     public const OPTION_RELEASE = 'stageart_core_representative_release_at';
@@ -15,14 +16,17 @@ final class RepresentativeGreeting
     public static function get(): array
     {
         return [
+            'label' => (string) get_option(self::OPTION_LABEL, '劇団代表'),
             'member_id' => (int) get_option(self::OPTION_MEMBER, 0),
             'body' => (string) get_option(self::OPTION_BODY, ''),
             'release_at' => (string) get_option(self::OPTION_RELEASE, ''),
         ];
     }
 
-    public static function save(int $memberId, string $body, ?string $releaseAt): void
+    public static function save(int $memberId, string $body, ?string $releaseAt, string $label = '劇団代表'): void
     {
+        update_option(self::OPTION_LABEL, sanitize_text_field($label) !== '' ? sanitize_text_field($label) : '劇団代表', false);
+        update_option(self::OPTION_LABEL, sanitize_text_field((string) get_option(self::OPTION_LABEL, '劇団代表')), false);
         update_option(self::OPTION_MEMBER, max(0, $memberId), false);
         update_option(self::OPTION_BODY, wp_kses_post($body), false);
         if ($releaseAt === null || trim($releaseAt) === '') delete_option(self::OPTION_RELEASE);
