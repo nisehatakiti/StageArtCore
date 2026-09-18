@@ -119,7 +119,7 @@ draw();sync();
 f.addEventListener("submit",function(){syncFromDom()});
 function syncFromDom(){
  root.querySelectorAll(".sa-pl-block").forEach((be,bi)=>{const b=blocks[bi];if(!b)return;b.sections.forEach((s,si)=>{const se=be.querySelectorAll(".sa-pl-section")[si];if(!se)return;s.heading=se.querySelector("[data-heading]").value||"";s.columns=parseInt(se.querySelector("[data-columns]").value||1,10);s.layout=se.querySelector("[data-layout]").value||"horizontal";s.slots=[];se.querySelectorAll("[data-slot]").forEach(row=>{const type=row.querySelector("[data-type]").value;const c=row.querySelector(".sa-pl-content"),h=row.querySelector(".sa-pl-heading"),indent=parseInt(row.querySelector(".sa-pl-indent").value||0,10);if(type==="heading")s.slots.push({type:"heading",ref:h.value||"",indent});else if(c.value.indexOf("free_content:")===0)s.slots.push({type:"free_content",ref:c.value.substring(13),indent});else if(c.value)s.slots.push({type:"link",ref:c.value,indent});});s.slots=s.slots.slice(0,s.columns)})});sync()}
-const credits=f.querySelector("#sa-credits");if(credits){const h=credits.previousElementSibling;if(h&&h.tagName==="H2"&&h.textContent.indexOf("公演クレジット")>=0)h.parentNode.insertBefore(box,h);else credits.parentNode.insertBefore(box,credits)}else f.appendChild(box);
+const mount=f.querySelector("#stageart-production-layout-mount");const credits=f.querySelector("#sa-credits");if(mount)mount.appendChild(box);else if(credits){const h=credits.previousElementSibling;if(h&&h.tagName==="H2"&&h.textContent.indexOf("公演クレジット")>=0)h.parentNode.insertBefore(box,h);else credits.parentNode.insertBefore(box,credits)}else f.appendChild(box);
 })();</script>';
     }
 
