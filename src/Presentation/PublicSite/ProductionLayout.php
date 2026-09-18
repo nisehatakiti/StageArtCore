@@ -49,7 +49,7 @@ final class ProductionLayout
             return [];
         }
 
-        return self::normalize($value);
+        return self::normalize($value, $id);
     }
 
     public static function save(int $id, array $sections): void
@@ -103,21 +103,29 @@ final class ProductionLayout
                     continue;
                 }
 
-                if ($type === self::SLOT_LINK) {
-                    $rawRef = (string) ($slot['ref'] ?? '');
-                    if (str_starts_with($rawRef, 'free_content:')) {
-                        $refId = absint(substr($rawRef, 13));
-                        if (!$refId || !FreeContentAdmin::canReference($refId, $productionId)) {
-                            $slots[] = ['type'=>self::SLOT_NONE,'ref'=>'','indent'=>$indent];
-                            continue;
-                        }
-                        $slots[] = ['type'=>'free_content','ref'=>(string)$refId,'indent'=>$indent];
+                $rawRef = (string) ($slot['ref'] ?? '');
+
+                if ($type === self::SLOT_LINK && str_starts_with($rawRef, 'free_content:')) {
+                    $refId = absint(substr($rawRef, 13));
+                    if (!$refId || !FreeContentAdmin::canReference($refId, $productionId)) {
+                        $slots[] = ['type' => self::SLOT_NONE, 'ref' => '', 'indent' => $indent];
                         continue;
                     }
-                    $ref = sanitize_key($rawRef);
+                    $slots[] = ['type' => 'free_content', 'ref' => (string) $refId, 'indent' => $indent];
+                    continue;
                 }
 
-                if ($type !== self::SLOT_LINK && $type !== 'free_content') {
+                if ($type === 'free_content') {
+                    $refId = absint($rawRef);
+                    if (!$refId || !FreeContentAdmin::canReference($refId, $productionId)) {
+                        $slots[] = ['type' => self::SLOT_NONE, 'ref' => '', 'indent' => $indent];
+                        continue;
+                    }
+                    $slots[] = ['type' => 'free_content', 'ref' => (string) $refId, 'indent' => $indent];
+                    continue;
+                }
+
+                if ($type !== self::SLOT_LINK) {
                     $slots[] = [
                         'type' => self::SLOT_NONE,
                         'ref' => '',
@@ -126,7 +134,7 @@ final class ProductionLayout
                     continue;
                 }
 
-                $ref = sanitize_key((string) ($slot['ref'] ?? ''));
+                $ref = sanitize_key($rawRef);
                 if ($ref === '' || !isset($labels[$ref])) {
                     $slots[] = [
                         'type' => self::SLOT_NONE,
