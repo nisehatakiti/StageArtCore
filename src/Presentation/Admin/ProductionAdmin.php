@@ -155,14 +155,7 @@ JS;
   echo $script;
  }
  public function save():void{$this->guard();$id=(int)($_POST['id']??0);$title=sanitize_text_field(wp_unslash($_POST['title']??''));if($title==='')wp_die('公演名を入力してください。');$requested=sanitize_title(wp_unslash($_POST['slug']??''));if($requested==='')$requested=sanitize_title($title);$existing=$id?get_post($id):null;if($existing&&$existing->post_type!=='stageart_production')wp_die('不正な公演です。');$oldSlug=$existing?(string)$existing->post_name:'';$historical=$this->repo->productionIdByHistoricalSlug($requested);if($historical&&$historical!==$id){$base=$requested;$n=2;while($this->repo->productionIdByHistoricalSlug($requested))$requested=$base.'-'.$n++;}$post=['post_type'=>'stageart_production','post_title'=>$title,'post_status'=>($_POST['post_status']??'draft')==='publish'?'publish':'draft','post_name'=>$requested];$id=$id?wp_update_post(array_merge(['ID'=>$id],$post),true):wp_insert_post($post,true);if(is_wp_error($id))wp_die(esc_html($id->get_error_message()));$id=(int)$id;if($oldSlug&&$oldSlug!==$requested)$this->repo->addSlugHistory($id,$oldSlug);$this->repo->addSlugHistory($id,$requested);foreach(['main_image_id','summary','description','schedule_start','schedule_end','venue_name','venue_map','performance_marker','ticket_comment']as$k){$v=isset($_POST[$k])?wp_unslash($_POST[$k]):'';$this->meta($id,$k,$k==='description'?wp_kses_post((string)$v):sanitize_textarea_field((string)$v));}if(isset($_POST['main_image_id']))update_post_meta($id,'main_image_id',max(0,(int)$_POST['main_image_id']));foreach(['main_image_release','summary_release','description_release','schedule_release','performance_release','venue_release','venue_map_release','cast_release','staff_release','ticket_release']as$k)$this->meta($id,$k,$this->utc(isset($_POST[$k])?(string)wp_unslash($_POST[$k]):null));update_post_meta($id,'use_labels',!empty($_POST['use_labels'])?'1':'0');update_post_meta($id,'label_display',in_array($_POST['label_display']??'symbol',['symbol','both'],true)?$_POST['label_display']:'symbol');update_post_meta($id,'legend',in_array($_POST['legend']??'none',['none','above','below'],true)?$_POST['legend']:'none');$performanceView=sanitize_key(wp_unslash($_POST['performance_view']??'table'));if(!in_array($performanceView,['table','list','timeline_line','timeline_grid'],true))$performanceView='table';update_post_meta($id,'performance_view',$performanceView);$performanceSize=sanitize_key(wp_unslash($_POST['performance_size']??'l'));if(!in_array($performanceSize,['l','m','s'],true))$performanceSize='l';update_post_meta($id,'performance_size',$performanceSize);$ticketSize=sanitize_key(wp_unslash($_POST['ticket_size']??'l'));if(!in_array($ticketSize,['l','m','s'],true))$ticketSize='l';update_post_meta($id,'ticket_size',$ticketSize);update_post_meta($id,'tax_display',in_array($_POST['tax_display']??'included',['included','excluded','none'],true)?$_POST['tax_display']:'included');$rawLabels=[];$labelsJson=trim((string)wp_unslash($_POST['labels_json']??''));if($labelsJson!==''){$decoded=json_decode($labelsJson,true);if(is_array($decoded))$rawLabels=$decoded;}if(!$rawLabels)$rawLabels=isset($_POST['labels'])?(array)$_POST['labels']:[];$labelRows=[];foreach($rawLabels as$rowKey=>$row){if(!is_array($row))continue;$labelRows[$rowKey]=['id'=>isset($row['id'])?(int)$row['id']:0,'symbol'=>sanitize_text_field(wp_unslash((string)($row['symbol']??''))),'name'=>sanitize_text_field(wp_unslash((string)($row['name']??'')))];}$labelIds=$this->repo->saveLabels($id,$labelRows,(array)($_POST['deleted_labels']??[]));$performanceRows=$this->cleanRows($_POST['performances']??[]);foreach($performanceRows as&$performanceRow){$labelKey=(string)($performanceRow['label_id']??'');if($labelKey!==''&&!ctype_digit($labelKey)&&isset($labelIds[$labelKey]))$performanceRow['label_id']=$labelIds[$labelKey];}unset($performanceRow);$this->repo->savePerformances($id,$performanceRows);$this->repo->saveTickets($id,$this->cleanRows($_POST['tickets']??[]));foreach(['cast','staff']as$kind)$this->repo->saveParticipants($id,$kind,$this->cleanRows((array)($_POST['participants'][$kind]??[])));$submittedSections=[];
-$creditsPayload=[];
-$creditsJson=trim((string)wp_unslash($_POST['credits_json']??''));
-if($creditsJson!==''){
- $decoded=json_decode($creditsJson,true);
- if(is_array($decoded))$creditsPayload=$decoded;
-}
-if(!$creditsPayload)$creditsPayload=(array)($_POST['credits']??[]);
-foreach($creditsPayload as $s){
+foreach((array)($_POST['credits']??[]) as $s){
  if(!is_array($s))continue;
  $name=sanitize_text_field(wp_unslash((string)($s['name']??'')));
  if($name==='')continue;
@@ -170,7 +163,8 @@ foreach($creditsPayload as $s){
  foreach((array)($s['items']??[]) as $it){
   if(!is_array($it))continue;
   $itemName=sanitize_text_field(wp_unslash((string)($it['name']??'')));
-  if($itemName!=='')$items[]=$itemName;
+  if($itemName==='')continue;
+  $items[]=['id'=>(int)($it['id']??0),'name'=>$itemName];
  }
  $submittedSections[]=['id'=>(int)($s['id']??0),'name'=>$name,'release_enabled'=>!empty($s['release_enabled']),'release_at'=>(string)($s['release_at']??''),'items'=>$items];
 }
@@ -187,25 +181,30 @@ foreach(array_values($submittedSections)as$order=>$s){
   if($sid<=0)wp_die('公演クレジット区分の追加に失敗しました。DB更新エラー');
  }
  $keepSections[]=$sid;
-
- // Credit items are intentionally rebuilt from the submitted list.
- // This avoids stale/duplicate form indexes causing only the last item to survive.
- foreach($this->credits->items($sid)as$oldItem)$this->credits->deleteItem((int)$oldItem['id']);
- foreach(array_values($s['items'])as$j=>$itemName){
-  $newItemId=$this->credits->createItem($sid,$itemName,null,$j);
-  if($newItemId<=0)wp_die('公演クレジット項目の保存に失敗しました。DB更新エラー');
- }
- $savedItems=$this->credits->items($sid);
- if(count($savedItems)!==count($s['items'])){
-  wp_die('公演クレジット項目の保存件数を確認できませんでした。');
- }
- foreach($savedItems as$k=>$savedItem){
-  if((string)$savedItem['name']!==(string)$s['items'][$k]){
-   wp_die('公演クレジット項目の保存結果を確認できませんでした。');
+ $existingItems=$this->credits->items($sid);
+ $existingIds=[];
+ foreach($existingItems as $existing)$existingIds[(int)$existing['id']]=true;
+ $keepItems=[];
+ foreach(array_values($s['items'])as$j=>$item){
+  $itemId=(int)$item['id'];
+  if($itemId>0&&isset($existingIds[$itemId])){
+   if(!$this->credits->updateItem($itemId,$item['name'],null,$j))wp_die('公演クレジット項目の更新に失敗しました。DB更新エラー');
+   $keepItems[]=$itemId;
+  }else{
+   $newItemId=$this->credits->createItem($sid,$item['name'],null,$j);
+   if($newItemId<=0)wp_die('公演クレジット項目の追加に失敗しました。DB更新エラー');
+   $keepItems[]=$newItemId;
   }
  }
+ foreach($existingItems as $existing){
+  $existingId=(int)$existing['id'];
+  if(!in_array($existingId,$keepItems,true)&&!$this->credits->deleteItem($existingId))wp_die('公演クレジット項目の削除に失敗しました。DB更新エラー');
+ }
+ $savedItems=$this->credits->items($sid);
+ if(count($savedItems)!==count($s['items']))wp_die('公演クレジット項目の保存件数を確認できませんでした。');
 }
 foreach($oldSections as$s)if(!in_array((int)$s['id'],$keepSections,true))$this->credits->deleteSection((int)$s['id']);
+
 wp_safe_redirect(admin_url('admin.php?page=stageart-productions&id='.$id.'&saved=1'));exit;}
  private function cleanRows(array$rows):array{$out=[];foreach($rows as$rowKey=>$r){if(!is_array($r))continue;$x=[];foreach($r as$k=>$v)$x[$k]=is_string($v)?sanitize_text_field(wp_unslash($v)):$v;$out[$rowKey]=$x;}return$out;}
 }
