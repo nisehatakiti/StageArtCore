@@ -45,7 +45,7 @@ final class RepresentativeGreetingAdmin
     public function save(): void
     {
         $this->guard();
-        RepresentativeGreeting::save((int) ($_POST['member_id'] ?? 0), wp_unslash($_POST['body'] ?? ''), ReleaseDate::toUtc(sanitize_text_field(wp_unslash($_POST['release_at'] ?? ''))));
+        RepresentativeGreeting::save((int) ($_POST['member_id'] ?? 0), wp_unslash($_POST['body'] ?? ''), ReleaseDate::toUtc(sanitize_text_field(wp_unslash($_POST['release_at'] ?? ''))), sanitize_text_field(wp_unslash($_POST['label'] ?? '劇団代表')));
         wp_safe_redirect(admin_url('admin.php?page=stageart-representative-greeting&saved=1'));
         exit;
     }
