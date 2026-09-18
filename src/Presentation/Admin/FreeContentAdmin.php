@@ -11,13 +11,13 @@ final class FreeContentAdmin
     {
         register_post_type(self::POST_TYPE,['labels'=>['name'=>'自由コンテンツ','singular_name'=>'自由コンテンツ'],'public'=>false,'show_ui'=>false,'show_in_menu'=>false,'supports'=>['title','editor'],'rewrite'=>false]);
         add_submenu_page('stageart-plugin','自由コンテンツ','自由コンテンツ','manage_options','stageart-free-content',[$this,'renderList']);
-        add_action('admin_post_stageart_save_free_content',[$this,'save']);
+        add_action('admin_post_stageart_save_free_content',[$this,'save']);$legacy=get_posts(['post_type'=>self::POST_TYPE,'post_status'=>'draft','numberposts'=>-1]);foreach($legacy as $legacyPost)wp_update_post(['ID'=>$legacyPost->ID,'post_status'=>'publish']);
     }
     public static function choices(?int $productionId = null, array $includeIds = []): array
     {
         $posts = get_posts([
             'post_type' => self::POST_TYPE,
-            'post_status' => ['publish', 'draft'],
+            'post_status' => 'publish',
             'numberposts' => -1,
             'orderby' => 'title',
             'order' => 'ASC',
@@ -28,7 +28,7 @@ final class FreeContentAdmin
             $owner = (string) get_post_meta($p->ID, self::OWNER_META, true);
             $target = (int) get_post_meta($p->ID, '_stageart_free_production_id', true);
             $owned = $owner === 'top' || ($productionId && $owner === 'production' && $target === $productionId);
-            if (!$owned || ($p->post_status !== 'publish' && !isset($includeIds[$p->ID]))) {
+            if (!$owned) {
                 continue;
             }
             $out[(int) $p->ID] = [
@@ -36,7 +36,7 @@ final class FreeContentAdmin
                 'owner' => $owner,
                 'production_id' => $target,
                 'category' => (string) get_post_meta($p->ID, self::CATEGORY_META, true),
-                'published' => $p->post_status === 'publish',
+                'published' => true,
             ];
         }
         return $out;
@@ -50,7 +50,7 @@ final class FreeContentAdmin
     public static function canReference(int $id, ?int $productionId = null): bool
     {
         $p = get_post($id);
-        if (!$p || $p->post_type !== self::POST_TYPE || !in_array($p->post_status, ['publish', 'draft'], true)) {
+        if (!$p || $p->post_type !== self::POST_TYPE || $p->post_status !== 'publish') {
             return false;
         }
         $owner = (string) get_post_meta($id, self::OWNER_META, true);
@@ -75,9 +75,9 @@ final class FreeContentAdmin
         if($id){$this->form($id);echo '</div>';return;}
         echo '<p><a class="button button-primary" href="'.esc_url(admin_url('admin.php?page=stageart-free-content&new=1')).'">＋ 自由コンテンツを追加</a></p>';
         $posts=get_posts(['post_type'=>self::POST_TYPE,'post_status'=>['publish','draft'],'numberposts'=>-1,'orderby'=>'date','order'=>'DESC']);
-        echo '<table class="widefat striped"><thead><tr><th>タイトル</th><th>分類</th><th>公開状態</th><th>操作</th></tr></thead><tbody>';
-        foreach($posts as $p){$owner=(string)get_post_meta($p->ID,self::OWNER_META,true);$cat=(string)get_post_meta($p->ID,self::CATEGORY_META,true);echo '<tr><td><strong>'.esc_html($p->post_title).'</strong></td><td>'.esc_html($this->ownerLabel($owner)).' / '.esc_html($cat?:'自由コンテンツ').'</td><td>'.esc_html($p->post_status==='publish'?'公開':'下書き').'</td><td><a href="'.esc_url(admin_url('admin.php?page=stageart-free-content&id='.$p->ID)).'">編集</a></td></tr>';}
-        if(!$posts)echo '<tr><td colspan="4">自由コンテンツはまだありません。</td></tr>';
+        echo '<table class="widefat striped"><thead><tr><th>タイトル</th><th>分類</th><th>操作</th></tr></thead><tbody>';
+        foreach($posts as $p){$owner=(string)get_post_meta($p->ID,self::OWNER_META,true);$cat=(string)get_post_meta($p->ID,self::CATEGORY_META,true);echo '<tr><td><strong>'.esc_html($p->post_title).'</strong></td><td>'.esc_html($this->ownerLabel($owner)).' / '.esc_html($cat?:'自由コンテンツ').'</td><td><a href="'.esc_url(admin_url('admin.php?page=stageart-free-content&id='.$p->ID)).'">編集</a></td></tr>';}
+        if(!$posts)echo '<tr><td colspan="3">自由コンテンツはまだありません。</td></tr>';
         echo '</tbody></table></div>';
     }
     private function form(int $id):void
@@ -92,7 +92,7 @@ final class FreeContentAdmin
         foreach(get_posts(['post_type'=>'stageart_production','post_status'=>['publish','draft'],'numberposts'=>-1,'orderby'=>'title','order'=>'ASC']) as $x)echo '<option value="'.(int)$x->ID.'" '.selected((int)$g('_stageart_free_production_id'),$x->ID,false).'>'.esc_html($x->post_title).'</option>';
         echo '</select></td></tr></table>';
         wp_editor($p?$p->post_content:'','stageart_free_body',['textarea_name'=>'content','textarea_rows'=>14,'media_buttons'=>true]);
-        echo '<p><label>公開状態 <select name="post_status"><option value="publish" '.selected($p->post_status??'publish','publish',false).'>公開</option><option value="draft" '.selected($p->post_status??'publish','draft',false).'>非公開</option></select></label></p>';
+        echo '<p class="description">自由コンテンツは公開状態を個別には管理しません。公演ページへの表示・非表示は「公演ページ・コンテンツ配置」で設定します。</p>';
         submit_button('保存');echo ' <a class="button" href="'.esc_url(admin_url('admin.php?page=stageart-free-content')).'">キャンセル</a></form>';
         echo '<script>(function(){var o=document.getElementById("sa-free-owner"),r=document.getElementById("sa-free-production");function x(){r.style.display=o.value==="production"?"":"none"}o.addEventListener("change",x);x()})();</script>';
     }
@@ -100,7 +100,7 @@ final class FreeContentAdmin
     {
         if(!current_user_can('manage_options'))wp_die('権限がありません。');check_admin_referer('stageart_free_content');
         $id=(int)($_POST['id']??0);$title=sanitize_text_field(wp_unslash($_POST['title']??''));if($title==='')wp_die('タイトルは必須です。');
-        $status=($_POST['post_status']??'publish')==='draft'?'draft':'publish';$slug=sanitize_title(wp_unslash($_POST['slug']??''));$owner=($_POST['owner']??'top')==='production'?'production':'top';$pid=$owner==='production'?absint($_POST['production_id']??0):0;
+        $status='publish';$slug=sanitize_title(wp_unslash($_POST['slug']??''));$owner=($_POST['owner']??'top')==='production'?'production':'top';$pid=$owner==='production'?absint($_POST['production_id']??0):0;
         if($owner==='production'&&!$pid)wp_die('公演専用の場合は対象公演を選択してください。');
         $data=['post_title'=>$title,'post_content'=>wp_kses_post(wp_unslash($_POST['content']??'')),'post_status'=>$status,'post_type'=>self::POST_TYPE];if($slug!=='')$data['post_name']=$slug;
         $saved=$id?wp_update_post(array_merge(['ID'=>$id],$data),true):wp_insert_post($data,true);if(is_wp_error($saved))wp_die($saved->get_error_message());$id=(int)$saved;
