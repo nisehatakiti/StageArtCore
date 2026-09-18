@@ -40,12 +40,28 @@ final class ProductionLayoutAdmin
         $sections = ProductionLayout::get($id);
         $labels = ProductionLayout::contentLabels();
         $nonce = wp_create_nonce('stageart_production_layout');
+        $currentFreeIds = [];
+        foreach ($sections as $section) {
+            foreach ((array) ($section['slots'] ?? []) as $slot) {
+                if (($slot['type'] ?? '') === 'free_content') {
+                    $currentFreeIds[] = absint($slot['ref'] ?? 0);
+                }
+            }
+        }
+        $currentFreeIds = array_values(array_unique(array_filter($currentFreeIds)));
+
         $picker = '<option value="">選択してください</option>';
         foreach ($labels as $key => $value) {
             $picker .= '<option value="' . esc_attr($key) . '">' . esc_html($value) . '</option>';
         }
 
-        foreach (FreeContentAdmin::choices($id) as $freeId => $free) { $picker .= '<option value="free_content:' . (int)$freeId . '">' . esc_html($free['title']) . '</option>'; }
+        foreach (FreeContentAdmin::choices($id, $currentFreeIds) as $freeId => $free) {
+            $label = (string) $free['title'];
+            if (empty($free['published'])) {
+                $label .= '（現在非公開）';
+            }
+            $picker .= '<option value="free_content:' . (int) $freeId . '" data-stageart-published="' . (!empty($free['published']) ? '1' : '0') . '">' . esc_html($label) . '</option>';
+        }
 
         $json = wp_json_encode($sections, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $pickerJson = wp_json_encode($picker, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -59,7 +75,7 @@ final class ProductionLayoutAdmin
         .sa-pl-section legend{font-weight:600}
         .sa-pl-top{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
         .sa-pl-slot{margin:12px 0;padding:10px 0;border-top:1px solid #ddd}
-        .sa-pl-slot-label{font-weight:600;margin-bottom:7px}
+        .sa-pl-slot-label{font-weight:600;margin-bottom:7px}.sa-pl-free-warning{color:#b32d2e;font-weight:400}
         .sa-pl-controls{display:flex;gap:12px;align-items:flex-end;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px}
         .sa-pl-controls>label{display:flex;flex-direction:column;align-items:flex-start;gap:4px;white-space:nowrap}
         .sa-pl-controls>label:first-child{width:150px}
@@ -148,6 +164,13 @@ final class ProductionLayoutAdmin
                         const c=r.querySelector(".sa-pl-content"),h=r.querySelector(".sa-pl-heading"),hw=r.querySelector(".sa-pl-heading-wrap");
                         if(heading){h.value=String(sl.ref||"")}else{c.value=sl.type==="free_content"?"free_content:"+String(sl.ref||""):String(sl.ref||"")}
                         r.querySelector(".sa-pl-indent").value=String(sl.indent||0);
+                        const warn=r.querySelector(".sa-pl-free-warning");
+                        const refreshWarning=function(){
+                            const selected=c.options[c.selectedIndex];
+                            warn.hidden=!(c.value.indexOf("free_content:")===0 && selected && selected.dataset.stageartPublished==="0");
+                        };
+                        c.addEventListener("change",refreshWarning);
+                        refreshWarning();
                         if(!heading)hw.style.display="none";
                         slots.appendChild(r);
                     }
