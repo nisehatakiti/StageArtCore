@@ -13,6 +13,28 @@ final class FreeContentAdmin
         add_submenu_page('stageart-plugin','自由コンテンツ','自由コンテンツ','manage_options','stageart-free-content',[$this,'renderList']);
         add_action('admin_post_stageart_save_free_content',[$this,'save']);
     }
+    public static function choices(?int $productionId = null): array
+    {
+        $posts = get_posts(['post_type'=>self::POST_TYPE,'post_status'=>'publish','numberposts'=>-1,'orderby'=>'title','order'=>'ASC']);
+        $out=[];
+        foreach($posts as $p){
+            $owner=(string)get_post_meta($p->ID,self::OWNER_META,true);
+            $target=(int)get_post_meta($p->ID,'_stageart_free_production_id',true);
+            if($owner==='top' || ($productionId && $owner==='production' && $target===$productionId)){
+                $out[(int)$p->ID]=['title'=>$p->post_title,'owner'=>$owner,'production_id'=>$target,'category'=>(string)get_post_meta($p->ID,self::CATEGORY_META,true)];
+            }
+        }
+        return $out;
+    }
+    public static function canReference(int $id, ?int $productionId = null): bool
+    {
+        $p=get_post($id);
+        if(!$p || $p->post_type!==self::POST_TYPE || $p->post_status!=='publish') return false;
+        $owner=(string)get_post_meta($id,self::OWNER_META,true);
+        $target=(int)get_post_meta($id,'_stageart_free_production_id',true);
+        return $owner==='top' || ($productionId && $owner==='production' && $target===$productionId);
+    }
+
     private function ownerLabel(string $owner):string { return $owner==='top'?'TOP共通':'公演専用'; }
     public function renderList():void
     {
