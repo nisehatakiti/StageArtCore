@@ -71,7 +71,7 @@ final class HeroAdmin
 
     public function script(): void
     {
-        if (!current_user_can('manage_options') || ($_GET['page'] ?? '') !== 'stageart-homepage') return;
+        if (!current_user_can('manage_options') || !in_array(($_GET['page'] ?? ''), ['stageart-homepage','stageart-organization'], true)) return;
         $presets = wp_json_encode($this->presets(), JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
         $saved = get_option(self::OPTION, []);
         if (!is_array($saved)) $saved = [];
@@ -83,12 +83,19 @@ final class HeroAdmin
         ], JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
         $script = <<<'JS'
 <script>(function(){
-const form=document.querySelector('form[action*="admin-post.php"] input[name="action"][value="stageart_save_homepage"]')?.form;
+const organization=location.search.indexOf('page=stageart-organization')>=0;
+let form=document.querySelector('form[action*="admin-post.php"] input[name="action"][value="stageart_save_homepage"]')?.form;
+if(organization){
+  form=document.createElement('form');
+  form.method='post';form.action='__ADMIN_POST__';
+  form.innerHTML='<input type="hidden" name="action" value="stageart_save_homepage">';
+  const nonce=document.createElement('input');nonce.type='hidden';nonce.name="_wpnonce";nonce.value='__NONCE__';form.appendChild(nonce);
+}
 if(!form)return;
 const ps=__PRESETS__,s=__STATE__;
 const b=document.createElement('fieldset');
 b.className='sa-hero-block';
-b.innerHTML='<legend><strong>Hero</strong></legend><p class="description">団体トップページの独立したHeroブロックです。</p><p><label><input type="checkbox" class="sa-hero-enabled"> Heroを表示する</label></p><h3>背景画像</h3><p class="description">StageArt標準の背景から選択できます。自分で用意した画像はWordPressメディアから選択します。</p><div class="sa-hero-groups"></div><p><button type="button" class="button sa-hero-media">自分で用意した画像を選択</button> <button type="button" class="button-link-delete sa-hero-clear">自前画像を解除</button></p><div class="sa-hero-preview"></div>';
+b.innerHTML='<legend><strong>Hero</strong></legend><p class="description">'+(organization?'団体ページのHeroです。':'団体トップページの独立したHeroブロックです。')+'</p><p><label><input type="checkbox" class="sa-hero-enabled"> Heroを表示する</label></p><h3>背景画像</h3><p class="description">StageArt標準の背景から選択できます。自分で用意した画像はWordPressメディアから選択します。</p><div class="sa-hero-groups"></div><p><button type="button" class="button sa-hero-media">自分で用意した画像を選択</button> <button type="button" class="button-link-delete sa-hero-clear">自前画像を解除</button></p><div class="sa-hero-preview"></div>';
 const hidden=(n,v)=>{let e=form.querySelector('[name="'+n+'"]');if(!e){e=document.createElement('input');e.type='hidden';e.name=n;form.appendChild(e)}e.value=v||'';return e};
 const en=b.querySelector('.sa-hero-enabled'),groups=b.querySelector('.sa-hero-groups'),preview=b.querySelector('.sa-hero-preview');
 const ht=hidden('stageart_hero_enabled',s.enabled?'1':'0'),ty=hidden('stageart_hero_background_type',s.type),pr=hidden('stageart_hero_background_preset',s.preset),ur=hidden('stageart_hero_background_url',s.url);
@@ -101,11 +108,11 @@ if(s.type==='preset')pick(s.preset);else previewImg();
 en.onchange=()=>{s.enabled=en.checked;ht.value=s.enabled?'1':'0'};
 b.querySelector('.sa-hero-media').onclick=()=>{if(!window.wp?.media)return;const f=wp.media({title:'Hero背景画像を選択',button:{text:'この画像を使用'},multiple:false,library:{type:'image'}});f.on('select',()=>{const a=f.state().get('selection').first().toJSON();if(!a?.url)return;s.type='custom';s.url=a.url;ty.value='custom';ur.value=a.url;groups.querySelectorAll('button.sa-hero-preset').forEach(x=>x.classList.remove('is-selected'));previewImg()});f.open()};
 b.querySelector('.sa-hero-clear').onclick=()=>pick(s.preset||ps[0]?.id||'');
-form.insertBefore(b,form.querySelector('#stageart-home-sections')||form.firstElementChild);
+if(organization){form.appendChild(b);const panel=document.querySelector('.sa-org-panel');const cards=panel?.querySelectorAll('.sa-org-card');const theme=cards?.[0];if(panel)panel.insertBefore(form,theme||null)}else{form.insertBefore(b,form.querySelector('#stageart-home-sections')||form.firstElementChild);}
 form.addEventListener('submit',()=>{ht.value=en.checked?'1':'0';ty.value=s.type;pr.value=s.preset;ur.value=s.url});
 })();</script>
 JS;
-        $script = str_replace(['__PRESETS__', '__STATE__'], [$presets, $state], $script);
+        $script = str_replace(['__PRESETS__', '__STATE__', '__NONCE__', '__ADMIN_POST__'], [$presets, $state, wp_create_nonce('stageart_homepage'), esc_url_raw(admin_url('admin-post.php'))], $script);
         echo $script;
     }
 
