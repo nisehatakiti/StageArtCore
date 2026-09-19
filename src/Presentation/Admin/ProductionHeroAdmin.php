@@ -182,8 +182,8 @@ final class ProductionHeroAdmin
     {
         $enabled = $type !== '' || $selected !== '' || $image > 0;
         $html = '<div class="sa-production-mode"><label><input type="checkbox" name="hero_enabled" value="1" ' . checked($enabled, true, false) . '> 公演Heroを使用する</label></div>';
-        $html .= '<div class="sa-production-hero-copy"><p><label>Heroタイトル<br><input type="text" name="hero_title" class="regular-text" value="' . esc_attr($heroTitle) . '" placeholder="公演名を表示"></label></p><p><label>Hero説明文<br><textarea name="hero_description" class="large-text" rows="3" placeholder="公演の短い紹介文を表示">' . esc_textarea($heroDescription) . '</textarea></label></p><p class="description">空欄の場合は、公演基本情報の公演名・概要を使用します。</p></div>';
         $html .= '<div class="sa-production-hero-options" style="' . ($enabled ? '' : 'display:none;') . '">';
+        $html .= '<div class="sa-production-hero-copy"><p><label>Heroタイトル<br><input type="text" name="hero_title" class="regular-text" value="' . esc_attr($heroTitle) . '" placeholder="公演名を表示"></label></p><p><label>Hero説明文<br><textarea name="hero_description" class="large-text" rows="3" placeholder="公演の短い紹介文を表示">' . esc_textarea($heroDescription) . '</textarea></label></p><p class="description">空欄の場合は、公演基本情報の公演名・概要を使用します。</p></div>';
         $html .= '<div class="sa-production-mode"><label><input type="radio" name="hero_image_type" value="preset" ' . checked($type ?: 'preset', 'preset', false) . '> プリセットから選択</label>　';
         $html .= '<label><input type="radio" name="hero_image_type" value="custom" ' . checked($type, 'custom', false) . '> 独自画像を使用</label></div>';
         $html .= '<div class="sa-production-presets-wrap"><p>公演の世界観に合わせた抽象イメージを選択できます。</p><div class="sa-production-presets">';
