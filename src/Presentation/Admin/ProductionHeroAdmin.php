@@ -10,6 +10,8 @@ final class ProductionHeroAdmin
     private const META_TYPE = 'hero_image_type';
     private const META_PRESET = 'hero_image_preset';
     private const META_IMAGE = 'hero_image_id';
+    private const META_TITLE = 'hero_title';
+    private const META_DESCRIPTION = 'hero_description';
 
     public function register(): void
     {
@@ -60,6 +62,8 @@ final class ProductionHeroAdmin
         $type = sanitize_key((string) ($_POST['hero_image_type'] ?? ''));
         $preset = sanitize_key((string) ($_POST['hero_image_preset'] ?? ''));
         $image = absint($_POST['hero_image_id'] ?? 0);
+        $heroTitle = sanitize_text_field((string) ($_POST['hero_title'] ?? ''));
+        $heroDescription = sanitize_textarea_field((string) ($_POST['hero_description'] ?? ''));
         $valid = [];
         foreach ($this->manifest() as $item) {
             if (!empty($item['id'])) {
@@ -71,6 +75,8 @@ final class ProductionHeroAdmin
             delete_post_meta($id, self::META_TYPE);
             delete_post_meta($id, self::META_PRESET);
             delete_post_meta($id, self::META_IMAGE);
+            delete_post_meta($id, self::META_TITLE);
+            delete_post_meta($id, self::META_DESCRIPTION);
             return;
         }
 
@@ -78,17 +84,23 @@ final class ProductionHeroAdmin
             update_post_meta($id, self::META_TYPE, 'preset');
             update_post_meta($id, self::META_PRESET, $preset);
             delete_post_meta($id, self::META_IMAGE);
+            update_post_meta($id, self::META_TITLE, $heroTitle);
+            update_post_meta($id, self::META_DESCRIPTION, $heroDescription);
             return;
         }
         if ($type === 'custom' && $image > 0 && get_post_type($image) === 'attachment') {
             update_post_meta($id, self::META_TYPE, 'custom');
             update_post_meta($id, self::META_IMAGE, (string) $image);
             delete_post_meta($id, self::META_PRESET);
+            update_post_meta($id, self::META_TITLE, $heroTitle);
+            update_post_meta($id, self::META_DESCRIPTION, $heroDescription);
             return;
         }
         delete_post_meta($id, self::META_TYPE);
         delete_post_meta($id, self::META_PRESET);
         delete_post_meta($id, self::META_IMAGE);
+        delete_post_meta($id, self::META_TITLE);
+        delete_post_meta($id, self::META_DESCRIPTION);
     }
 
     public function footer(): void
@@ -100,6 +112,8 @@ final class ProductionHeroAdmin
         $type = (string) get_post_meta($id, self::META_TYPE, true);
         $preset = (string) get_post_meta($id, self::META_PRESET, true);
         $image = absint(get_post_meta($id, self::META_IMAGE, true));
+        $heroTitle = (string) get_post_meta($id, self::META_TITLE, true);
+        $heroDescription = (string) get_post_meta($id, self::META_DESCRIPTION, true);
         $presets = $this->manifest();
         ?>
         <style>
@@ -122,7 +136,7 @@ final class ProductionHeroAdmin
             const root = document.createElement('div');
             root.id = 'stageart-production-hero-settings';
             root.className = 'sa-production-display-card';
-            root.innerHTML = <?php echo wp_json_encode($this->html($type, $preset, $image, $presets)); ?>;
+            root.innerHTML = <?php echo wp_json_encode($this->html($type, $preset, $image, $presets, $heroTitle, $heroDescription)); ?>;
             mount.appendChild(root);
             const typeInputs = root.querySelectorAll('input[name="hero_image_type"]');
             const presetInput = root.querySelector('input[name="hero_image_preset"]');
@@ -164,10 +178,11 @@ final class ProductionHeroAdmin
         <?php
     }
 
-    private function html(string $type, string $selected, int $image, array $presets): string
+    private function html(string $type, string $selected, int $image, array $presets, string $heroTitle = '', string $heroDescription = ''): string
     {
         $enabled = $type !== '' || $selected !== '' || $image > 0;
         $html = '<div class="sa-production-mode"><label><input type="checkbox" name="hero_enabled" value="1" ' . checked($enabled, true, false) . '> 公演Heroを使用する</label></div>';
+        $html .= '<div class="sa-production-hero-copy"><p><label>Heroタイトル<br><input type="text" name="hero_title" class="regular-text" value="' . esc_attr($heroTitle) . '" placeholder="公演名を表示"></label></p><p><label>Hero説明文<br><textarea name="hero_description" class="large-text" rows="3" placeholder="公演の短い紹介文を表示">' . esc_textarea($heroDescription) . '</textarea></label></p><p class="description">空欄の場合は、公演基本情報の公演名・概要を使用します。</p></div>';
         $html .= '<div class="sa-production-hero-options" style="' . ($enabled ? '' : 'display:none;') . '">';
         $html .= '<div class="sa-production-mode"><label><input type="radio" name="hero_image_type" value="preset" ' . checked($type ?: 'preset', 'preset', false) . '> プリセットから選択</label>　';
         $html .= '<label><input type="radio" name="hero_image_type" value="custom" ' . checked($type, 'custom', false) . '> 独自画像を使用</label></div>';
