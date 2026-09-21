@@ -5,6 +5,16 @@
  * Version: 0.9.8
  * Requires at least: 6.0
  * Requires PHP: 8.0
+ * Requires Plugins: authcore
+ * AuthCore: application
+ * AuthCore Application Key: stageart
+ * AuthCore Application Name: StageArt
+ * AuthCore Application Version: 0.9.8
+ * AuthCore Application URI: https://github.com/nisehatakiti/StageArtCore
+ * AuthCore Vendor: nisehatakiti
+ * AuthCore Vendor URI: https://github.com/nisehatakiti
+ * AuthCore Description: 舞台芸術団体向け公演管理・チケット管理基盤
+ * AuthCore Icon: dashicons-tickets-alt
  * Author: nisehatakiti
  * Author URI: https://nisehatakiti.online/
  * License: GPL v2 or later
