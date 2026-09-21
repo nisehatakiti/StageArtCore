@@ -146,10 +146,16 @@ final class SurveyResultsAdmin
         echo '<h1>' . esc_html($survey['title']) . '</h1><p>' . esc_html($production->post_title) . '　回答数：' . count($responses) . '件</p>';
         foreach ($questions as $question) {
             echo '<section><h2>' . esc_html($question['label']) . '</h2>';
-            if (in_array($question['type'], ['radio', 'select', 'rating', 'checkbox'], true)) {
+            if (in_array($question['type'], ['radio', 'select', 'rating', 'checkbox', 'member_radio', 'member_checkbox'], true)) {
                 $counts = [];
-                foreach ((array) $question['options'] as $option) {
-                    $counts[(string) $option] = 0;
+                if (in_array($question['type'], ['member_radio','member_checkbox'], true)) {
+                    foreach ($this->members->all(false) as $member) {
+                        if (in_array((int)$member['id'], array_map('intval',(array)$question['options']), true)) $counts[(string)$member['id']] = 0;
+                    }
+                } else {
+                    foreach ((array) $question['options'] as $option) {
+                        $counts[(string) $option] = 0;
+                    }
                 }
                 if ($question['type'] === 'rating') {
                     for ($n = 1; $n <= 5; $n++) {
@@ -158,7 +164,7 @@ final class SurveyResultsAdmin
                 }
                 foreach ($responses as $response) {
                     $value = $response['answers'][(string) $question['id']] ?? [];
-                    $values = $question['type'] === 'checkbox' ? (array) $value : [$value];
+                    $values = in_array($question['type'], ['checkbox','member_checkbox'], true) ? (array) $value : [$value];
                     foreach ($values as $answer) {
                         if (isset($counts[(string) $answer])) {
                             $counts[(string) $answer]++;
@@ -167,7 +173,8 @@ final class SurveyResultsAdmin
                 }
                 echo '<table><tr><th>回答</th><th>件数</th></tr>';
                 foreach ($counts as $answer => $count) {
-                    echo '<tr><td>' . esc_html($answer) . '</td><td>' . (int) $count . '</td></tr>';
+                    $label = $question['type'] === 'member_radio' || $question['type'] === 'member_checkbox' ? $this->displayAnswer(['type'=>$question['type']], [$answer]) : $answer;
+                    echo '<tr><td>' . esc_html($label) . '</td><td>' . (int) $count . '</td></tr>';
                 }
                 echo '</table>';
             } else {
