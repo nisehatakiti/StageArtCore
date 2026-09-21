@@ -112,20 +112,27 @@ jobs:
           mkdir -p dist/hero/StageArtHeroAssets/assets/hero
           cp -a assets/hero/organization dist/hero/StageArtHeroAssets/assets/hero/
 
-          # Optimize production Hero JPGs for the installable package only.
+          # Optimize Hero JPGs for the installable packages only.
           # Source images in the repository are kept untouched.
+          # Both production and organization Hero assets are optimized here.
           python3 -m pip install --disable-pip-version-check --quiet Pillow
           python3 - <<'PY'
           from pathlib import Path
           from PIL import Image
 
-          root = Path("dist/core/StageArtCore/assets/hero/production")
-          for path in sorted(root.glob("*.jpg")):
-              with Image.open(path) as im:
-                  im = im.convert("RGB")
-                  im.thumbnail((1600, 900), Image.Resampling.LANCZOS)
-                  im.save(path, "JPEG", quality=78, optimize=True, progressive=True)
-          PY
+          roots = [
+              Path("dist/core/StageArtCore/assets/hero/production"),
+              Path("dist/hero/StageArtHeroAssets/assets/hero/organization"),
+          ]
+
+          for root in roots:
+              if not root.exists():
+                  continue
+              for path in sorted(root.glob("*.jpg")):
+                  with Image.open(path) as im:
+                      im = im.convert("RGB")
+                      im.thumbnail((1600, 900), Image.Resampling.LANCZOS)
+                      im.save(path, "JPEG", quality=78, optimize=True, progressive=True)
 
 
           cd dist/core
