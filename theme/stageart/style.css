@@ -113,3 +113,22 @@ Text Domain: stageart-theatre
 .stageart-production-layout-slot--performances.stageart-size-s .stageart-performance-table th,
 .stageart-production-layout-slot--performances.stageart-size-s .stageart-performance-table td{font-size:.85rem!important;}
 .stageart-production-layout-slot--performances .stageart-performance-cell{margin:0 2px!important;}
+
+
+/* Production survey */
+.stageart-survey{padding:70px 0 100px;background:var(--paper);color:var(--ink)}
+.stageart-survey-inner{width:min(calc(100% - 48px),860px);margin:auto}
+.stageart-survey-inner>h1{font-family:Georgia,"Yu Mincho","Hiragino Mincho ProN",serif;font-size:clamp(2.3rem,5vw,4.4rem);font-weight:400;line-height:1.2;margin:20px 0 24px}
+.stageart-survey-inner>div{line-height:1.9}
+.stageart-survey-inner form{margin-top:36px}
+.stageart-survey-inner fieldset{margin:0 0 24px;padding:22px 24px;border:1px solid var(--line);background:var(--card-bg)}
+.stageart-survey-inner legend{padding:0 8px;font-family:Georgia,"Yu Mincho",serif;font-size:1.15rem;font-weight:500}
+.stageart-survey-inner label{display:inline-block;margin:6px 12px 6px 0}
+.stageart-survey-inner input[type=text],.stageart-survey-inner textarea,.stageart-survey-inner select{max-width:100%;padding:9px 11px;border:1px solid var(--line);background:var(--white);color:var(--ink);font:inherit}
+.stageart-survey-inner textarea{width:min(100%,680px);resize:vertical}
+.stageart-survey-inner select{min-width:220px}
+.stageart-survey-inner button{padding:11px 24px;border:1px solid var(--wine);background:var(--wine);color:#fff;cursor:pointer;font:inherit}
+.stageart-survey-inner a{text-decoration:underline}
+.stageart-survey-confirm-item{padding:18px 0;border-top:1px solid var(--line)}
+.stageart-survey-confirm-item h2{font-size:1.05rem;margin:0 0 8px}
+@media(max-width:520px){.stageart-survey{padding:45px 0 70px}.stageart-survey-inner{width:min(calc(100% - 28px),860px)}.stageart-survey-inner fieldset{padding:18px}.stageart-survey-inner select{min-width:0;width:100%}}
