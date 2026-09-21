@@ -8,6 +8,7 @@ use StageArtCore\Infrastructure\RewriteManager;
 use StageArtCore\Infrastructure\Schema\Schema;
 use StageArtCore\Infrastructure\Schema\ProductionMigration;
 use StageArtCore\Infrastructure\Schema\SurveyMigration;
+use StageArtCore\Infrastructure\Schema\TicketMigration;
 use StageArtCore\Domain\Production\ProductionValidator;
 use StageArtCore\Presentation\Admin\AdminMenu;
 use StageArtCore\Presentation\Admin\MemberAdmin;
@@ -25,11 +26,13 @@ use StageArtCore\Presentation\Admin\OrganizationAdmin;
 use StageArtCore\Presentation\Admin\SurveyAdmin;
 use StageArtCore\Presentation\Admin\SurveyResultsAdmin;
 use StageArtCore\Presentation\Admin\SurveyQrAdmin;
+use StageArtCore\Presentation\Admin\TicketAdmin;
 use StageArtCore\Presentation\PublicSite\MemberRouter;
 use StageArtCore\Presentation\PublicSite\MemberShortcodes;
 use StageArtCore\Presentation\PublicSite\ProductionRouter;
 use StageArtCore\Presentation\PublicSite\FreeContentRouter;
 use StageArtCore\Presentation\PublicSite\SurveyRouter;
+use StageArtCore\Presentation\PublicSite\TicketRouter;
 use StageArtCore\Presentation\Rest\HealthController;
 use StageArtCore\Presentation\Rest\MemberController;
 
@@ -43,6 +46,7 @@ final class Plugin
             }
             ProductionMigration::ensure();
             SurveyMigration::ensure();
+            TicketMigration::ensure();
             SiteSettingsAdmin::migrate();
         }, 1);
 
@@ -67,6 +71,7 @@ final class Plugin
         add_action('admin_menu', [new SurveyAdmin(), 'register'], 30);
         add_action('admin_menu', [new SurveyResultsAdmin(), 'register'], 31);
         add_action('admin_menu', [new SurveyQrAdmin(), 'register'], 32);
+        add_action('admin_menu', [new TicketAdmin(), 'register'], 33);
         add_action('admin_post_stageart_save_production', static function (): void {
             if (!current_user_can('manage_options')) wp_die('権限がありません。');
             $postedLabels = (array) ($_POST['stageart_performance_labels'] ?? []);
@@ -98,6 +103,7 @@ final class Plugin
         (new ProductionRouter())->register();
         (new FreeContentRouter())->register();
         (new SurveyRouter())->register();
+        (new TicketRouter())->register();
         RewriteManager::register();
     }
 }
