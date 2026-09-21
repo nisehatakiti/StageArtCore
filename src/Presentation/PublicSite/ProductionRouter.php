@@ -24,6 +24,31 @@ final class ProductionRouter
     public function vars(array $v): array { $v[] = 'stageart_production_slug'; return $v; }
     private function released($v): bool { return ReleaseDate::isReleased($v ?: null); }
     private function placeholder(string $text): void { echo '<p class="stageart-release-placeholder">' . esc_html($text) . '</p>'; }
+    private function productionHeroBackgroundUrl(int $productionId): string
+    {
+        $type = sanitize_key((string) get_post_meta($productionId, 'hero_image_type', true));
+        if ($type === 'custom') {
+            $image = absint(get_post_meta($productionId, 'hero_image_id', true));
+            return $image > 0 ? (string) wp_get_attachment_image_url($image, 'full') : '';
+        }
+        if ($type !== 'preset') {
+            return '';
+        }
+
+        $path = STAGEART_CORE_DIR . 'assets/hero/production/manifest.json';
+        if (!is_file($path)) {
+            return '';
+        }
+        $data = json_decode((string) file_get_contents($path), true);
+        $presets = is_array($data) && is_array($data['presets'] ?? null) ? $data['presets'] : [];
+        $selected = sanitize_key((string) get_post_meta($productionId, 'hero_image_preset', true));
+        foreach ($presets as $item) {
+            if ((string) ($item['id'] ?? '') === $selected && !empty($item['file'])) {
+                return STAGEART_CORE_URL . 'assets/hero/production/' . rawurlencode(basename((string) $item['file']));
+            }
+        }
+        return '';
+    }
     private function mapsUrl(string $value): string { return preg_match('#^https?://#i', $value) ? $value : 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode($value); }
     private function performanceCell(array $x, string $display, string $marker): string { return !empty($x['symbol']) ? (string) $x['symbol'] : $marker; }
     private function performanceLegend(array $labels): void { if (!$labels) return; echo '<div class="stageart-performance-legend">'; foreach ($labels as $l) echo '<span>' . esc_html((string) $l['symbol'] . ' ' . $l['name']) . '</span>　'; echo '</div>'; }
@@ -74,9 +99,13 @@ final class ProductionRouter
             if ($heroDescription !== '') echo '<p class="stageart-production-hero-summary">'.esc_html($heroDescription).'</p>';
             elseif ($this->released($g('summary_release')) && $g('summary')) echo '<p class="stageart-production-hero-summary">'.esc_html($g('summary')).'</p>';
             elseif (!$this->released($g('summary_release'))) echo '<p class="stageart-production-hero-summary">近日公開</p>';
-            echo '</div><div class="stageart-production-hero-image">';
-            $heroImageId=(int)$g('hero_image_id');$heroRelease=$g('hero_image_release');
-            if($heroImageId&&$this->released($heroRelease))echo wp_get_attachment_image($heroImageId,'large');else echo '<span class="stageart-production-hero-image-placeholder">公演Hero画像</span>';
+            echo '</div>';
+            $heroBackground = $this->productionHeroBackgroundUrl($p->ID);
+            $heroStyle = $heroBackground !== '' ? ' style="background-image:url(\'' . esc_url($heroBackground) . '\');background-size:cover;background-position:center center;"' : '';
+            echo '<div class="stageart-production-hero-image"' . $heroStyle . '>';
+            if ($heroBackground === '') {
+                echo '<span class="stageart-production-hero-image-placeholder">公演Hero画像</span>';
+            }
             echo '</div></section>';
         }
         echo '<div class="stageart-production-content"><article>';
