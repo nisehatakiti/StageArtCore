@@ -28,7 +28,7 @@ define('STAGEART_CORE_FILE',__FILE__);
 define('STAGEART_CORE_DIR',plugin_dir_path(__FILE__));
 define('STAGEART_CORE_URL',plugin_dir_url(__FILE__));
 spl_autoload_register(static function(string $class):void{$prefix='StageArtCore\\';if(!str_starts_with($class,$prefix))return;$relative=substr($class,strlen($prefix));$path=STAGEART_CORE_DIR.'src/'.str_replace('\\','/',$relative).'.php';if(is_file($path))require_once $path;});
-register_activation_hook(STAGEART_CORE_FILE,static function():void{StageArtCore\Infrastructure\Schema\Schema::activate();StageArtCore\Infrastructure\Schema\ProductionMigration::ensure();StageArtCore\Infrastructure\Schema\SurveyMigration::ensure();StageArtCore\Infrastructure\RewriteManager::activate();});
+register_activation_hook(STAGEART_CORE_FILE,static function():void{StageArtCore\Infrastructure\Schema\Schema::activate();StageArtCore\Infrastructure\Schema\ProductionMigration::ensure();StageArtCore\Infrastructure\Schema\SurveyMigration::ensure();StageArtCore\Infrastructure\Schema\TicketMigration::ensure();StageArtCore\Infrastructure\RewriteManager::activate();});
 add_action('plugins_loaded',static function():void{(new StageArtCore\Plugin())->boot();});
 add_action('plugins_loaded',static function():void{(new StageArtCore\Presentation\Admin\HeroAdmin())->register();},20);
 add_action('plugins_loaded',static function():void{(new StageArtCore\Presentation\Admin\ContentBlockAdmin())->register();},20);
