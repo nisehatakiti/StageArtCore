@@ -2,14 +2,15 @@
 declare(strict_types=1);
 namespace StageArtCore\Presentation\Admin;
 use StageArtCore\Domain\Survey\SurveyRepository;
+use StageArtCore\Domain\Member\MemberRepository;
 
 final class SurveyResultsAdmin
 {
-    private SurveyRepository $repo;
+    private SurveyRepository $repo;private MemberRepository $members;
 
     public function __construct()
     {
-        $this->repo = new SurveyRepository();
+        $this->repo = new SurveyRepository();$this->members = new MemberRepository();
     }
 
     public function register(): void
@@ -47,7 +48,7 @@ final class SurveyResultsAdmin
         foreach ($questions as $question) {
             $this->summary($question, $responses);
         }
-        echo '<h2>回答一覧</h2><table class="widefat striped"><thead><tr><th>日時</th><th>公演スケジュール</th>';
+        echo '<h2>回答一覧</h2><table class="widefat striped"><thead><tr><th>日時</th><th>お名前</th><th>メールアドレス</th><th>公演スケジュール</th>';
         foreach ($questions as $question) {
             echo '<th>' . esc_html($question['label']) . '</th>';
         }
@@ -56,7 +57,8 @@ final class SurveyResultsAdmin
             echo '<tr><td>' . esc_html($response['submitted_at']) . '</td><td>' . esc_html($response['respondent_name'] ?? '') . '</td><td>' . esc_html($response['respondent_email'] ?? '') . '</td><td>' . esc_html($pn[(int) $response['performance_id']] ?? '未選択') . '</td>';
             foreach ($questions as $question) {
                 $value = $response['answers'][(string) $question['id']] ?? '';
-                echo '<td>' . esc_html(is_array($value) ? implode('、', $value) : (string) $value) . '</td>';
+                $value = $this->displayAnswer($question, $value);
+                echo '<td>' . esc_html($value) . '</td>';
             }
             echo '</tr>';
         }
@@ -74,14 +76,33 @@ final class SurveyResultsAdmin
         return $row ?: null;
     }
 
+    private function displayAnswer(array $question, $value): string
+    {
+        if (in_array($question['type'], ['member_radio','member_checkbox'], true)) {
+            $ids = array_map('intval', is_array($value) ? $value : [$value]);
+            $names = [];
+            foreach ($this->members->all(false) as $member) {
+                if (in_array((int)$member['id'], $ids, true)) $names[] = (string)$member['name'];
+            }
+            return implode('、', $names);
+        }
+        return is_array($value) ? implode('、', $value) : (string)$value;
+    }
+
     private function summary(array $question, array $responses): void
     {
         $type = $question['type'];
         echo '<div class="postbox" style="padding:12px;margin:15px 0"><h2>' . esc_html($question['label']) . '</h2>';
-        if (in_array($type, ['radio', 'select', 'rating', 'checkbox'], true)) {
+        if (in_array($type, ['radio', 'select', 'rating', 'checkbox', 'member_radio', 'member_checkbox'], true)) {
             $counts = [];
-            foreach ((array) $question['options'] as $option) {
-                $counts[(string) $option] = 0;
+            if (in_array($type, ['member_radio','member_checkbox'], true)) {
+                foreach ($this->members->all(false) as $member) {
+                    if (in_array((int)$member['id'], array_map('intval', (array)$question['options']), true)) $counts[(string)$member['id']] = 0;
+                }
+            } else {
+                foreach ((array) $question['options'] as $option) {
+                    $counts[(string) $option] = 0;
+                }
             }
             if ($type === 'rating') {
                 for ($n = 1; $n <= 5; $n++) {
@@ -90,7 +111,7 @@ final class SurveyResultsAdmin
             }
             foreach ($responses as $response) {
                 $value = $response['answers'][(string) $question['id']] ?? [];
-                $values = $type === 'checkbox' ? (array) $value : [$value];
+                $values = in_array($type, ['checkbox','member_checkbox'], true) ? (array) $value : [$value];
                 foreach ($values as $answer) {
                     if (isset($counts[(string) $answer])) {
                         $counts[(string) $answer]++;
@@ -99,7 +120,9 @@ final class SurveyResultsAdmin
             }
             echo '<table class="widefat"><tr><th>回答</th><th>件数</th></tr>';
             foreach ($counts as $answer => $count) {
-                echo '<tr><td>' . esc_html($answer) . '</td><td>' . (int) $count . '</td></tr>';
+                $label = $answer;
+                if (in_array($type, ['member_radio','member_checkbox'], true)) $label = $this->displayAnswer(['type'=>$type], [$answer]);
+                echo '<tr><td>' . esc_html($label) . '</td><td>' . (int) $count . '</td></tr>';
             }
             echo '</table>';
         } else {
