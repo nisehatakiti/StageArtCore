@@ -53,7 +53,7 @@ final class SurveyResultsAdmin
         }
         echo '</tr></thead><tbody>';
         foreach ($responses as $response) {
-            echo '<tr><td>' . esc_html($response['submitted_at']) . '</td><td>' . esc_html($pn[(int) $response['performance_id']] ?? '未選択') . '</td>';
+            echo '<tr><td>' . esc_html($response['submitted_at']) . '</td><td>' . esc_html($response['respondent_name'] ?? '') . '</td><td>' . esc_html($response['respondent_email'] ?? '') . '</td><td>' . esc_html($pn[(int) $response['performance_id']] ?? '未選択') . '</td>';
             foreach ($questions as $question) {
                 $value = $response['answers'][(string) $question['id']] ?? '';
                 echo '<td>' . esc_html(is_array($value) ? implode('、', $value) : (string) $value) . '</td>';
@@ -61,7 +61,7 @@ final class SurveyResultsAdmin
             echo '</tr>';
         }
         if (!$responses) {
-            echo '<tr><td colspan="' . (2 + count($questions)) . '">回答はまだありません。</td></tr>';
+            echo '<tr><td colspan="' . (4 + count($questions)) . '">回答はまだありません。</td></tr>';
         }
         echo '</tbody></table></div>';
     }
