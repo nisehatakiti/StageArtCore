@@ -133,6 +133,7 @@ jobs:
                       im = im.convert("RGB")
                       im.thumbnail((1600, 900), Image.Resampling.LANCZOS)
                       im.save(path, "JPEG", quality=78, optimize=True, progressive=True)
+          PY
 
 
           cd dist/core
