@@ -7,10 +7,11 @@ namespace StageArtCore\Infrastructure;
 use StageArtCore\Presentation\PublicSite\MemberRouter;
 use StageArtCore\Presentation\PublicSite\ProductionRouter;
 use StageArtCore\Presentation\PublicSite\SurveyRouter;
+use StageArtCore\Presentation\PublicSite\TicketRouter;
 
 final class RewriteManager
 {
-    public const VERSION = '13';
+    public const VERSION = '14';
 
     public static function register(): void
     {
@@ -57,6 +58,7 @@ final class RewriteManager
         (new MemberRouter())->add_rewrite_rules();
         (new ProductionRouter())->rewrite();
         (new SurveyRouter())->rewrite();
+        (new TicketRouter())->rewrite();
     }
 
     private static function markReadyIfRoutesExist(): void
@@ -88,6 +90,8 @@ final class RewriteManager
         // The two-segment production rule must precede the one-segment rule.
         $rules = [
             'RewriteEngine On',
+            'RewriteRule ^production/([^/]+)/ticket/([^/]+)/?$ index.php?stageart_ticket_production_slug=$1&stageart_ticket_attribution_slug=$2 [QSA,L]',
+            'RewriteRule ^production/([^/]+)/ticket/?$ index.php?stageart_ticket_production_slug=$1 [QSA,L]',
             'RewriteRule ^production/([^/]+)/([^/]+)/?$ index.php?stageart_production_slug=$1&stageart_survey_slug=$2 [QSA,L]',
             'RewriteRule ^production/([^/]+)/?$ index.php?stageart_production_slug=$1 [QSA,L]',
             'RewriteRule ^member/([^/]+)/?$ index.php?stageart_member_slug=$1 [QSA,L]',
