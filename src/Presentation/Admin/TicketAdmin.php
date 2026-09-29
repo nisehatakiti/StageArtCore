@@ -18,7 +18,7 @@ final class TicketAdmin{
   $found=null;
   if($lookup!==''){
     $key=$lookup;
-    if(str_starts_with($key,'stageart-ticket:'))$key=substr($key,15);
+    if(str_starts_with($key,'stageart-ticket:'))$key=substr($key,16);
     $found=$this->t->reservationByToken($key);
     if(!$found)$found=$this->t->reservationByNo($key);
   }
