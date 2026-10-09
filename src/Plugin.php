@@ -9,6 +9,7 @@ use StageArtCore\Infrastructure\Schema\Schema;
 use StageArtCore\Infrastructure\Schema\ProductionMigration;
 use StageArtCore\Infrastructure\Schema\SurveyMigration;
 use StageArtCore\Infrastructure\Schema\TicketMigration;
+use StageArtCore\Infrastructure\AuthCoreBridge;
 use StageArtCore\Domain\Production\ProductionValidator;
 use StageArtCore\Presentation\Admin\AdminMenu;
 use StageArtCore\Presentation\Admin\MemberAdmin;
@@ -47,6 +48,7 @@ final class Plugin
             ProductionMigration::ensure();
             SurveyMigration::ensure();
             TicketMigration::ensure();
+            AuthCoreBridge::boot();
             SiteSettingsAdmin::migrate();
         }, 1);
 
