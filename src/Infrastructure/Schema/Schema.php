@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace StageArtCore\Infrastructure\Schema;
 final class Schema{
-public const DB_VERSION='0.6.2';
+public const DB_VERSION='0.6.3';
 public static function activate():void{
 global $wpdb;$c=$wpdb->get_charset_collate();$p=$wpdb->prefix;require_once ABSPATH.'wp-admin/includes/upgrade.php';
 dbDelta("CREATE TABLE {$p}stageart_plugin_members (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,name VARCHAR(191) NOT NULL,slug VARCHAR(191) NOT NULL,photo_id BIGINT UNSIGNED NULL,profile LONGTEXT NULL,status VARCHAR(20) NOT NULL DEFAULT 'draft',display_order INT UNSIGNED NOT NULL DEFAULT 0,release_at DATETIME NULL,authcore_user_id BIGINT UNSIGNED NULL,created_at DATETIME NOT NULL,updated_at DATETIME NOT NULL,PRIMARY KEY(id),UNIQUE KEY slug(slug),KEY status_display_order(status,display_order),KEY release_at(release_at),KEY authcore_user_id(authcore_user_id)) {$c};");
