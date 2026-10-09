@@ -2,10 +2,10 @@
 declare(strict_types=1);
 namespace StageArtCore\Infrastructure\Schema;
 final class Schema{
-public const DB_VERSION='0.6.3';
+public const DB_VERSION='0.6.4';
 public static function activate():void{
 global $wpdb;$c=$wpdb->get_charset_collate();$p=$wpdb->prefix;require_once ABSPATH.'wp-admin/includes/upgrade.php';
-dbDelta("CREATE TABLE {$p}stageart_plugin_members (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,name VARCHAR(191) NOT NULL,slug VARCHAR(191) NOT NULL,photo_id BIGINT UNSIGNED NULL,profile LONGTEXT NULL,status VARCHAR(20) NOT NULL DEFAULT 'draft',display_order INT UNSIGNED NOT NULL DEFAULT 0,release_at DATETIME NULL,authcore_user_id BIGINT UNSIGNED NULL,created_at DATETIME NOT NULL,updated_at DATETIME NOT NULL,PRIMARY KEY(id),UNIQUE KEY slug(slug),KEY status_display_order(status,display_order),KEY release_at(release_at),KEY authcore_user_id(authcore_user_id)) {$c};");
+dbDelta("CREATE TABLE {$p}stageart_plugin_members (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,name VARCHAR(191) NOT NULL,slug VARCHAR(191) NOT NULL,photo_id BIGINT UNSIGNED NULL,profile LONGTEXT NULL,status VARCHAR(20) NOT NULL DEFAULT 'draft',display_order INT UNSIGNED NOT NULL DEFAULT 0,release_at DATETIME NULL,authcore_user_id BIGINT UNSIGNED NULL,created_at DATETIME NOT NULL,updated_at DATETIME NOT NULL,PRIMARY KEY(id),UNIQUE KEY slug(slug),KEY status_display_order(status,display_order),KEY release_at(release_at),KEY authcore_user_id(authcore_user_id)) {$c};");$wpdb->query("ALTER TABLE {$p}stageart_plugin_members ADD COLUMN release_at DATETIME NULL");
 dbDelta("CREATE TABLE {$p}stageart_plugin_member_roles (member_id BIGINT UNSIGNED NOT NULL,role_key VARCHAR(40) NOT NULL,PRIMARY KEY(member_id,role_key),KEY role_key(role_key)) {$c};");
 dbDelta("CREATE TABLE {$p}stageart_plugin_member_social_links (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,member_id BIGINT UNSIGNED NOT NULL,platform VARCHAR(30) NOT NULL,url VARCHAR(2048) NOT NULL,created_at DATETIME NOT NULL,updated_at DATETIME NOT NULL,PRIMARY KEY(id),UNIQUE KEY member_platform(member_id,platform),KEY member_id(member_id)) {$c};");
 dbDelta("CREATE TABLE {$p}stageart_plugin_member_fields (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,field_key VARCHAR(191) NOT NULL,name VARCHAR(191) NOT NULL,description TEXT NULL,is_active TINYINT(1) NOT NULL DEFAULT 1,display_order INT UNSIGNED NOT NULL DEFAULT 0,created_at DATETIME NOT NULL,updated_at DATETIME NOT NULL,PRIMARY KEY(id),UNIQUE KEY field_key(field_key),KEY is_active_display_order(is_active,display_order)) {$c};");
