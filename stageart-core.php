@@ -5,7 +5,6 @@
  * Version: 0.9.8
  * Requires at least: 6.0
  * Requires PHP: 8.0
- * Requires Plugins: authcore
  * AuthCore: application
  * AuthCore Application Key: stageart
  * AuthCore Application Name: StageArt
