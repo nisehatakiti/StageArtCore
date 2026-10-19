@@ -13,6 +13,11 @@ final class MemberPermissionsAdmin
         'member' => '一般メンバー',
     ];
 
+    public function __construct()
+    {
+        add_action('admin_post_stageart_save_user_permissions', [$this, 'save']);
+    }
+
     public function register(): void
     {
         add_submenu_page(
@@ -23,7 +28,6 @@ final class MemberPermissionsAdmin
             'stageart-user-permissions',
             [$this, 'render']
         );
-        add_action('admin_post_stageart_save_user_permissions', [$this, 'save']);
     }
 
     public function save(): void
