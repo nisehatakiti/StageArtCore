@@ -13,6 +13,7 @@ use StageArtCore\Infrastructure\AuthCoreBridge;
 use StageArtCore\Domain\Production\ProductionValidator;
 use StageArtCore\Presentation\Admin\AdminMenu;
 use StageArtCore\Presentation\Admin\MemberAdmin;
+use StageArtCore\Presentation\Admin\MemberPermissionsAdmin;
 use StageArtCore\Presentation\Admin\PerformanceReleaseAdmin;
 use StageArtCore\Presentation\Admin\ProductionAdmin;
 use StageArtCore\Presentation\Admin\ProductionLayoutAdmin;
@@ -64,6 +65,7 @@ final class Plugin
         add_action('admin_init', [new ThemeAdmin(), 'registerSettings']);
         add_action('admin_init', [new ThemeAdmin(), 'registerActions']);
         add_action('admin_menu', [new MemberAdmin(), 'register'], 20);
+        add_action('admin_menu', [new MemberPermissionsAdmin(), 'register'], 21);
         (new PerformanceReleaseAdmin())->register();
         (new RepresentativeGreetingAdmin())->register();
         (new ProductionPresentationAdmin())->register();
