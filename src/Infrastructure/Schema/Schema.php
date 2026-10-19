@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace StageArtCore\Infrastructure\Schema;
 final class Schema{
-public const DB_VERSION='0.6.5';
+public const DB_VERSION='0.6.6';
 public static function activate():void{
 global $wpdb;$c=$wpdb->get_charset_collate();$p=$wpdb->prefix;require_once ABSPATH.'wp-admin/includes/upgrade.php';
 dbDelta("CREATE TABLE {$p}stageart_plugin_members (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,name VARCHAR(191) NOT NULL,slug VARCHAR(191) NOT NULL,photo_id BIGINT UNSIGNED NULL,profile LONGTEXT NULL,status VARCHAR(20) NOT NULL DEFAULT 'draft',display_order INT UNSIGNED NOT NULL DEFAULT 0,release_at DATETIME NULL,authcore_user_id BIGINT UNSIGNED NULL,created_at DATETIME NOT NULL,updated_at DATETIME NOT NULL,PRIMARY KEY(id),UNIQUE KEY slug(slug),KEY status_display_order(status,display_order),KEY release_at(release_at),KEY authcore_user_id(authcore_user_id)) {$c};");$wpdb->query("ALTER TABLE {$p}stageart_plugin_members ADD COLUMN release_at DATETIME NULL");
@@ -24,5 +24,6 @@ dbDelta("CREATE TABLE {$p}stageart_plugin_production_participants (id BIGINT UNS
 dbDelta("CREATE TABLE {$p}stageart_plugin_performance_labels (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,production_id BIGINT UNSIGNED NOT NULL,symbol VARCHAR(30) NOT NULL,name VARCHAR(191) NULL,display_order INT UNSIGNED NOT NULL DEFAULT 0,created_at DATETIME NOT NULL,updated_at DATETIME NOT NULL,PRIMARY KEY(id),KEY production_order(production_id,display_order)) {$c};");
 dbDelta("CREATE TABLE {$p}stageart_plugin_production_performances (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,production_id BIGINT UNSIGNED NOT NULL,performance_date DATE NOT NULL,start_time TIME NOT NULL,end_time TIME NULL,label_id BIGINT UNSIGNED NULL,release_at DATETIME NULL,created_at DATETIME NOT NULL,updated_at DATETIME NOT NULL,PRIMARY KEY(id),KEY production_datetime(production_id,performance_date,start_time),KEY label_id(label_id),KEY release_at(release_at)) {$c};");
 dbDelta("CREATE TABLE {$p}stageart_plugin_production_ticket_prices (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,production_id BIGINT UNSIGNED NOT NULL,description VARCHAR(191) NOT NULL,amount BIGINT UNSIGNED NOT NULL DEFAULT 0,show_on_reservation TINYINT(1) NOT NULL DEFAULT 1,display_order INT UNSIGNED NOT NULL DEFAULT 0,created_at DATETIME NOT NULL,updated_at DATETIME NOT NULL,PRIMARY KEY(id),KEY production_order(production_id,display_order)) {$c};");
+dbDelta("CREATE TABLE {$p}stageart_plugin_member_permissions (authcore_user_id BIGINT UNSIGNED NOT NULL,role_key VARCHAR(40) NOT NULL DEFAULT 'member',created_at DATETIME NOT NULL,updated_at DATETIME NOT NULL,PRIMARY KEY(authcore_user_id),KEY role_key(role_key)) {$c};");
 update_option('stageart_core_db_version',self::DB_VERSION,false);
 }}
